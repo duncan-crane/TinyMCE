@@ -1,4 +1,7 @@
 <?php
+
+use MediaWiki\MediaWikiServices;
+
 /**
  * TinyMCEUploadWindow - used for uploading files from within a form.
  * This class is heavily based on the Page Forms extension's
@@ -282,7 +285,7 @@ class TinyMCEUploadWindow extends UnlistedSpecialPage {
 			'pfNode' => $this->mNode,
 			'pfDropSrc' => $this->mDropSrc,
 		) );
-		$form->setTitle( $this->getTitle() );
+		$form->setTitle( $this->getPageTitle() );
 
 		# Check the token, but only if necessary
 		if ( !$this->mTokenOk && !$this->mCancelUpload
@@ -833,7 +836,11 @@ END;
 			return true;
 		$success = $this->mUpload->unsaveUploadedFile();
 		if ( ! $success ) {
-			$this->getOutput()->showFileDeleteError( $this->mUpload->getTempPath() );
+			$this->getOutput()->showFatalError(
+				$this->msg( 'filedeleteerror' )
+					->params( $this->mUpload->getTempPath() )
+					->escaped()
+			);
 			return false;
 		} else {
 			return true;
@@ -927,14 +934,15 @@ END;
 	 * @return string
 	 */
 	public static function ajaxGetLicensePreview( $license ) {
-		global $wgParser, $wgUser;
+		global $wgUser;
 		$text = '{{' . $license . '}}';
 		$title = Title::makeTitle( NS_FILE, 'Sample.jpg' );
 		$options = ParserOptions::newFromUser( $wgUser );
 
+		$parser = MediaWikiServices::getInstance()->getParser();
 		// Expand subst: first, then live templates...
-		$text = $wgParser->preSaveTransform( $text, $title, $wgUser, $options );
-		$output = $wgParser->parse( $text, $title, $options );
+		$text = $parser->preSaveTransform( $text, $title, $wgUser, $options );
+		$output = $parser->parse( $text, $title, $options );
 
 		return $output->getText();
 	}
