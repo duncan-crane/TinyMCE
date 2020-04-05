@@ -1,8 +1,9 @@
 {
 	"@Note": "When updating this file please also update TinyMCE.php with the same changes.",
 	"name": "TinyMCE",
-	"version": "0.1",
+	"version": "0.5",
 	"author": [
+		"Ephox",
 		"Hallo Welt",
 		"Duncan Crane",
 		"Yaron Koren"
@@ -13,12 +14,16 @@
 	"type": "hook",
 	"callback": "TinyMCEHooks::registerExtension",
 	"requires": {
-		"MediaWiki": ">= 1.27.0"
+		"MediaWiki": ">= 1.29.0"
 	},
 	"MessagesDirs": {
 		"TinyMCE": [
 			"i18n"
 		]
+	},
+	"ExtensionMessagesFiles": {
+		"TinyMCEMagic": "TinyMCE.i18n.magic.php",
+		"TinyMCEAlias": "TinyMCE.i18n.alias.php"
 	},
 	"AutoloadClasses": {
 		"TinyMCEHooks": "TinyMCE.hooks.php",
@@ -84,6 +89,7 @@
 				"tinymce-upload-format-border-text",
 				"tinymce-upload-format-frame-text",
 				"tinymce-upload-format-frameless-text",
+				"tinymce-upload-format-none-text",
 				"tinymce-upload-alert-uploads-not-enabled",
 				"tinymce-upload-alert-uploads-not-allowed",
 				"tinymce-upload-alert-error-uploading-to-wiki",
@@ -106,11 +112,16 @@
 				"tinymce-wikicode-alert-image-request-invalid",
 				"tinymce-wikicode-alert-image-request-unknown-error",
 				"tinymce-wikicode-alert-infinte-loop",
+				"tinymce-wikicode-alert-mw-parser-fail",
+				"tinymce-wikicode-non-rendering-single-linebreak",
 				"tinymce-openlink",
 				"tinymce-wikimagic",
 				"tinymce-wikimagic-title",
+				"tinymce-browsercontextmenu",
+				"tinymce-browsercontextmenu-title",
 				"tinymce-wikisourcecode",
 				"tinymce-wikisourcecode-title",
+				"tinymce-link-title",
 				"tinymce-link-title-label",
 				"tinymce-link-url-page-label",
 				"tinymce-link-display-text-label",
@@ -150,9 +161,11 @@
 	},
 	"Hooks": {
 		"MakeGlobalVariablesScript": "TinyMCEHooks::setGlobalJSVariables",
+		"MagicWordwgVariableIDs": "TinyMCEHooks::addMagicWordVariableIDs",
+		"ParserBeforeTidy": "TinyMCEHooks::handleMagicWords",
 		"SkinTemplateNavigation": "TinyMCEAction::displayTab",
 		"SkinEditSectionLinks": "TinyMCEHooks::addEditSectionLink",
-		"LinkEnd": "TinyMCEHooks::changeRedLink",
+		"AlternateEdit": "TinyMCEHooks::determineIfTinyMCEIsEnabled",
 		"EditPageBeforeEditToolbar": "TinyMCEHooks::removeDefaultToolbar",
 		"EditPage::showEditForm:initial": "TinyMCEHooks::addToEditPage",
 		"WikiEditorDisable": "TinyMCEHooks::disableWikiEditor",
@@ -170,7 +183,12 @@
 	},
 	"config": {
 		"TinyMCEMacros": [],
-		"TinyMCEEnabled": false
+		"TinyMCEDefaultTags": [],
+		"TinyMCEExtensionTags": [],
+		"TinyMCEPreservedTags": [],
+		"TinyMCEEnabled": false,
+		"TinyMCEDisabledNamespaces": [ 8, 10 ],
+		"TinyMCEUnhandledStrings": []
 	},
 	"manifest_version": 1
 }

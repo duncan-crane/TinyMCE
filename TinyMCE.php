@@ -34,13 +34,13 @@ if ( defined( 'TINYMCE_VERSION' ) ) {
 	return 1;
 }
 
-define( 'TINYMCE_VERSION', '0.1' );
+define( 'TINYMCE_VERSION', '0.5' );
 
 $GLOBALS['wgExtensionCredits']['hook'][] = array(
 	'path' => __FILE__,
 	'name' => 'TinyMCE',
 	'version' => TINYMCE_VERSION,
-	'author' => array( 'Hallo Welt', 'Duncan Crane', 'Yaron Koren' ),
+	'author' => array( 'Ephox', 'Hallo Welt', 'Duncan Crane', 'Yaron Koren' ),
 	'url' => 'https://www.mediawiki.org/wiki/Extension:TinyMCE',
 	'descriptionmsg' => 'tinymce-desc',
 	'license-name' => 'GPL-2.0+'
@@ -67,10 +67,19 @@ $GLOBALS['wgTinyMCEIP'] = dirname( __FILE__ );
 
 //$GLOBALS['wgHooks']['ResourceLoaderRegisterModules'][] = 'TinyMCEHooks::registerModules';
 $GLOBALS['wgHooks']['MakeGlobalVariablesScript'][] = 'TinyMCEHooks::setGlobalJSVariables';
+$GLOBALS['wgHooks']['MagicWordwgVariableIDs'][] = 'TinyMCEHooks::addMagicWordVariableIDs';
+$GLOBALS['wgHooks']['ParserBeforeTidy'][] = 'TinyMCEHooks::handleMagicWords';
 $GLOBALS['wgHooks']['SkinTemplateNavigation'][] = 'TinyMCEAction::displayTab';
 $GLOBALS['wgHooks']['SkinEditSectionLinks'][] = 'TinyMCEHooks::addEditSectionLink';
-$GLOBALS['wgHooks']['LinkEnd'][] = 'TinyMCEHooks::changeRedLink';
+if ( class_exists( 'MediaWiki\Linker\LinkRenderer' ) ) {
+	// MW 1.28+
+	$GLOBALS['wgHooks']['HtmlPageLinkRendererEnd'][] = 'TinyMCEHooks::changeRedLink';
+} else {
+	// MW < 1.28
+	$GLOBALS['wgHooks']['LinkEnd'][] = 'TinyMCEHooks::changeRedLinkOld';
+}
 $GLOBALS['wgHooks']['EditPageBeforeEditToolbar'][] = 'TinyMCEHooks::removeDefaultToolbar';
+$GLOBALS['wgHooks']['AlternateEdit'][] = 'TinyMCEHooks::determineIfTinyMCEIsEnabled';
 $GLOBALS['wgHooks']['EditPage::showEditForm:initial'][] = 'TinyMCEHooks::addToEditPage';
 $GLOBALS['wgHooks']['WikiEditorDisable'][] = 'TinyMCEHooks::disableWikiEditor';
 $GLOBALS['wgHooks']['GetPreferences'][] = 'TinyMCEHooks::addPreference';
@@ -86,6 +95,7 @@ $GLOBALS['wgSpecialPages']['TinyMCEUploadWindow'] = 'TinyMCEUploadWindow';
 $GLOBALS['wgActions']['tinymceedit'] = 'TinyMCEAction';
 
 $GLOBALS['wgMessagesDirs']['TinyMCE'] = __DIR__ . '/i18n';
+$wgExtensionMessagesFiles['TinyMCEMagic'] = __DIR__ . '/TinyMCE.i18n.magic.php';
 
 // Register client-side modules.
 $wgTinyMCEResourceTemplate = array(
@@ -98,7 +108,7 @@ $GLOBALS['wgResourceModules'] += array(
 		'styles' => 'MW_tinymce.css',
 		'dependencies' => array(
 			'ext.tinymce.core',
-			'ext.tinymce.fancybox'
+#			'ext.tinymce.fancybox'
 		),
 		'messages' => array(
 			'tinymce-upload',
@@ -149,6 +159,7 @@ $GLOBALS['wgResourceModules'] += array(
 			'tinymce-upload-format-border-text',
 			'tinymce-upload-format-frame-text',
 			'tinymce-upload-format-frameless-text',
+			'tinymce-upload-format-none-text',
 			'tinymce-upload-alert-uploads-not-enabled',
 			'tinymce-upload-alert-uploads-not-allowed',
 			'tinymce-upload-alert-error-uploading-to-wiki',
@@ -171,11 +182,16 @@ $GLOBALS['wgResourceModules'] += array(
 			'tinymce-wikicode-alert-image-request-invalid',
 			'tinymce-wikicode-alert-image-request-unknown-error',
 			'tinymce-wikicode-alert-infinte-loop',
+			'tinymce-wikicode-alert-mw-parser-fail',
+			'tinymce-wikicode-non-rendering-single-linebreak',
 			'tinymce-openlink',
 			'tinymce-wikimagic',
 			'tinymce-wikimagic-title',
 			'tinymce-wikisourcecode',
 			'tinymce-wikisourcecode-title',
+			'tinymce-browsercontextmenu',
+			'tinymce-browsercontextmenu-title',
+			'tinymce-link-title',
 			'tinymce-link-title-label',
 			'tinymce-link-display-text-label',
 			'tinymce-link-link-list-label',
@@ -200,11 +216,11 @@ $GLOBALS['wgResourceModules'] += array(
 	'ext.tinymce.core' => $wgTinyMCEResourceTemplate + array(
 		'scripts' => 'tinymce/tinymce.js'
 	),
-	'ext.tinymce.fancybox' => $wgTinyMCEResourceTemplate + array(
-		'scripts' => 'fancybox/jquery.fancybox.js',
-		'styles' => 'fancybox/jquery.fancybox.css',
-		'dependencies' => 'ext.tinymce.browser'
-	),
+#	'ext.tinymce.fancybox' => $wgTinyMCEResourceTemplate + array(
+#		'scripts' => 'fancybox/jquery.fancybox.js',
+#		'styles' => 'fancybox/jquery.fancybox.css',
+#		'dependencies' => 'ext.tinymce.browser'
+#	),
 	'ext.tinymce.browser' => $wgTinyMCEResourceTemplate + array(
 		'scripts' => 'jquery.browser.js'
 	)
@@ -217,4 +233,9 @@ $wgDefaultUserOptions['tinymce-use'] = 1;
 // $pathfix = $IP . $GLOBALS['wgTinyMCEScriptPath'];
 
 $GLOBALS['wgTinyMCEEnabled'] = false;
-$GLOBALS['wgTinyMCEMacros'] = array();
+$GLOBALS['wgTinyMCEMacros'] = array();  
+$GLOBALS['wgTinyMCEDefaultTags'] = array();  
+$GLOBALS['wgTinyMCEExtensionTags'] = array();  
+$GLOBALS['wgTinyMCEPreservedTags'] = array();  
+$GLOBALS['wgTinyMCEDisabledNamespaces'] = array( NS_MEDIAWIKI, NS_TEMPLATE );
+$GLOBALS['wgTinyMCEUnhandledStrings'] = array();
