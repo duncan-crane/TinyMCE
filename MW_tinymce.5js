@@ -51,6 +51,7 @@ var	mw_htmlPairsStatic = [ //now just non-nestable
 ];
 var	mw_htmlBlockPairsStatic = [
     'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+	'img', 
     'ol', 'ul', 'li',
     'p', 'pre', 
     'blockquote',
@@ -105,8 +106,10 @@ for (var key in mw_namespaces ) {
 window.mwTinyMCEInit = function( tinyMCESelector ) {
 	window.tinymce.init({
 		selector: tinyMCESelector,
-		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/modern/theme.js',
-		skin_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/skins/lightgray',
+///		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/modern/theme.js',
+		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/silver/theme.js',
+///		skin_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/skins/lightgray',
+		skin_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/skins/ui/oxide',
 		content_css:
 			[ 
 			mw_scriptPath + mw_skin_css,
@@ -130,11 +133,10 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 			'save': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/save/plugin.js',
 			'searchreplace': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/searchreplace/plugin.js',
 			'visualblocks': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualblocks/plugin.js',
-//			'codemirror': mw_extensionAssetsPath + '/TinyMCE/codemirror/plugins/fontawesome/plugin.js',
 			'fontawesome': mw_extensionAssetsPath + '/TinyMCE/fontawesome/plugins/fontawesome/plugin.js',
 			'table': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_table/plugin.js',
-			'wikiupload': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_upload/plugin.js',
 			'wikicode': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_wikicode/plugin.js',
+			'wikiupload': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_upload/plugin.js',
 		},
 		//
 		// *** tinymce configuration ***
@@ -207,8 +209,8 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 		link_title: false,
 		link_assume_external_targets: true,
 		link_class_list: [
-			{title: 'External', value: 'mceNonEditable mwt-wikiMagic mwt-externallink'},
-			{title: 'Internal', value: 'mceNonEditable mwt-wikiMagic mwt-internallink'},
+			{title: 'External', value: 'link external mwt-externalLink mceNonEditable'},
+			{title: 'Internal', value: 'link internal mwt-internalLink mceNonEditable'},
 		],
 		target_list: false,
 //		visual_table_class : "wikitable",

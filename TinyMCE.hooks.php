@@ -1,4 +1,7 @@
 <?php
+
+use MediaWiki\MediaWikiServices;
+
 /**
  * Static functions called by various outside hooks, as well as by
  * extension.json.
@@ -16,9 +19,18 @@ class TinyMCEHooks {
 			return 1;
 		}
 
-		define( 'TINYMCE_VERSION', '0.1' );
+		define( 'TINYMCE_VERSION', '0.5' );
 
 		$GLOBALS['wgTinyMCEIP'] = dirname( __DIR__ ) . '/../';
+
+		// We have to have this hook called here, instead of in
+		// extension.json, because it's conditional.
+		if ( class_exists( 'MediaWiki\Linker\LinkRenderer' ) ) {
+			// MW 1.28+
+			$GLOBALS['wgHooks']['HtmlPageLinkRendererEnd'][] = 'TinyMCEHooks::changeRedLink';
+		} else {
+			$GLOBALS['wgHooks']['LinkEnd'][] = 'TinyMCEHooks::changeRedLinkOld';
+		}
 	}
 
 	/**
@@ -136,8 +148,8 @@ class TinyMCEHooks {
 	}
 
 	static function setGlobalJSVariables( &$vars, $out ) {
-		global $wgTinyMCEEnabled, $wgTinyMCEMacros;
-		global $wgParser, $wgCheckFileExtensions, $wgStrictFileExtensions;
+		global $wgTinyMCEEnabled, $wgTinyMCEMacros, $wgTinyMCEPreservedTags;
+		global $wgCheckFileExtensions, $wgStrictFileExtensions;
 		global $wgFileExtensions, $wgFileBlacklist;
 		global $wgEnableUploads;
 
@@ -147,8 +159,9 @@ class TinyMCEHooks {
 
 		$context = $out->getContext();
 
-		$extensionTags = $wgParser->getTags();
+		$extensionTags = MediaWikiServices::getInstance()->getParser()->getTags();
 		$specialTags = '';
+		$preservedTags = '';
 		foreach ( $extensionTags as $tagName ) {
 			if ( ( $tagName == 'pre' ) || ($tagName == 'nowiki') ) {
 				continue;
@@ -157,12 +170,17 @@ class TinyMCEHooks {
 		}
 
 		$defaultTags = array(
-			"includeonly", "onlyinclude", "noinclude" //Definitively MediaWiki core
+			"includeonly", "onlyinclude", "noinclude", "nowiki", "pre" //Definitively MediaWiki core
 		);
 
 		$tinyMCETagList = $specialTags . implode( '|', $defaultTags );
+		$tinyMCEPreservedTagList = $preservedTags . implode( '|', $wgTinyMCEPreservedTags);
+/*		if ( $wgTinyMCEPreservedTags  ) {
+			$tinyMCETagList = $tinyMCETagList . '|' . implode( '|', $wgTinyMCEPreservedTags );
+		}*/
 
 		$vars['wgTinyMCETagList'] = $tinyMCETagList;
+		$vars['wgTinyMCEPreservedTagList'] = $tinyMCEPreservedTagList;
 
 		$mwLanguage = $context->getLanguage()->getCode();
 		$tinyMCELanguage = self::mwLangToTinyMCELang( $mwLanguage );
@@ -209,7 +227,7 @@ class TinyMCEHooks {
 				if ( strtolower( substr( $macro['image'], 0, 4 ) ) === 'http' ) {
 					$imageURL = $macro['image'];
 				} else {
-					$imageFile =  wfLocalFile( $macro['image'] );
+					$imageFile = wfLocalFile( $macro['image'] );
 					$imageURL = $imageFile->getURL();
 				}
 			}
@@ -223,6 +241,33 @@ class TinyMCEHooks {
 
 		return true;
 	}
+
+	/**
+	 * Register magic-word variable IDs
+	 */
+	static function addMagicWordVariableIDs( &$magicWordVariableIDs ) {
+		$magicWordVariableIDs[] = 'MAG_NOTINYMCE';
+		return true;
+	}
+
+	/**
+	 * Set a value in the page_props table based on the presence of the
+	 * 'NOTINYMCE' magic word in a page
+	 */
+	static function handleMagicWords( &$parser, &$text ) {
+		if ( class_exists( MagicWordFactory::class ) ) {
+			// MW 1.32+
+			$factory = MediaWikiServices::getInstance()->getMagicWordFactory();
+			$magicWord = $factory->get( 'MAG_NOTINYMCE' );
+		} else {
+			$magicWord = MagicWord::get( 'MAG_NOTINYMCE' );
+		}
+		if ( $magicWord->matchAndRemove( $text ) ) {
+			$parser->mOutput->setProperty( 'notinymce', 'y' );
+		}
+		return true;
+	}
+
 
 	/**
 	 * Adds an "edit" link for TinyMCE, and renames the current "edit"
@@ -242,7 +287,7 @@ class TinyMCEHooks {
 		foreach ( $links as &$link ) {
 			if ( $link['query']['action'] == 'edit' ) {
 				$newLink = $link;
-				$link['text'] = $skin->msg( 'tinymce-editsectionsource' )->parse();
+				$link['text'] = $skin->msg( 'tinymce-editsectionsource' )->text();
 			}
 		}
 		$newLink['query']['action'] = 'tinymceedit';
@@ -253,7 +298,7 @@ class TinyMCEHooks {
 
 	/**
 	 * Sets broken/red links to point to TinyMCE edit page, if they
-	 * haven't been customized already.
+	 * haven't been customized already - for MW < 1.28.
 	 *
 	 * @param Linker $linker
 	 * @param Title $target
@@ -263,7 +308,7 @@ class TinyMCEHooks {
 	 * @param bool &$ret
 	 * @return true
 	 */
-	static function changeRedLink( $linker, $target, $options, $text, &$attribs, &$ret ) {
+	static function changeRedLinkOld( $linker, $target, $options, $text, &$attribs, &$ret ) {
 		// If it's not a broken (red) link, exit.
 		if ( !in_array( 'broken', $options, true ) ) {
 			return true;
@@ -290,6 +335,55 @@ class TinyMCEHooks {
 	}
 
 	/**
+	 * Called by the HtmlPageLinkRendererEnd hook.
+	 *
+	 * The $target argument is listed in the documentation as being of type
+	 * LinkTarget, but in practice it seems to sometimes be of type Title
+	 * and sometimes of type TitleValue. So we just leave out a type
+	 * declaration for that argument in the declaration.
+	 *
+	 * @param LinkRenderer $linkRenderer
+	 * @param Title $target
+	 * @param bool $isKnown
+	 * @param string &$text
+	 * @param array &$attribs
+	 * @param bool &$ret
+	 * @return true
+	 */
+	static function changeRedLink( MediaWiki\Linker\LinkRenderer $linkRenderer, $target, $isKnown, &$text, &$attribs, &$ret ) {
+		// If it's not a broken (red) link, exit.
+		if ( $isKnown ) {
+			return true;
+		}
+		// If the link is to a special page, exit.
+		if ( $target->getNamespace() == NS_SPECIAL ) {
+			return true;
+		}
+
+		// This link may have been modified already by Page Forms or
+		// some other extension - if so, leave it as it is.
+		if ( strpos( $attribs['href'], 'action=edit&' ) === false ) {
+			return true;
+		}
+
+		if ( $target instanceof Title ) {
+			$title = $target;
+		} else {
+			// TitleValue object in MW >= 1.34?
+			$title = Title::newFromLinkTarget( $target );
+		}
+
+		global $wgOut;
+		if ( !TinyMCEHooks::enableTinyMCE( $title, $wgOut->getContext() ) ) {
+			return true;
+		}
+
+		$attribs['href'] = $title->getLinkURL( array( 'action' => 'tinymceedit', 'redlink' => '1' ) );
+
+		return true;
+	}
+
+	/**
 	 * Is there a less hacky way to do this, like stopping the toolbar
 	 * creation before it starts?
 	 */
@@ -302,15 +396,48 @@ class TinyMCEHooks {
 	}
 
 	public static function enableTinyMCE( $title, $context ) {
-		if ( $title->getNamespace() == NS_TEMPLATE ) {
+		global $wgTinyMCEDisabledNamespaces, $wgTinyMCEUnhandledStrings;
+
+		if ( in_array( $title->getNamespace(), $wgTinyMCEDisabledNamespaces ) ) {
 			return false;
 		}
 
-		if ( $context->getRequest()->getCheck('undo') ) {
+		if ( $context->getRequest()->getCheck( 'undo' ) ) {
 			return false;
 		}
 
 		if ( !$context->getUser()->getOption( 'tinymce-use' ) ) {
+			return false;
+		}
+
+		if ( !empty( $wgTinyMCEUnhandledStrings ) ) {
+			$wikiPage = new WikiPage( $title );
+			$content = $wikiPage->getContent();
+			if ( $content != null ) {
+				$pageText = $content->getNativeData();
+				foreach ( $wgTinyMCEUnhandledStrings as $str ) {
+					if ( strpos( $pageText, $str ) !== false ) {
+						return false;
+					}
+				}
+			}
+		}
+
+		// If there's a 'notinymce' property for this page in the
+		// page_props table, regardless of the value, disable TinyMCE.
+		$dbr = wfGetDB( DB_REPLICA );
+		$res = $dbr->select( 'page_props',
+			array(
+				'pp_value'
+			),
+			array(
+				'pp_page' => $title->getArticleID(),
+				'pp_propname' => 'notinymce'
+			)
+		);
+		// First row of the result set.
+		$row = $dbr->fetchRow( $res );
+		if ( $row != null ) {
 			return false;
 		}
 
@@ -322,23 +449,36 @@ class TinyMCEHooks {
 		return true;
 	}
 
-	public static function addToEditPage( EditPage &$editPage, OutputPage &$output ) {
+	/**
+	 * This code is called separately from addToEditPage() because it needs
+	 * to be called earlier - addToEditPage() is called via the same hook
+	 * (EditPage::showEditForm:initial) as WikiEditor's code for
+	 * determining whether to install WikiEditor - which means that, if
+	 * this code were part of addToEditPage(), whether or not it ran
+	 * correctly would depend on the order in which the extensions were
+	 * called. Instead, for this code we use a hook called earlier -
+	 * AlternateEdit.
+	 */
+	public static function determineIfTinyMCEIsEnabled( EditPage $editPage ) {
 		global $wgTinyMCEEnabled;
 
 		$wgTinyMCEEnabled = false;
 
 		$context = $editPage->getArticle()->getContext();
-		$title = $editPage->getTitle();
 
 		$action = Action::getActionName( $context );
-		if ( $action == 'edit' || $action == 'submit' ) {
+		if ( $action != 'tinymceedit' ) {
 			return true;
 		}
 
-		if ( self::enableTinyMCE( $title, $context ) ) {
-			$wgTinyMCEEnabled = true;
-			$output->addModules( 'ext.tinymce' );
-		}
+		$title = $editPage->getTitle();
+		$wgTinyMCEEnabled = self::enableTinyMCE( $title, $context );
+
+		return true;
+	}
+
+	public static function addToEditPage( EditPage &$editPage, OutputPage &$output ) {
+		global $wgTinyMCEEnabled;
 
 		if ( !$wgTinyMCEEnabled ) {
 			return true;
