@@ -328,4 +328,7 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 	});
 };
 
-mwTinyMCEInit( '#wpTextbox1' );
+mwTinyMCEInit( '.tinymce, #wpTextbox1' );
+
+// Let others know we're done here
+$( document ).trigger( 'TinyMCELoaded' );
