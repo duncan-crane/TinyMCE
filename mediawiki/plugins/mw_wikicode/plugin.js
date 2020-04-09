@@ -578,11 +578,17 @@ var MwWikiCode = function() {
 			elementTitle,
 			count = 0,
 			regex,
-			matcher;
+			matcher,
+			blockMatcher;
 
 		// replace non rendering new line placeholder with html equivalent
 		text = text.replace(/<@@slb@@>/gmi, _slb);
 
+		// the block matcher is used in a loop to determine whether to wrap the returned 
+		// html in div or span tags, we define it here so it only has to be defined once
+		regex = "<(" + _mwtBlockTagsList + ")";
+		blockMatcher = new RegExp(regex, 'i');
+		
 		// we use the parser table to collect all the wikicode to be parsed into a single
 		// document to avoid multiple calls to the api parser so speed things up
 		// there are two passes one to collect the parser text and the next to insert it
@@ -633,14 +639,18 @@ var MwWikiCode = function() {
 							regex,
 							matcher;
 
-						regex = "<(" + _mwtBlockTagsList + ")";
-						matcher = new RegExp(regex, 'i');
 						html = parserTable[count];
 						elementTitle = _tags4Wiki[tag];
 
-						if ( parserTable[count].match(matcher) ) {
+						if ( html.match(blockMatcher) ) {
 							// if parser result contains a block tag. wrap in a <div>
 							// and add a new line to the wiki text
+							if (html.match(/<img/gmi)) {
+								// images should are given a placeholder for the editor window
+								// as the actual code may appear elsewhere in the text to where
+								// the image is displayed
+								html = html + _img ;									
+							}
 							html = '<div>' + html + '</div>';
 							_tags4Wiki[tag] = '<@@bnl@@>' + _tags4Wiki[tag] + '<@@bnl@@>';
 						} else {
@@ -2618,7 +2628,7 @@ debugger;
 						uploadDetails = data;
 				},
 				error:function(xhr,status, error){
-					uploadDetails.responseText = xhr.responseText;
+					uploadDetails['responseText'] = xhr.responseText;
 					console.log(error);
 				}
 			});
@@ -2675,16 +2685,23 @@ debugger;
 					}
 				}
 				ed.windowManager.alert(message);
-			} else if (typeof uploadDetails.imageinfo != "undefined") {
-				result = uploadDetails.imageinfo.url;
+			} else if (typeof uploadDetails.upload.imageinfo != "undefined") {
+				result = uploadDetails.upload.imageinfo.url;
 			}
 			return result;
 		}
 
 		$dom = $( "<div id='tinywrapper'>" + text + "</div>" );
 
+		/**
+		 * creates a wiki link for an image and returns a place 
+		 * holder for the html text, which is substituted later
+		 *
+		 * @param {String} text
+		 * @returns {String}
+		 */
+		function getWikiImagePlaceHolder(imageElm, imageLink) {
 		// find image tags in the dom and upload the images
-		$dom.find( "img" ).replaceWith( function() {
 			var aLink,
 				fileType, 
 				uploadDetails, 
@@ -2692,9 +2709,9 @@ debugger;
 				ignoreWarnings = true,
 				fileSummary = '',
 				wikiImageObject = [],
-				htmlImageObject = this,
+				htmlImageObject = imageElm,
 				attribute,
-				attributes = this.attributes,
+				attributes = imageElm.attributes,
 				sourceURI = attributes['src'].value.split('#')[0].split('?')[0],
 				protocol = sourceURI.split('/')[0].toLowerCase(),
 				dstName = sourceURI.split('/').pop().split('#')[0].split('?')[0],
@@ -2721,7 +2738,12 @@ debugger;
 			uploadResult = checkUploadDetail(uploadDetails, ignoreWarnings, dstName);
 
 			// build the wiki code for the image link
-			// first process image tag attributes
+
+			// first add the filename.  We use the original destination as
+			// if the upload fails we will insert a 'red link' instead
+			wikiImageObject['imagename'] = dstName;
+
+			// then process image tag attributes
 			for (var j = 0; j < attributes.length; j++) {
 				attribute = attributes[j].name;
 				if ( !( attribute == 'width' || !attribute == 'height' )) {
@@ -2886,12 +2908,50 @@ debugger;
 			if ( imageCaption ) {
 				wikiText.push( imageCaption );
 			}
-
-			if (this.parentNode.tagName == "A") {
-				dstName = dstName + "|link=" + this.parentNode.href;
-				aLink = '[[' + _mwtFileNamespace + ':' + dstName + wikiText.join('|') + ']]';
-				return _preserveLinks4Html(aLink);
+			
+			if (imageLink) {
+				dstName = dstName + "|link=" + imageLink;
+				aLink = '[[File:' + dstName + wikiText.join('|') + ']]';
+			} else {
+				aLink = '[[File:' + dstName + wikiText.join('|') + ']]';
 			}	
+			return _preserveLinks4Html(aLink);
+		};
+
+		// convert to <a> wiki links then replace these
+		// with a placeholder for the html
+		$dom.find( "a" ).replaceWith( function() {
+			var aLink,
+				linkPlaceholder,
+				protocol = this.protocol,
+				dstName = this.href,
+				title = this.text;
+
+			if (this.firstElementChild && this.firstElementChild.tagName == "IMG") {
+				// process links to images
+				linkPlaceholder = getWikiImagePlaceHolder(this.firstElementChild, dstName);
+			} else if (protocol) {
+				// process external links
+				if (title) {
+					dstName = dstName + ' ' + title;
+				}
+				aLink = '[' + dstName + ']'
+				linkPlaceholder = _preserveLinks4Html(aLink);			
+			} else {
+				// process internal links
+				if (title) {
+					dstName = dstName + '|' + title;
+				}
+				aLink = '[[' + dstName + ']]'
+				linkPlaceholder = _preserveLinks4Html(aLink);			
+			}
+
+			return linkPlaceholder;			
+		});
+
+		// the process any remaining images in the text
+		$dom.find( "img" ).replaceWith( function() {
+			return getWikiImagePlaceHolder(this)
 		});
 
 		// convert DOM back to html text
@@ -3243,6 +3303,7 @@ debugger;
 	function _onBeforeSetContent(e) {
 		// if raw format is requested, this is usually for internal issues like
 		// undo/redo. So no additional processing should occur. Default is 'html'
+
 		if (e.format == 'raw' ) {
 			return;
 		}
@@ -3267,6 +3328,7 @@ debugger;
 	 * @param {tinymce.SetContentEvent} e
 	 */
 	function _onSetContent(e) {
+
 		return;
 	}
 
@@ -3278,6 +3340,7 @@ debugger;
 	function _onBeforeGetContent(e) {
 		// generally we want to get the content of the editor
 		// unaltered by any html rationalisation!!!
+debugger;
 		e.format = 'raw';
 		return;
 	}
@@ -3290,6 +3353,7 @@ debugger;
 	function _onGetContent(e) {
 		// if we are going to save the content then we need to convert it
 		// back to wiki text
+
 		if (e.save == true) {
 			e.convert2wiki = true;
 		}
@@ -3312,6 +3376,7 @@ debugger;
 	 * @param {tinymce.LoadContentEvent} e
 	 */
 	function _onLoadContent(e) {
+
 		return;
 	}
 
@@ -3321,6 +3386,7 @@ debugger;
 	 * @param {tinymce.DropEvent} e
 	 */
 	function _onDrop(e) {
+
 		return;
 	}
 	
@@ -3332,7 +3398,7 @@ debugger;
 	function _onPastePreProcess(e) {
 		// check if this is the content of a drag/drop event
 		// if it is then no need to convert wiki to html
-		
+
 		// Show progress for the active editor
 		_ed.setProgressState(true);
 
@@ -3341,7 +3407,25 @@ debugger;
 
 		// Hide progress for the active editor
 		_ed.setProgressState(false);
-		return;
+
+		// this hack bypasses the TinyMCE paste plugin because at the moment
+		// it is filtyering out html links with images and I can't figure why
+		// at a later date I may reintroduce it!
+
+		_ed.undoManager.transact(function() {
+			var args = {format: 'raw', load: 'true', convert2html: false};
+
+			_ed.focus();
+			_ed.selection.setContent(e.content, args);
+			_ed.undoManager.add();
+		});
+		_ed.selection.setCursorLocation();
+		_ed.nodeChanged();
+
+		// prevent further processing
+		e.preventDefault();
+		e.stopPropagation();
+		e.stopImmediatePropagation();
 	}
 
 	/**
