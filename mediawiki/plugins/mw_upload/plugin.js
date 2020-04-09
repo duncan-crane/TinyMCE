@@ -948,7 +948,7 @@ tinymce.PluginManager.add('wikiupload', function(editor) {
 						uploadDetails = data.upload;
 					},
 					error:function(xhr,status, error){
-						uploadDetails.responseText = xhr.responseText;
+						uploadDetails['responseText'] = xhr.responseText;
 						console.log(error);
 					}
 				});
