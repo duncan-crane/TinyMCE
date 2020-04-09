@@ -170,7 +170,8 @@
 		"EditPage::showEditForm:initial": "TinyMCEHooks::addToEditPage",
 		"WikiEditorDisable": "TinyMCEHooks::disableWikiEditor",
 		"GetPreferences": "TinyMCEHooks::addPreference",
-		"PageForms::addRLModules": "TinyMCEHooks::addRLModules"
+		"PageForms::addRLModules": "TinyMCEHooks::addRLModules",
+		"OutputPageBeforeHTML": "TinyMCEHooks::addToViewPage"
 	},
 	"Actions": {
 		"tinymceedit": "TinyMCEAction"
@@ -188,7 +189,8 @@
 		"TinyMCEPreservedTags": [],
 		"TinyMCEEnabled": false,
 		"TinyMCEDisabledNamespaces": [ 8, 10 ],
-		"TinyMCEUnhandledStrings": []
+		"TinyMCEUnhandledStrings": [],
+		"TinyMCELoadOnView": false
 	},
 	"manifest_version": 1
 }
