@@ -51,6 +51,7 @@ var	mw_htmlPairsStatic = [ //now just non-nestable
 ];
 var	mw_htmlBlockPairsStatic = [
     'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+	'img', 
     'ol', 'ul', 'li',
     'p', 'pre', 
     'blockquote',
@@ -105,8 +106,10 @@ for (var key in mw_namespaces ) {
 window.mwTinyMCEInit = function( tinyMCESelector ) {
 	window.tinymce.init({
 		selector: tinyMCESelector,
-		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/modern/theme.js',
-		skin_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/skins/lightgray',
+///		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/modern/theme.js',
+		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/silver/theme.js',
+///		skin_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/skins/lightgray',
+		skin_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/skins/ui/oxide',
 		content_css:
 			[ 
 			mw_scriptPath + mw_skin_css,
@@ -119,7 +122,8 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 		external_plugins: {
 			'anchor': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/anchor/plugin.js',
 			'autolink': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autolink/plugin.js',
-			'autoresize': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autoresize/plugin.js',
+//DC TODO autoresize is broken - it just endlessly extends the editor window?
+//			'autoresize': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autoresize/plugin.js',
 			'autosave': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autosave/plugin.js',
 			'charmap': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/charmap/plugin.js',
 			'insertdatetime': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/insertdatetime/plugin.js',
@@ -130,11 +134,12 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 			'save': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/save/plugin.js',
 			'searchreplace': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/searchreplace/plugin.js',
 			'visualblocks': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualblocks/plugin.js',
-//			'codemirror': mw_extensionAssetsPath + '/TinyMCE/codemirror/plugins/fontawesome/plugin.js',
-			'fontawesome': mw_extensionAssetsPath + '/TinyMCE/fontawesome/plugins/fontawesome/plugin.js',
-			'table': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_table/plugin.js',
-			'wikiupload': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_upload/plugin.js',
+// DC TODO fix fontawesome for TMCE v 5
+//			'fontawesome': mw_extensionAssetsPath + '/TinyMCE/fontawesome/plugins/fontawesome/plugin.js',
+// DC TODO fix tables for TMCE v 5
+//			'table': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_table/plugin.js',
 			'wikicode': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_wikicode/plugin.js',
+//			'wikiupload': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_upload/plugin.js',
 		},
 		//
 		// *** tinymce configuration ***
@@ -272,7 +277,9 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 		noneditable_noneditable_class: 'fa',
 		extended_valid_elements: 'span[*]',
 		// tinymce configuration
-		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap fontawesome singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect removeformat | searchreplace ',
+//DC  TODO fix fontawesome for TinyMCE v5
+//		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap fontawesome singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect removeformat | searchreplace ',
+		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect removeformat | searchreplace ',
 		style_formats_merge: true,
 		style_formats: [
 			{title: "Table", items: [
