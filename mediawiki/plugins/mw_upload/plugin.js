@@ -1171,17 +1171,17 @@ tinymce.PluginManager.add('wikiupload', function(editor) {
 		editor.serializer.addNodeFilter('figure', toggleContentEditableState(false));
 	});
 
-	editor.addButton('wikiupload', {
+	editor.ui.registry.addButton('wikiupload', {
 		icon: 'image',
 		tooltip: mw.msg("tinymce-upload-menu-item-text"),
-		onclick: showDialog,
+		onAction: showDialog,
 		stateSelector: '.mwt-image'
 	});
 
-	editor.addMenuItem('wikiupload', {
+	editor.ui.registry.addMenuItem('wikiupload', {
 		icon: 'image',
 		text: mw.msg("tinymce-upload-menu-item-text"),
-		onclick: showDialog,
+		onAction: showDialog,
 		context: 'upload',
 		prependToContext: true
 	});
