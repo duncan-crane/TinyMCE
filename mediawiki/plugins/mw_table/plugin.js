@@ -4341,19 +4341,19 @@ define(
       }
 
       if (editor.settings.table_grid === false) {
-        editor.addMenuItem('inserttable', {
+        editor.ui.registry.addMenuItem('inserttable', {
           text: 'Table',
           icon: 'table',
           context: 'table',
-          onclick: dialogs.table
+          onAction: dialogs.table
         });
       } else {
-        editor.addMenuItem('inserttable', {
+        editor.ui.registry.addMenuItem('inserttable', {
           text: 'Table',
           icon: 'table',
           context: 'table',
           ariaHideMenu: true,
-          onclick: function (e) {
+          onAction: function (e) {
             if (e.aria) {
               this.parent().hideAll();
               e.stopImmediatePropagation();
@@ -4397,7 +4397,7 @@ define(
                 }
               },
 
-              onclick: function (e) {
+              onAction: function (e) {
                 var self = this;
 
                 if (e.target.tagName.toUpperCase() == 'A') {
@@ -4417,54 +4417,54 @@ define(
         });
       }
 
-      editor.addMenuItem('tableprops', {
+      editor.ui.registry.addMenuItem('tableprops', {
         text: 'Table properties',
         context: 'table',
         onPostRender: postRender,
-        onclick: dialogs.tableProps
+        onAction: dialogs.tableProps
       });
 
-      editor.addMenuItem('deletetable', {
+      editor.ui.registry.addMenuItem('deletetable', {
         text: 'Delete table',
         context: 'table',
         onPostRender: postRender,
-        cmd: 'mceTableDelete'
+        onAction: editor.execCommand('mceTableDelete')
       });
 
-      editor.addMenuItem('cell', {
+      editor.ui.registry.addMenuItem('cell', {
         separator: 'before',
         text: 'Cell',
         context: 'table',
         menu: [
-          { text: 'Cell properties', onclick: cmd('mceTableCellProps'), onPostRender: postRenderCell },
-          { text: 'Merge cells', onclick: cmd('mceTableMergeCells'), onPostRender: postRenderMergeCell },
-          { text: 'Split cell', onclick: cmd('mceTableSplitCells'), onPostRender: postRenderCell }
+          { text: 'Cell properties', onAction: cmd('mceTableCellProps'), onPostRender: postRenderCell },
+          { text: 'Merge cells', onAction: cmd('mceTableMergeCells'), onPostRender: postRenderMergeCell },
+          { text: 'Split cell', onAction: cmd('mceTableSplitCells'), onPostRender: postRenderCell }
         ]
       });
 
-      editor.addMenuItem('row', {
+      editor.ui.registry.addMenuItem('row', {
         text: 'Row',
         context: 'table',
         menu: [
-          { text: 'Insert row before', onclick: cmd('mceTableInsertRowBefore'), onPostRender: postRenderCell },
-          { text: 'Insert row after', onclick: cmd('mceTableInsertRowAfter'), onPostRender: postRenderCell },
-          { text: 'Delete row', onclick: cmd('mceTableDeleteRow'), onPostRender: postRenderCell },
-          { text: 'Row properties', onclick: cmd('mceTableRowProps'), onPostRender: postRenderCell },
+          { text: 'Insert row before', onAction: cmd('mceTableInsertRowBefore'), onPostRender: postRenderCell },
+          { text: 'Insert row after', onAction: cmd('mceTableInsertRowAfter'), onPostRender: postRenderCell },
+          { text: 'Delete row', onAction: cmd('mceTableDeleteRow'), onPostRender: postRenderCell },
+          { text: 'Row properties', onAction: cmd('mceTableRowProps'), onPostRender: postRenderCell },
           { text: '-' },
-          { text: 'Cut row', onclick: cmd('mceTableCutRow'), onPostRender: postRenderCell },
-          { text: 'Copy row', onclick: cmd('mceTableCopyRow'), onPostRender: postRenderCell },
-          { text: 'Paste row before', onclick: cmd('mceTablePasteRowBefore'), onPostRender: postRenderCell },
-          { text: 'Paste row after', onclick: cmd('mceTablePasteRowAfter'), onPostRender: postRenderCell }
+          { text: 'Cut row', onAction: cmd('mceTableCutRow'), onPostRender: postRenderCell },
+          { text: 'Copy row', onAction: cmd('mceTableCopyRow'), onPostRender: postRenderCell },
+          { text: 'Paste row before', onAction: cmd('mceTablePasteRowBefore'), onPostRender: postRenderCell },
+          { text: 'Paste row after', onAction: cmd('mceTablePasteRowAfter'), onPostRender: postRenderCell }
         ]
       });
 
-      editor.addMenuItem('column', {
+      editor.ui.registry.addMenuItem('column', {
         text: 'Column',
         context: 'table',
         menu: [
-          { text: 'Insert column before', onclick: cmd('mceTableInsertColBefore'), onPostRender: postRenderCell },
-          { text: 'Insert column after', onclick: cmd('mceTableInsertColAfter'), onPostRender: postRenderCell },
-          { text: 'Delete column', onclick: cmd('mceTableDeleteCol'), onPostRender: postRenderCell }
+          { text: 'Insert column before', onAction: cmd('mceTableInsertColBefore'), onPostRender: postRenderCell },
+          { text: 'Insert column after', onAction: cmd('mceTableInsertColAfter'), onPostRender: postRenderCell },
+          { text: 'Delete column', onAction: cmd('mceTableDeleteCol'), onPostRender: postRenderCell }
         ]
       });
 
@@ -4473,11 +4473,11 @@ define(
         if (name == '|') {
           menuItems.push({ text: '-' });
         } else {
-          menuItems.push(editor.menuItems[name]);
+          menuItems.push(editor.ui.registry.menuItems[name]);
         }
       });
 
-      editor.addButton("table", {
+      editor.ui.registry.addButton("table", {
         type: "menubutton",
         title: "Table",
         menu: menuItems
@@ -4619,85 +4619,85 @@ define(
       });
 
       function addButtons() {
-        editor.addButton('tableprops', {
+        editor.ui.registry.addButton('tableprops', {
           title: 'Table properties',
-          onclick: dialogs.tableProps,
+          onAction: dialogs.tableProps,
           icon: 'table'
         });
 
-        editor.addButton('tabledelete', {
+        editor.ui.registry.addButton('tabledelete', {
           title: 'Delete table',
-          onclick: cmd('mceTableDelete')
+          onAction: cmd('mceTableDelete')
         });
 
-        editor.addButton('tablecellprops', {
+        editor.ui.registry.addButton('tablecellprops', {
           title: 'Cell properties',
-          onclick: cmd('mceTableCellProps')
+          onAction: cmd('mceTableCellProps')
         });
 
-        editor.addButton('tablemergecells', {
+        editor.ui.registry.addButton('tablemergecells', {
           title: 'Merge cells',
-          onclick: cmd('mceTableMergeCells')
+          onAction: cmd('mceTableMergeCells')
         });
 
-        editor.addButton('tablesplitcells', {
+        editor.ui.registry.addButton('tablesplitcells', {
           title: 'Split cell',
-          onclick: cmd('mceTableSplitCells')
+          onAction: cmd('mceTableSplitCells')
         });
 
-        editor.addButton('tableinsertrowbefore', {
+        editor.ui.registry.addButton('tableinsertrowbefore', {
           title: 'Insert row before',
-          onclick: cmd('mceTableInsertRowBefore')
+          onAction: cmd('mceTableInsertRowBefore')
         });
 
-        editor.addButton('tableinsertrowafter', {
+        editor.ui.registry.addButton('tableinsertrowafter', {
           title: 'Insert row after',
-          onclick: cmd('mceTableInsertRowAfter')
+          onAction: cmd('mceTableInsertRowAfter')
         });
 
-        editor.addButton('tabledeleterow', {
+        editor.ui.registry.addButton('tabledeleterow', {
           title: 'Delete row',
-          onclick: cmd('mceTableDeleteRow')
+          onAction: cmd('mceTableDeleteRow')
         });
 
-        editor.addButton('tablerowprops', {
+        editor.ui.registry.addButton('tablerowprops', {
           title: 'Row properties',
-          onclick: cmd('mceTableRowProps')
+          onAction: cmd('mceTableRowProps')
         });
 
-        editor.addButton('tablecutrow', {
+        editor.ui.registry.addButton('tablecutrow', {
           title: 'Cut row',
-          onclick: cmd('mceTableCutRow')
+          onAction: cmd('mceTableCutRow')
         });
 
-        editor.addButton('tablecopyrow', {
+        editor.ui.registry.addButton('tablecopyrow', {
           title: 'Copy row',
-          onclick: cmd('mceTableCopyRow')
+          onAction: cmd('mceTableCopyRow')
         });
 
-        editor.addButton('tablepasterowbefore', {
+        editor.ui.registry.addButton('tablepasterowbefore', {
           title: 'Paste row before',
-          onclick: cmd('mceTablePasteRowBefore')
+          onAction: cmd('mceTablePasteRowBefore')
         });
 
-        editor.addButton('tablepasterowafter', {
+        editor.ui.registry.addButton('tablepasterowafter', {
           title: 'Paste row after',
-          onclick: cmd('mceTablePasteRowAfter')
+          onAction: cmd('mceTablePasteRowAfter')
         });
 
-        editor.addButton('tableinsertcolbefore', {
+        editor.ui.registry.addButton('tableinsertcolbefore', {
           title: 'Insert column before',
-          onclick: cmd('mceTableInsertColBefore')
+          onAction: cmd('mceTableInsertColBefore')
         });
 
-        editor.addButton('tableinsertcolafter', {
+        editor.ui.registry.addButton('tableinsertcolafter', {
           title: 'Insert column after',
-          onclick: cmd('mceTableInsertColAfter')
+          onAction: cmd('mceTableInsertColAfter')
         });
 
-        editor.addButton('tabledeletecol', {
+        editor.ui.registry.addButton('tabledeletecol', {
           title: 'Delete column',
-          onclick: cmd('mceTableDeleteCol')
+          onAction: cmd('mceTableDeleteCol')
         });
 
       }
