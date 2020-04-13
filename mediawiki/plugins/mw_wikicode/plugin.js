@@ -90,7 +90,7 @@ var MwWikiCode = function() {
 		 * default '|'
 		 * @type String
 		 */
-		_pipeText = ($(_ed.target.targetElm).hasClass('mcePartOfTemplate')) ? '{{!}}' : '|',
+		_pipeText = ($(_ed.targetElm).hasClass('mcePartOfTemplate')) ? '{{!}}' : '|',
 		/**
 		 *
 		 * string for inserting a placeholder in editor text for 
@@ -3174,8 +3174,9 @@ debugger;
 				}
 
 				if (!href) {
-					ed.execCommand('unlink');
-					return;
+//					ed.execCommand('unlink');
+//DC TODO fix unlink for TMCE 5
+//					return Utils.unlink(editor);
 				}
 
 				// Is email and not //user@domain.com
@@ -3255,24 +3256,37 @@ debugger;
 			value = ed.selection.getContent({format : 'raw', convert2wiki : true});
 		}
 
-		var win = ed.windowManager.open({
+		ed.windowManager.open({
 			title: mw.msg("tinymce-wikisourcecode"),
+			size: 'large',
 			body: {
-				type: 'textbox', 
-				name: 'code', 
-				multiline: true,
-				minWidth: Math.max(tinymce.DOM.getViewPort().w - 400, 600),
-				minHeight: ed.getParam("code_dialog_height", 
-					Math.min(tinymce.DOM.getViewPort().h - 200, 500)),
-				spellcheck: true,
-				style: 'direction: ltr; text-align: left',
+				type: 'panel', 
+				items: [
+					{
+						type: 'textarea', 
+						name: 'code', 
+					}
+				]
+			},
+			buttons: [
+				{
+					type: 'cancel',
+					name: 'closeButton',
+					text: 'Cancel'
 				},
+				{
+					type: 'submit',
+					name: 'submitButton',
+					text: 'OK',
+					primary: true
+				}
+			],
+			initialData: {
+				code: value
+			},
 			onsubmit: function(e) {
 				var args = {format: 'wiki', load: 'true', convert2html: true};
 				
-				// We get a lovely "Wrong document" error in IE 11 if we
-				// don't move the focus to the editor before creating an undo
-				// transation since it tries to make a bookmark for the current selection
 				ed.undoManager.transact(function() {
 					ed.focus();
 					if (!selectAll) {
@@ -3289,10 +3303,6 @@ debugger;
 				return;
 			}
 		});
-
-		// Gecko has a major performance issue with textarea
-		// contents so we need to set it when all reflows are done
-		win.find('#code').value(value);
 	}
 	
 	/**
@@ -3303,7 +3313,7 @@ debugger;
 	function _onBeforeSetContent(e) {
 		// if raw format is requested, this is usually for internal issues like
 		// undo/redo. So no additional processing should occur. Default is 'html'
-
+debugger;
 		if (e.format == 'raw' ) {
 			return;
 		}
@@ -3317,6 +3327,9 @@ debugger;
 		e.format = 'raw';
 		// if the content is wikitext thyen convert to html
 		if (e.convert2html) {
+		e.preventDefault();
+		e.stopPropagation();
+		e.stopImmediatePropagation();
 			e.content = _convertWiki2Html(e.content);
 		}
 		return;
@@ -3328,6 +3341,7 @@ debugger;
 	 * @param {tinymce.SetContentEvent} e
 	 */
 	function _onSetContent(e) {
+debugger;
 
 		return;
 	}
@@ -3353,6 +3367,7 @@ debugger;
 	function _onGetContent(e) {
 		// if we are going to save the content then we need to convert it
 		// back to wiki text
+debugger;
 
 		if (e.save == true) {
 			e.convert2wiki = true;
@@ -3376,6 +3391,7 @@ debugger;
 	 * @param {tinymce.LoadContentEvent} e
 	 */
 	function _onLoadContent(e) {
+debugger;
 
 		return;
 	}
@@ -3386,6 +3402,7 @@ debugger;
 	 * @param {tinymce.DropEvent} e
 	 */
 	function _onDrop(e) {
+debugger;
 
 		return;
 	}
@@ -3398,6 +3415,7 @@ debugger;
 	function _onPastePreProcess(e) {
 		// check if this is the content of a drag/drop event
 		// if it is then no need to convert wiki to html
+debugger;
 
 		// Show progress for the active editor
 		_ed.setProgressState(true);
@@ -3437,6 +3455,7 @@ debugger;
 		var ed = _ed,
 		selectedNode,
 		targetFound = false;
+debugger;
 		
 		selectedNode = e.target;
 		while (selectedNode.parentNode != null) {
@@ -3479,6 +3498,7 @@ debugger;
 	 * @returns {String}
 	 */
 	this.init = function(ed, url) {
+debugger;
 		//
 		// set up markup placeholders
 		//
@@ -3504,82 +3524,84 @@ debugger;
 		//
 		// add in wikilink functionality
 		//
-		ed.addCommand('mceLink', showWikiLinkDialog);
+/*		ed.addCommand('mceLink', showWikiLinkDialog);
 		ed.addShortcut('Meta+K', '', showWikiLinkDialog);
-		ed.addButton('wikilink', {
+		ed.ui.registry.addButton('wikilink', {
 			icon: 'link',
 			tooltip: mw.msg("tinymce-link-link-button-tooltip"),
 			shortcut: 'Meta+K',
-			onclick: showWikiLinkDialog,
+			onAction: showWikiLinkDialog,
 			stateSelector: '.mwt-internallink,.mwt-externallink'
 		});
-		ed.addButton('unlink', {
+		ed.ui.registry.addButton('unlink', {
 			icon: 'unlink',
 			tooltip: mw.msg("tinymce-link-link-remove-button-tooltip"),
-			cmd: 'unlink',
+//DC TODO fix unlink for TMCE 5
+//			onAction: Utils.unlink(ed),
+//	        onSetup: Actions.toggleEnabledState(ed),
 			stateSelector: '.mwt-internallink,.mwt-externallink'
 		});
-		ed.addMenuItem('wikilink', {
+		ed.ui.registry.addMenuItem('wikilink', {
 			icon: 'link',
 			text: mw.msg('tinymce-link'),
 			shortcut: 'Meta+K',
-			onclick: showWikiLinkDialog,
+			onAction: showWikiLinkDialog,
 			stateSelector: '.mwt-internallink,.mwt-externallink',
 			context: 'insert',
 			prependToContext: true
-		});
+		});*/
 
 		//
 		// add in wikimagic functionality
 		//
 		ed.addCommand('mceWikimagic', showWikiMagicDialog);  
-		ed.addButton('wikimagic', {
+		ed.ui.registry.addButton('wikimagic', {
 			icon: 'wikicode',
 			stateSelector: '.wikimagic',
 			tooltip: mw.msg( 'tinymce-wikimagic' ),
-			onclick: showWikiMagicDialog
+			onAction: showWikiMagicDialog
 		});
-		ed.addMenuItem('wikimagic', {
+		ed.ui.registry.addMenuItem('wikimagic', {
 			icon: 'wikicode',
 			text: 'Wikimagic',
 			tooltip: mw.msg( 'tinymce-wikimagic' ),
 			context: 'insert',
-			onclick: showWikiMagicDialog
+			onAction: showWikiMagicDialog
 		});
 
 		//
 		// add processing for non rendered new line functionality
 		//
 		if (_slb) {
-			ed.addButton('singlelinebreak', {
+			ed.ui.registry.addButton('singlelinebreak', {
 				icon: 'visualchars',
 				tooltip: mw.msg("tinymce-insert-linebreak"),
-				onclick:  insertSingleLinebreak
+				onAction:  insertSingleLinebreak
 			});
 	
-			ed.addMenuItem('singlelinebreak', {
+			ed.ui.registry.addMenuItem('singlelinebreak', {
 				icon: 'visualchars',
 				text: 'Single linebreak',
 				tooltip: mw.msg("tinymce-insert-linebreak"),
 				context: 'insert',
-				onclick: insertSingleLinebreak
+				onAction: insertSingleLinebreak
 			});
 		}
 
 		//
 		// add processing for browser context menu 
 		//
-		ed.addButton('browsercontextmenu', {
+		ed.ui.registry.addButton('browsercontextmenu', {
 			icon: 'info',
 			tooltip: mw.msg( 'tinymce-browsercontextmenu' ),
-			onclick: showWikiMagicDialog
+			onAction: showWikiMagicDialog
 			});
-		ed.addMenuItem('browsercontextmenu', {
+		ed.ui.registry.addMenuItem('browsercontextmenu', {
 			icon: 'info',
 			text: mw.msg('tinymce-browsercontextmenu-title'),
 			tooltip: mw.msg( 'tinymce-browsercontextmenu' ),
 			context: 'insert',
-			onclick: function(e) {
+			onAction: function(e) {
 				ed.focus();
 				ed.windowManager.confirm(mw.msg( 'tinymce-browsercontextmenu' ), function(state) {
 					if (state) {
@@ -3596,12 +3618,12 @@ debugger;
 		var numMacros = macros.length;
 		for ( var i = 0; i < numMacros; i++ ) {
 			var curMacro = macros[i];
-			ed.addMenuItem('macro' + i, {
+			ed.ui.registry.addMenuItem('macro' + i, {
 				text: curMacro['name'],
 				image: curMacro['image'],
 				context: 'insert',
 				wikitext: curMacro['text'],
-				onclick: function () {
+				onAction: function () {
 
 					// Insert the user-selected text into
 					// the macro text, if the macro text
