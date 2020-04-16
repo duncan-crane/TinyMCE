@@ -3052,7 +3052,7 @@ debugger;
 			function appendItems(values, output) {
 				output = output || [];
 	
-				tinymce.foreach(values, function(item) {
+				tinymce.each(values, function(item) {
 					var menuItem = {text: item.text || item.title};
 	
 					if (item.menu) {
@@ -3636,19 +3636,49 @@ debugger;
 		//
 		// setup MW TinyMCE macros - these are defined in localSettings.php
 		//
-		var templates = ed.getParam("tinyMCETemplates"),
-			templateItems = [];
+		var macros = ed.getParam("tinyMCEMacros");
+		var numMacros = macros.length;
+		var menuItems = [];
 debugger;
-//		for ( var i = 0; i < numMacros; i++ ) {
-		templates.forEach( function( template ) {
-			templateItems.push({
-				title: template['title'],
-				description: template['description'],
-				content: _htmlDecode(template['content']),
+		for ( var i = 0; i < numMacros; i++ ) {
+			var curMacro = macros[i];
+			menuItems.push({
+				type: 'menuitem',
+				text: curMacro['name'],
+				icon: curMacro['image'],
+//				wikitext: curMacro['text'],
+				onAction: function () {
+debugger;
+					// Insert the user-selected text into
+					// the macro text, if the macro text
+					// has a section to be replaced.
+					// (Demarcated by '!...!'.)
+					// @TODO - handle actual ! marks.
+					var selectedContent = ed.selection.getContent();
+//					var insertText = tinymce.DOM.decode(this.settings.wikitext);
+					var insertText = curMacro['text'];
+					var replacementStart = insertText.indexOf('!');
+					var replacementEnd = insertText.indexOf('!', replacementStart + 1);
+					if ( selectedContent == '' ) {
+						insertText = insertText.replace( /!/g, '' );
+					} else if ( replacementStart > 0 && replacementEnd > 0 ) {
+						insertText = insertText.substr( 0, replacementStart ) + selectedContent + insertText.substr( replacementEnd + 1 );
+					}
+					Content.setSelection( ed, insertText, {format: 'wiki', load: 'true'} );
+
+					return;
+				}
 			});
-		});
+		}
+	
+		editor.ui.registry.addMenuButton('macros', {
+			text: 'Macros',
+			icon: 'macros',
+			fetch: function (callback) {
 debugger;
-		editor.settings['templates'] = templateItems;
+				callback(menuItems);
+			}
+		});
 
 		//
 		// setup minimising menubar when field not selected in pageforms
