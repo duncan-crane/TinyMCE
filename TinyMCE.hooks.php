@@ -446,6 +446,11 @@ class TinyMCEHooks {
 			return false;
 		}
 
+		global $wgTinyMCELoadOnView;
+		if ( Action::getActionName( $context ) === 'view') {
+		    return (bool)$wgTinyMCELoadOnView;
+		}
+
 		return true;
 	}
 
@@ -500,6 +505,28 @@ class TinyMCEHooks {
 		return true;
 	}
 
+	/**
+	 * Load the extension on every view, if allowed.
+	 *
+	 * @param OutputPage $output
+	 * @return void
+	*/
+	public static function addToViewPage( OutputPage &$output ) {
+		$context = $output->getContext();
+		$action = Action::getActionName( $context );
+
+		if ( $action != 'view' ) {
+			return;
+		}
+
+		if( self::enableTinyMCE( $output->getTitle(), $context ) ) {
+			$GLOBALS['wgTinyMCEEnabled'] = true;
+			$output->addModules( 'ext.tinymce' );
+		} else {
+			$GLOBALS['wgTinyMCEEnabled'] = false;
+		}
+	}
+	
 	public static function addPreference( $user, &$preferences ) {
 		$preferences['tinymce-use'] = array(
 			'type' => 'toggle',
