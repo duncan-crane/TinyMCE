@@ -336,14 +336,14 @@ tinymce.PluginManager.add('fontawesome', function(editor, url) {
         document.getElementsByTagName('head')[0].appendChild(csslink);
     });
 
-    editor.addButton('fontawesome', {
+    editor.ui.registry.addButton('fontawesome', {
         icon: 'tinymceflag',
 //        text: translate('Icons'),
         tooltip: translate('Icons'),
         onclick: showDialog
     });
 
-    editor.addMenuItem('fontawesome', {
+    editor.ui.registry.addMenuItem('fontawesome', {
         icon: 'tinymceflag',
         text: translate('Icons'),
         onclick: showDialog,
