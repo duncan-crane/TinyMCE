@@ -183,7 +183,7 @@
 		"tinymce-use": 1
 	},
 	"config": {
-		"TinyMCEMacros": [],
+		"TinyMCETemplates": [],
 		"TinyMCEDefaultTags": [],
 		"TinyMCEExtensionTags": [],
 		"TinyMCEPreservedTags": [],

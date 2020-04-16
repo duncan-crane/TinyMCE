@@ -234,7 +234,7 @@ $wgDefaultUserOptions['tinymce-use'] = 1;
 // $pathfix = $IP . $GLOBALS['wgTinyMCEScriptPath'];
 
 $GLOBALS['wgTinyMCEEnabled'] = false;
-$GLOBALS['wgTinyMCEMacros'] = array();  
+$GLOBALS['wgTinyMCETemplates'] = array();  
 $GLOBALS['wgTinyMCEDefaultTags'] = array();  
 $GLOBALS['wgTinyMCEExtensionTags'] = array();  
 $GLOBALS['wgTinyMCEPreservedTags'] = array();  

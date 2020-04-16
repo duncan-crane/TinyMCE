@@ -148,7 +148,7 @@ class TinyMCEHooks {
 	}
 
 	static function setGlobalJSVariables( &$vars, $out ) {
-		global $wgTinyMCEEnabled, $wgTinyMCEMacros, $wgTinyMCEPreservedTags;
+		global $wgTinyMCEEnabled, $wgTinyMCETemplates, $wgTinyMCEPreservedTags;
 		global $wgCheckFileExtensions, $wgStrictFileExtensions;
 		global $wgFileExtensions, $wgFileBlacklist;
 		global $wgEnableUploads;
@@ -216,28 +216,38 @@ class TinyMCEHooks {
 		}
 		$vars['wgTinyMCEUserIsBlocked'] = $userIsBlocked ;
 
-		$jsMacroArray = array();
-		foreach ( $wgTinyMCEMacros as $macro ) {
-			if ( !array_key_exists( 'name', $macro ) || !array_key_exists( 'text', $macro ) ) {
+		$jsTemplateArray = array();
+		foreach ( $wgTinyMCETemplates as $template ) {
+			if ( !array_key_exists( 'title', $template ) ) {
 				continue;
 			}
 
-			$imageURL = null;
-			if ( array_key_exists( 'image', $macro ) ) {
-				if ( strtolower( substr( $macro['image'], 0, 4 ) ) === 'http' ) {
-					$imageURL = $macro['image'];
-				} else {
-					$imageFile = wfLocalFile( $macro['image'] );
-					$imageURL = $imageFile->getURL();
-				}
+			$description = null;
+			if ( array_key_exists( 'description', $template ) ) {
+				$description = $template['description'];
 			}
-			$jsMacroArray[] = array(
-				'name' => $macro['name'],
-				'image' => $imageURL,
-				'text' => htmlentities( $macro['text'] )
-			);
+
+			if ( array_key_exists( 'url', $template ) ) {
+				if ( strtolower( substr( $template['url'], 0, 4 ) ) === 'http' ) {
+					$contentURL = $template['url'];
+				} else {
+					$contentFile = wfLocalFile( $template['url'] );
+					$contentURL = $contentFile->getURL();
+				}
+				$jsTemplateArray[] = array(
+					'title' => $template['title'],
+					'description' => $template['description'],
+					'url' => $contentURL,
+				);
+			} else if ( array_key_exists( 'content', $template ) ) {
+				$jsTemplateArray[] = array(
+					'title' => $template['title'],
+					'description' => $template['description'],
+					'content' => $template['content'] 
+				);
+			}
 		}
-		$vars['wgTinyMCEMacros'] = $jsMacroArray;
+		$vars['wgTinyMCETemplates'] = $jsTemplateArray;
 
 		return true;
 	}

@@ -5,7 +5,7 @@ var mw_namespaces = mw.config.get( 'wgNamespaceIds' );
 var mw_url_protocols = mw.config.get( 'wgUrlProtocols' );
 var mw_canonical_namespace = mw.config.get( "wgCanonicalNamespace" ); 
 var mw_title = mw.config.get( "wgTitle" );
-var tinyMCETemplates = mw.config.get( 'wgTinyMCETemplates' );
+var tinyMCEMacros = mw.config.get( 'wgTinyMCEMacros' );
 var tinyMCETagList = mw.config.get( 'wgTinyMCETagList' );
 var tinyMCEPreservedTagList = mw.config.get( 'wgTinyMCEPreservedTagList' );
 var tinyMCELanguage = mw.config.get( 'wgTinyMCELanguage' );
@@ -51,7 +51,6 @@ var	mw_htmlPairsStatic = [ //now just non-nestable
 ];
 var	mw_htmlBlockPairsStatic = [
     'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-	'img', 
     'ol', 'ul', 'li',
     'p', 'pre', 
     'blockquote',
@@ -106,10 +105,8 @@ for (var key in mw_namespaces ) {
 window.mwTinyMCEInit = function( tinyMCESelector ) {
 	window.tinymce.init({
 		selector: tinyMCESelector,
-///		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/modern/theme.js',
-		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/silver/theme.js',
-///		skin_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/skins/lightgray',
-		skin_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/skins/ui/oxide',
+		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/modern/theme.js',
+		skin_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/skins/lightgray',
 		content_css:
 			[ 
 			mw_scriptPath + mw_skin_css,
@@ -122,8 +119,7 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 		external_plugins: {
 			'anchor': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/anchor/plugin.js',
 			'autolink': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autolink/plugin.js',
-//DC TODO autoresize is broken - it just endlessly extends the editor window?
-//			'autoresize': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autoresize/plugin.js',
+			'autoresize': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autoresize/plugin.js',
 			'autosave': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autosave/plugin.js',
 			'charmap': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/charmap/plugin.js',
 			'insertdatetime': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/insertdatetime/plugin.js',
@@ -133,14 +129,12 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 			'preview': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/preview/plugin.js',
 			'save': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/save/plugin.js',
 			'searchreplace': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/searchreplace/plugin.js',
-			'template': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/template/plugin.js',
 			'visualblocks': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualblocks/plugin.js',
-// DC TODO fix fontawesome for TMCE v 5
-//			'fontawesome': mw_extensionAssetsPath + '/TinyMCE/fontawesome/plugins/fontawesome/plugin.js',
-// DC TODO fix tables for TMCE v 5
-//			'table': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_table/plugin.js',
+//			'codemirror': mw_extensionAssetsPath + '/TinyMCE/codemirror/plugins/fontawesome/plugin.js',
+			'fontawesome': mw_extensionAssetsPath + '/TinyMCE/fontawesome/plugins/fontawesome/plugin.js',
+			'table': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_table/plugin.js',
+			'wikiupload': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_upload/plugin.js',
 			'wikicode': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_wikicode/plugin.js',
-//			'wikiupload': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_upload/plugin.js',
 		},
 		//
 		// *** tinymce configuration ***
@@ -198,7 +192,7 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 //		relative_urls: false,
 //		remove_script_host: false,
 //		document_base_url: server,
-		tinyMCETemplates: tinyMCETemplates,
+		tinyMCEMacros: tinyMCEMacros,
 		automatic_uploads: true,
 		paste_data_images: true,
 		paste_word_valid_elements: 'b,strong,i,em,h1,h2,h3,h4,h5,table,tr,th,td,ol,ul,li,a,sub,sup,strike,br,del,div,p',
@@ -278,9 +272,7 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 		noneditable_noneditable_class: 'fa',
 		extended_valid_elements: 'span[*]',
 		// tinymce configuration
-//DC  TODO fix fontawesome for TinyMCE v5
-//		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap fontawesome singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect removeformat | searchreplace ',
-		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect template removeformat | searchreplace ',
+		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap fontawesome singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect removeformat | searchreplace ',
 		style_formats_merge: true,
 		style_formats: [
 			{title: "Table", items: [
@@ -302,7 +294,6 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 		block_formats: 'Paragraph=p;Heading 1=h1;Heading 2=h2;Heading 3=h3;Heading 4=h4;Heading 5=h5;Heading 6=h6;Preformatted=pre;Code=code',
 		images_upload_credentials: true,
 		autoresize_max_height: 400,
-		template_selected_content_classes: "selectedcontent",
 		setup: function(editor) {
 		},
 		init_instance_callback: function (instance) {
@@ -337,7 +328,4 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 	});
 };
 
-mwTinyMCEInit( '.tinymce, #wpTextbox1' );
-
-// Let others know we're done here
-$( document ).trigger( 'TinyMCELoaded' ); 
+mwTinyMCEInit( '#wpTextbox1' );
