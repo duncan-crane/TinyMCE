@@ -84,6 +84,7 @@ $GLOBALS['wgHooks']['EditPage::showEditForm:initial'][] = 'TinyMCEHooks::addToEd
 $GLOBALS['wgHooks']['WikiEditorDisable'][] = 'TinyMCEHooks::disableWikiEditor';
 $GLOBALS['wgHooks']['GetPreferences'][] = 'TinyMCEHooks::addPreference';
 $GLOBALS['wgHooks']['PageForms::addRLModules'][] = 'TinyMCEHooks::addRLModules';
+$GLOBALS['wgHooks']['OutputPageBeforeHTML'][] = 'TinyMCEHooks::addToViewPage';
 
 $GLOBALS['wgAutoloadClasses']['TinyMCEHooks'] = __DIR__ . '/TinyMCE.hooks.php';
 $GLOBALS['wgAutoloadClasses']['TinyMCEAction'] = __DIR__ . '/TinyMCEAction.php';
@@ -239,3 +240,4 @@ $GLOBALS['wgTinyMCEExtensionTags'] = array();
 $GLOBALS['wgTinyMCEPreservedTags'] = array();  
 $GLOBALS['wgTinyMCEDisabledNamespaces'] = array( NS_MEDIAWIKI, NS_TEMPLATE );
 $GLOBALS['wgTinyMCEUnhandledStrings'] = array();
+$GLOBALS['wgTinyMCELoadOnView'] = false;
