@@ -115,7 +115,7 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 			mw_scriptPath + mw_skin_css,
 			mw_scriptPath + mw_shared_css,
 			mw_extensionAssetsPath + '/TinyMCE/MW_tinymce.css',
-			mw_extensionAssetsPath + '/TinyMCE/fontawesome/plugins/fontawesome/css/font-awesome.min.css',
+			mw_extensionAssetsPath + '/TinyMCE/custom_plugins/fontawesome/fontawesome/css/font-awesome.min.css',
 			mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.wrapper.css',
 			mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.generated.css',
 		],
@@ -127,7 +127,9 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 			'autosave': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autosave/plugin.js',
 			'charmap': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/charmap/plugin.js',
 			'insertdatetime': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/insertdatetime/plugin.js',
+//			'image': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/image/plugin.js',
 			'lists': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/lists/plugin.js',
+//			'media': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/media/plugin.js',
 			'noneditable': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/noneditable/plugin.js',
 			'paste': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/paste/plugin.js',
 			'preview': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/preview/plugin.js',
@@ -139,7 +141,8 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 //			'fontawesome': mw_extensionAssetsPath + '/TinyMCE/fontawesome/plugins/fontawesome/plugin.js',
 // DC TODO fix tables for TMCE v 5
 //			'table': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_table/plugin.js',
-			'wikicode': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_wikicode/plugin.js',
+//			'table': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/table/plugin.js',
+			'wikicode': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/mw_wikicode/plugin.js',
 //			'wikiupload': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_upload/plugin.js',
 		},
 		//
@@ -273,14 +276,16 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 		],
 		menubar: false, //'edit insert view format table tools',
 		contextmenu_never_use_native: false,
-		removed_menuitems: 'media',
+//		removed_menuitems: 'media',
 		// fontawesome configuration
 		noneditable_noneditable_class: 'fa',
 		extended_valid_elements: 'span[*]',
 		// tinymce configuration
 //DC  TODO fix fontawesome for TinyMCE v5
+		toolbar_sticky: true,
 //		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap fontawesome singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect removeformat | searchreplace ',
-		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect template removeformat | searchreplace ',
+//		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap singlelinebreak wikilink unlink table image media wikiupload wikimagic wikisourcecode | formatselect styleselect template removeformat | searchreplace ',
+		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap singlelinebreak wikilink unlink wikimagic wikisourcecode | formatselect styleselect template removeformat | searchreplace ',
 		style_formats_merge: true,
 		style_formats: [
 			{title: "Table", items: [
