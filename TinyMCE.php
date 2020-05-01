@@ -244,3 +244,4 @@ $GLOBALS['wgTinyMCEPreservedTags'] = array();
 $GLOBALS['wgTinyMCEDisabledNamespaces'] = array( NS_MEDIAWIKI, NS_TEMPLATE );
 $GLOBALS['wgTinyMCEUnhandledStrings'] = array();
 $GLOBALS['wgTinyMCELoadOnView'] = false;
+//$GLOBALS['wgTinyMCESettings'] = array();

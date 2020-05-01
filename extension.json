@@ -193,7 +193,8 @@
 		"TinyMCEEnabled": false,
 		"TinyMCEDisabledNamespaces": [ 8, 10 ],
 		"TinyMCEUnhandledStrings": [],
-		"TinyMCELoadOnView": false
+		"TinyMCELoadOnView": false,
+		"wgTinyMCESettings": []
 	},
 	"manifest_version": 1
 }
