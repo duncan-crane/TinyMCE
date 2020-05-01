@@ -384,13 +384,10 @@ var MwWikiCode = function() {
 				'contenteditable': "false"
 			});
 			tagOuterHTML = element.prop("outerHTML");
-/*		} else if (protection != 'nonEditable') {
-			// the wiki text contains editable html
-			tagOuterHTML = tagHTML.replace(/( class=)/i," id=" + id + "$1");*/
 		} else {
 			// the tagWikiText needs to be parsed so we 'batch' them for
 			// to process later.  In this case tagHTML = 'toParse
-			tagOuterHTML = tagHTML;		
+			tagOuterHTML = tagHTML;
 		}
 
 		// preserve the wiki text and html in arrays for later substitution
@@ -1050,7 +1047,7 @@ var MwWikiCode = function() {
 						regex,
 						matcher,
 						html;
-debugger;
+
 					// If this Tag is allowed by mediawiki but has no wiki markup
 					// equivalent then it doesn't need to be protected in the TinyMCE
 					// editor.  Everything else need to be preserved
@@ -1058,9 +1055,7 @@ debugger;
 						if ((extensionTags.indexOf(elmTagName) > -1) || 
 							(preservedTags.indexOf(elmTagName) > -1)) {
 							// process other tags that are allowed by mediawiki
-							elm.addClass("mwt-preserveHtml");
-//							elm.replaceWith( _getPlaceHolder4Html(elmTagWikiText, 'toParse', elmTagName, 'nonEditable') );
-							elm.replaceWith( _getPlaceHolder4Html(elmTagWikiText, elm.prop("outerHTML"), elmTagName, '') );
+							elm.replaceWith( _getPlaceHolder4Html(elmTagWikiText, 'toParse', elmTagName, 'nonEditable') );
 						} else {
 							// this tag is unrecognised as an html or a mediawiki tag
 							// so we wrap it in <code> tags.  All these should have be caught 
@@ -2148,28 +2143,7 @@ debugger;
 				return '<@@snl@@>';
 			});
 	
-			// process blocks containing preserved html text
-			$dom.find( "*[class*='mwt-preserveHtml']" ).replaceWith( function(a) {
-				var newLine,
-					html,
-					id = "<@@@" + this.tagName.toUpperCase() + ":" + _createUniqueNumber() + "@@@>",
-					regex = "<(" + _mwtBlockTagsList + ")",
-					blockTagArray = _mwtBlockTagsList.split("|"),
-					blockMatcher = new RegExp(regex, 'i');
-debugger;
-				$(this).removeClass('mwt-preserveHtml');
-				html = this.outerHTML.replace(/ class=(["|'])\1/,"");
-				if (blockTagArray.indexOf(this.tagName.toLowerCase()) > -1) {
-					html = '<@@bnl@@>' + html;
-				}
-				if ( this.tagName.match(blockMatcher) ) {
-					html = '<@@bnl@@>' + html;
-				}
-				_tags4Wiki[id] = html;
-				return id;
-			});
-
-			// process blocks containing parsed wiki text
+			// process blocks containin parsed wiki text
 			$dom.find( "*[class*='mwt-wikiMagic']" ).replaceWith( function(a) {
 				return this.id;
 			});
