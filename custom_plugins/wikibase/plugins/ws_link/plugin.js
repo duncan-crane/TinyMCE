@@ -267,40 +267,7 @@ var Ws_Link = function(editor) {
         iframeBody = $(iframeBody).contents().find('body');
         $(iframeBody).append(
             `<script>attachIframeTokens();</script>`
-        )
-        /*$(iframeBody).find('select[data-inputtype="ws-select2"]').each(function() {
-            var selectid = $(this).attr('id');
-            var selectoptionsid = 'select2options-' + selectid;
-            var select2config = $(iframeBody).find("input#" + selectoptionsid).val();
-            console.log(select2config);
-            /!*
-            console.log(iframeBody, iframeBody.selector);
-            var iframeConfig = select2config.substring(select2config.indexOf('select2(') + 8, select2config.lastIndexOf(');'));
-            console.log(iframeConfig);
-            //$(iframeBody).find('#' + selectid).select2(eval(iframeConfig));
-            var configObj = eval(`(${iframeConfig})`);
-            console.log(configObj, configObj.placeholder);
-            var jsonstr = JSON.stringify(configObj);
-            console.log(jsonstr);
-            var jsonObj = JSON.parse(jsonstr);
-            console.log(jsonObj);*!/
-
-            $(iframeBody).append(
-                `<script>doTokens();</script>`
-            );
-        });*/
-    }
-
-    function doTokens() {
-        if ($('select[data-inputtype="ws-select2"]')[0]) {
-            $('select[data-inputtype="ws-select2"]').each(function() {
-                var selectid = $(this).attr('id');
-                var selectoptionsid = 'select2options-' + selectid;
-                var select2config = $("input#" + selectoptionsid).val();
-                var F = new Function(select2config);
-                return (F());
-            });
-        }
+        );
     }
 
     function getScripts() {
