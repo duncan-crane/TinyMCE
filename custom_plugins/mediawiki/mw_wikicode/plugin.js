@@ -86,6 +86,13 @@ var MwWikiCode = function() {
 		_mwtInvariantTagsList = _ed.getParam("wiki_invariant_tags"),
 		/**
 		 *
+		 * tags which have a wiki equivalent that we want to preserve in 
+		 * the wiki text, defined in MW_tinymce.js
+		 * @type Array
+		 */
+		_mwtPreservedHtmlTagsList = _ed.getParam("wiki_preserved_html_tags"),
+		/**
+		 *
 		 * global used to store the form of pipe used in the original wikicode
 		 * Set to '{{!}}' or '|' depending on whether the target text is in
 		 * a template or not
@@ -824,13 +831,13 @@ debugger;
 			text = text.replace(matcher, function(match, $1) {
 				//$1 = the encoded character
 				var html;
-debugger;
+//debugger;
 
 				// double encode &amp; otherwise will display incorrectly if recoverred
-				if ($1 == 'amp') {
-////					match = _htmlEncode(match);
-					match = _htmlEncode(_htmlEncode(match));
-				}
+////				if ($1 == 'amp') {
+						match = _htmlEncode(match);
+////					match = _htmlEncode(_htmlEncode(match));
+////				}
 				html = '<span class="mceNonEditable mwt-wikiMagic ">&' + $1 + ';</span>';
 				return _getPlaceHolder4Html(match, html, 'htmlEntity', 'nonEditable')
 			});
@@ -1052,16 +1059,6 @@ debugger;
 				invariantTags;
 
 			/**
-			 * The dom parser used in this function will close
-			 * HTML tags, such as <li> which in all likelihood weren't closed
-			 * in the original wiki text.  This function is a hack which assumes
-			 * they shouldn't be closed and removes any closing tags.  Sorry!!
-			 *
-			 * @param {elementHTML} text
-			 * @returns {text}
-			 */
-
-			/**
 			 * Convert child elements which shouldn't be converted back to 
 			 * wiki code on saving and preserve them for recovery later.
 			 * BEWARE recursive function
@@ -1089,7 +1086,6 @@ debugger;
 						html,
 						innerHTML = elm.prop("innerHTML"),
 						outerHTML = elm.prop("outerHTML");
-debugger;
 
 					// If this Tag is allowed by mediawiki but has no wiki markup
 					// equivalent then it doesn't need to be protected in the TinyMCE
@@ -1099,14 +1095,26 @@ debugger;
 							(preservedTags.indexOf(elmTagName) > -1)) {
 							// process other tags that are allowed by mediawiki
 							elm.addClass( "mwt-preserveHtml" );
+							if (elm.attr( "title")) {
+								elm.attr( "title", function (i, title) {
+debugger;
+//									title = _recoverPlaceholders2Wiki( title ).replace(/&amp;/gmi,"&");
+									title = _recoverPlaceholders2Wiki( title ).replace(/&/gmi,"&amp;");
+//									title = _recoverPlaceholders2Wiki( title );
+									return title;
+								});
+							}
 //							html = _recoverPlaceholders2Wiki( _htmlDecode(elm.prop("outerHTML")) );
-							outerHTML = elm.prop("outerHTML");
-							outerHTML = outerHTML.replace(/&lt;@@@HTMLENTITY:/gmi, "<@@@@>");
-							outerHTML = _recoverPlaceholders2Wiki( outerHTML );
-							outerHTML = outerHTML.replace(/<@@@@>/gmi, "&lt;@@@HTMLENTITY:");
+///							outerHTML = elm.prop("outerHTML");
+//							outerHTML = outerHTML.replace(/&lt;@@@HTMLENTITY:/gmi, "<@@@@>");
+///							outerHTML = outerHTML.replace(/&lt;@@@/gmi, "{@@@@}");
+///							outerHTML = _recoverPlaceholders2Wiki( outerHTML );
+//							outerHTML = outerHTML.replace(/<@@@@>/gmi, "&lt;@@@HTMLENTITY:");
+///							outerHTML = outerHTML.replace(/{@@@@}/gmi, "&lt;@@@");
 //							elm.replaceWith( _getPlaceHolder4Html(elmTagWikiText, 'toParse', elmTagName, 'nonEditable') );
 //							elm.replaceWith( _getPlaceHolder4Html(elmTagWikiText, elm.prop("outerHTML"), elmTagName, '') );
-							elm.replaceWith( outerHTML );
+//							elm.replaceWith( outerHTML );
+							if (elm.children()) convertChildren( elm );
 						} else {
 							// this tag is unrecognised as an html or a mediawiki tag
 							// so we wrap it in <code> tags.  All these should have be caught 
@@ -1128,15 +1136,16 @@ debugger;
 			// to process the remaining html tags		
 			$dom = $( "<tinywrapper>" + text + "</tinywrapper>" );
 			text = $dom.html();
-
+debugger;
 			// process each element in the dom recursively
 			// be aware this next function is recursive
 			convertChildren($dom);
 
 			// substiture placeholders for mediawiki extension tags
-			$dom.find( "*[class*='mwExtensionTag']" ).replaceWith( function() {
+/*			$dom.find( "*[class*='mwExtensionTag']" ).replaceWith( function() {
+debugger;
 				return this.id;
-			});
+			});*/
 
 			// convert DOM back to html text and decode html entities
 			text = $dom.html();
@@ -2194,13 +2203,14 @@ debugger;
 	
 	/*
 	 * Converts html content of the editor window to wiki code.
+	 * Note: This function is recursive.  If 'recursed' is true
+	 * we are not at the top level of recursion, which results in some functions not being executed
 	 *
 	 * @param {String} text
 	 * @returns {String}
 	 */
-	function _convertHtml2Wiki(e) {
-		var text = e.content,
-			textObject;
+	function _convertHtml2Wiki(text, recursed) {
+		var textObject;
 		
 		/*
 		 * Preprocess HTML in DOM form. This is mainly used to replace tags
@@ -2238,10 +2248,17 @@ debugger;
 			});
 
 			// process blocks containing parsed wiki text
+			$dom.find( "*[class*='mwt-htmlEntity']" ).replaceWith( function(a) {
+debugger;
+//				return _htmlEncode(this.getAttribute("data-mwt-wikiText"));
+				return this.id;
+			});
+
+			// process blocks containing parsed wiki text
 			$dom.find( "*[class*='mwt-wikiMagic']" ).replaceWith( function(a) {
 				return this.id;
 			});
-debugger;
+//debugger;
 			// convert DOM back to html text
 			text = _htmlDecode($dom[0].innerHTML);		
 
@@ -2253,37 +2270,43 @@ debugger;
 			// process blocks containing preserved html text
 			$dom.find( "*[class*='mwt-preserveHtml']" ).replaceWith( function(a) {
 				var newLine,
-					html,
+					elm = $(this),
+					innerHtml = this.innerHTML,
+					outerHtml = this.outerHTML,
 					id = "<@@@" + this.tagName.toUpperCase() + ":" + _createUniqueNumber() + "@@@>",
 					regex = "<" + _mwtBlockTagsList.split('|').join('[\\s>]|<') + "[\\s>]",
 					blockMatcher = new RegExp(regex, 'gmi');
-				
-				$(this).removeClass('mwt-preserveHtml');
+debugger;				
+				elm.removeClass('mwt-preserveHtml');
+				if ( elm.children() ) innerHtml = _convertHtml2Wiki( innerHtml, true );
+				this.innerHTML = innerHtml;
 
 				// remove empty class attributes
-				html = this.outerHTML.replace(/ class=(["|'])\1/,"");
+				outerHtml = this.outerHTML.replace(/ class=(["|'])\1/,"");
+
 debugger;				
-				// recover any wiki text from placeholders
-				html = _recoverPlaceholders2Wiki( html )
+/*				// recover any wiki text from placeholders
+				html = _recoverPlaceholders2Wiki( html )*/
 
 				// start block tags on new lines to make wiki text more readable
-				html = html.replace(blockMatcher, function (match) {
+				outerHtml = outerHtml.replace(blockMatcher, function (match) {
 					return '<@@bnl@@>' + match;
 				});
 
 				// tidy up end of lists
-				html = html.replace(/(<\/li>)(<\/[uo]l>)/gmi, "$1<@@bnl@@>$2");
+				outerHtml = outerHtml.replace(/(<\/li>)(<\/[uo]l>)/gmi, "$1<@@bnl@@>$2");
 
 				// assume as its html in wiki text there aren't any </li> needed
-				html = html.replace(/<\/li>/gmi, "");
+				outerHtml = outerHtml.replace(/<\/li>/gmi, "");
 				
 				// add a final block new line if this is a block tag
 				if (_mwtBlockTagsList.split('|').indexOf(this.tagName.toLowerCase()) >= 0) {
-					html = html + '<@@bnl@@>';
-				}	
+					outerHtml = outerHtml + '<@@bnl@@>';
+				}
 
-				_tags4Wiki[id] = html;
+				_tags4Wiki[id] = outerHtml;
 				return id;
+////				return html;
 			});
 	
 			// process heading 
@@ -2307,7 +2330,7 @@ debugger;
 	
 				return heading;
 			});
-	
+debugger;
 			// convert DOM back to html text
 			text = _htmlDecode($dom[0].innerHTML);		
 	
@@ -2498,7 +2521,7 @@ debugger;
 				// $1 = any : preceding the table tag
 				// $2 = any attributes contained in the table tag
 				var newLines = '';
-
+debugger;
 				// process the empty lines at the start of the table
 				$2 = $2.replace(/\s*data-mwt-tablestartnewlines="(\d)"/gmi, function (match,$1) {
 					//$1 = number of new lines following the opening code of table
@@ -2675,12 +2698,16 @@ debugger;
 		 * @returns {String}
 		 */
 		function recoverTags2Wiki(text) {
+debugger;
 			if (_tags4Wiki){
 				while (text.match(/\<@@@.*?:\d*@@@>/)) {
 					text = text.replace(/(\<@@@.*?:\d*@@@>)/gi, function(match, $1, offset, string) {
 						// replace '&amp;amp;' with '&amp;' as we double escaped these when they were converted
 debugger;
-						return _tags4Wiki[$1].replace(/&amp;amp;/gmi,'&amp;');
+//						return _tags4Wiki[$1].replace(/&amp;amp;/gmi,'&amp;');
+						// '&amp;' is processed by the wiki don and turned into '&' 
+						// so we subsitue it with a placeholder which will be replaced later
+						return _tags4Wiki[$1].replace(/&amp;/gmi,'<@@@@>');
 					}); 
 				}
 			}
@@ -2716,7 +2743,7 @@ debugger;
 
 			// one or more forced new lines for blocks at the start of the page 
 			// should be removed
-			text = text.replace(/^(<@@[pbht]nl@@>)*/gmi, "");
+			if (!recursed) text = text.replace(/^(<@@[pbht]nl@@>)*/gmi, "");
 
 			// where two blocks are adjacent we only need one new line
 			text = text.replace(/<@@[pbht]nl@@>\s*<@@[pbht]nl@@>/gmi, "<@@nl@@>");
@@ -2752,10 +2779,13 @@ debugger;
 		// save some work
 		if ( text === '' ) return text;
 		
-		// wrap the text in an object to send it to event listeners
-		textObject = {text: text};
-		$(document).trigger('TinyMCEBeforeHtmlToWiki', [textObject]);
-		text = textObject.text;
+		
+		if (!recursed) {
+			// wrap the text in an object to send it to event listeners
+			textObject = {text: text};
+			$(document).trigger('TinyMCEBeforeHtmlToWiki', [textObject]);
+			text = textObject.text;
+		}
 
 		//Remove any '\n' as they are not part of html formatting
 		text = text.replace(/\n/gi, "");
@@ -2782,11 +2812,19 @@ debugger;
 		if ( _pipeText == '{{!}}' ) {
 			text = text.replace(/\|/gmi, "{{!}}");
 		}
+debugger;
 
-		// wrap the text in an object to send it to event listeners
-		textObject = {text: text};
-		$(document).trigger('TinyMCEAfterHtmlToWiki', [textObject]);
-		text = textObject.text;
+		if (!recursed) {
+			// wrap the text in an object to send it to event listeners
+			textObject = {text: text};
+			$(document).trigger('TinyMCEAfterHtmlToWiki', [textObject]);
+			text = textObject.text;
+
+			// because _ is called recusrsively we get a problem that
+			// html entities of form &xxx; get over converted so we used a 
+			// placeholder to prevent this.  The next line reverse this
+			text = text.replace(/&lt;/gmi,'<').replace(/&gt;/gmi,'>').replace(/<@@@@>/gmi,"&");
+		}
 
 		return text;
 	} 
@@ -4831,7 +4869,7 @@ debugger;
 		}
 		// set format to raw so that the Tiny parser won't rationalise the html
 		e.format = 'raw';
-		// if the content is wikitext thyen convert to html
+		// if the content is wikitext then convert to html
 		if (e.convert2html) {
 			e.content = _convertWiki2Html(e.content);
 		} else {
@@ -4872,8 +4910,9 @@ debugger;
 	 * @param {tinymce.ContentEvent} e
 	 */
 	function _onGetContent(e) {
-		// if we are going to save the content then we need to convert it
-		// back to wiki text
+		var text;
+		
+		text = e.content;
 debugger;
 
 		if (e.save == true) {
@@ -4881,14 +4920,18 @@ debugger;
 		}
 
 		if (e.convert2wiki) {
-			e.content = _convertHtml2Wiki(e);
+			// _convertHtml2Wiki is a recursive function
+			
+			text = _convertHtml2Wiki(text, false);
+
 			e.convert2wiki = false;
 		} else {
 			// if we are just retrieving the html, for example for CodeMirror,
 			// we may have to tidy up some of the 'rationalisation' that
 			// TinyMCE makes to the html, mainly as a result of forcing root blocks
-			e.content = e.content.replace(/<br class="mwt-emptylineFirst"><\/p>/gm,"</p>");
+			text = text.replace(/<br class="mwt-emptylineFirst"><\/p>/gm,"</p>");
 		}
+		e.content = text;
 		return;
 	}
 
