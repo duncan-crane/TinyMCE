@@ -10,6 +10,7 @@ var tinyMCETagList = mw.config.get( 'wgTinyMCETagList' );
 var tinyMCEPreservedTagList = mw.config.get( 'wgTinyMCEPreservedTagList' );
 var tinyMCELanguage = mw.config.get( 'wgTinyMCELanguage' );
 var tinyMCEDirectionality = mw.config.get( 'wgTinyMCEDirectionality' );
+var tinyMCESettings = mw.config.get( 'wgTinyMCESettings' );
 var tinyMCELangURL = null;
 var mw_skin = mw.config.get( 'skin' );
 var mw_skin_css = '/load.php?debug=false&lang=en-gb&modules=mediawiki.legacy.commonPrint%2Cshared%7Cmediawiki.sectionAnchor%7Cmediawiki.skinning.interface%7Cskins.' + mw_skin + '.styles&only=styles&skin=' + mw_skin ;
@@ -51,9 +52,10 @@ var	mw_htmlPairsStatic = [ //now just non-nestable
 ];
 var	mw_htmlBlockPairsStatic = [
     'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-	'img', 
+//	'img', 
     'ol', 'ul', 'li',
-    'p', 'pre', 
+//    'p', 'pre', 
+    'p',
     'blockquote',
     'dl','dd','dt',
     'div',
@@ -86,6 +88,13 @@ var mw_htmlList = [
 var mw_htmlInsideList = [
 	'li',
 ];
+// the following tags have wiki equivalents, so if they occur in 
+// the wiki text we will want to preserve them so they don't get 
+// replaced by their wiki equivalent
+var mw_preserveHtml = [
+	'ol', 'ul', 'li',
+	'dd', 'dt', 'dl',
+]	
 var mw_preservedTagsList = mw_htmlPairsStatic.concat(mw_htmlSingleOnly, mw_htmlNestable, mw_htmlInvariants).join("|") + "|" + tinyMCETagList; 
 
 //set up other mw related constants
@@ -103,22 +112,25 @@ for (var key in mw_namespaces ) {
 	}
 };
 
-window.mwTinyMCEInit = function( tinyMCESelector ) {
-	window.tinymce.init({
-		selector: tinyMCESelector,
-///		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/modern/theme.js',
+var defaultSettings = function(selector) {
+	return {
+		selector: selector,
+		base_url: mw_extensionAssetsPath + '/TinyMCE/tinymce',
 		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/silver/theme.js',
-///		skin_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/skins/lightgray',
 		skin_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/skins/ui/oxide',
 		content_css:
-			[ 
-			mw_scriptPath + mw_skin_css,
-			mw_scriptPath + mw_shared_css,
-			mw_extensionAssetsPath + '/TinyMCE/MW_tinymce.css',
-			mw_extensionAssetsPath + '/TinyMCE/custom_plugins/fontawesome/fontawesome/css/font-awesome.min.css',
-			mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.wrapper.css',
-			mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.generated.css',
-		],
+			[
+				mw_scriptPath + mw_skin_css,
+				mw_scriptPath + mw_shared_css,
+				mw_extensionAssetsPath + '/TinyMCE/MW_tinymce.css',
+//				mw_extensionAssetsPath + '/TinyMCE/custom_plugins/fontawesome/fontawesome/css/font-awesome.min.css',
+				mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.wrapper.css',
+				mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.generated.css',
+				'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.0/css/bootstrap.css',
+				'https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css'
+			],
+		language_url: tinyMCELangURL,
+		language: tinyMCELanguage,
 		external_plugins: {
 			'anchor': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/anchor/plugin.js',
 			'autolink': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autolink/plugin.js',
@@ -127,51 +139,55 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 			'autosave': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autosave/plugin.js',
 			'charmap': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/charmap/plugin.js',
 			'insertdatetime': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/insertdatetime/plugin.js',
-			'image': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/image/plugin.js',
+//			'image': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/image/plugin.js',
+//			'link': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/link/plugin.js',
 			'lists': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/lists/plugin.js',
-			'media': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/media/plugin.js',
+//			'media': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/media/plugin.js',
 			'noneditable': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/noneditable/plugin.js',
 			'paste': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/paste/plugin.js',
 			'preview': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/preview/plugin.js',
 			'save': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/save/plugin.js',
 			'searchreplace': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/searchreplace/plugin.js',
 			'template': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/template/plugin.js',
-			'visualblocks': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualblocks/plugin.js',
+//			'visualblocks': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualblocks/plugin.js',
+//			'visualchars': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualchars/plugin.js',
 // DC TODO fix fontawesome for TMCE v 5
 //			'fontawesome': mw_extensionAssetsPath + '/TinyMCE/fontawesome/plugins/fontawesome/plugin.js',
 // DC TODO fix tables for TMCE v 5
 			'table': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/mw_table/plugin.js',
 //			'table': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/table/plugin.js',
 			'wikicode': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/mw_wikicode/plugin.js',
-//			'wikiupload': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_upload/plugin.js',
+			'wslink': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/wikibase/ws_link/plugin.js',
+			'wikiupload': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/mw_upload/plugin.js',
 		},
 		//
 		// *** tinymce configuration ***
 		//
 		// ** mediawiki related settings**
-		// 
+		//
 		// set the page title
 		wiki_page_title: mw_canonical_namespace + ':' + mw_title,
 		// set the path to the wiki api
 		wiki_api_path: mw_scriptPath + '/api.php',
 		// set the valid wiki namespaces
-		wiki_namespaces: mw_namespaces, 
+		wiki_namespaces: mw_namespaces,
 		// set the local name of the 'file' namespace
 		wiki_fileNamespace: mw_fileNamespace,
 		// set the valid wiki protocols
 		wiki_url_protocols: mw_url_protocols,
-		// following allowed html tags are taken from 
+		// following allowed html tags are taken from
 		// https://phabricator.wikimedia.org/source/mediawiki/browse/REL1_29/includes/Sanitizer.php
-//		wiki_tags_list: tinyMCETagList + '|' + tinyMCEPreservedTagList, 
-		wiki_extension_tags_list: tinyMCETagList, 
-		wiki_preserved_tags_list: mw_preservedTagsList, 
-		wiki_preserved_single_tags_list: mw_htmlSingle.concat(mw_htmlInsideTable).join("|"), 
-		wiki_preserved_pairs_static_tags_list: mw_htmlPairsStatic.join("|"), 
-		wiki_preserved_pairs_nestable_tags_list: mw_htmlNestable.join("|"), 
-		wiki_preserved_pairs_tags_list: mw_htmlPairsStatic.concat(mw_htmlNestable).join("|"), 
-//		wiki_preserved_tags_list: mw_htmlPairsStatic.concat(mw_htmlSingleOnly, mw_htmlNestable).join("|") + tinyMCETagList, 
+//		wiki_tags_list: tinyMCETagList + '|' + tinyMCEPreservedTagList,
+		wiki_extension_tags_list: tinyMCETagList,
+		wiki_preserved_tags_list: mw_preservedTagsList,
+		wiki_preserved_single_tags_list: mw_htmlSingle.concat(mw_htmlInsideTable).join("|"),
+		wiki_preserved_pairs_static_tags_list: mw_htmlPairsStatic.join("|"),
+		wiki_preserved_pairs_nestable_tags_list: mw_htmlNestable.join("|"),
+		wiki_preserved_pairs_tags_list: mw_htmlPairsStatic.concat(mw_htmlNestable).join("|"),
+//		wiki_preserved_tags_list: mw_htmlPairsStatic.concat(mw_htmlSingleOnly, mw_htmlNestable).join("|") + tinyMCETagList,
 		wiki_block_tags: mw_htmlBlockPairsStatic.join("|"),
 		wiki_invariant_tags: mw_htmlInvariants.join("|"),
+		wiki_preserved_html_tags: mw_preserveHtml.join("|"),
 		//
 		// ** TinyMCE editor settings **
 		//
@@ -188,7 +204,7 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 		// <br /> tags: set rendering_br_character to false if you don't use rendering br tag in wiki
 		wiki_rendering_br_character: '&#8492',
 		// Images are frequntly displayed on the page in a location separate from where the markup appears within the wiki
-		// markup so the following character is used to located the non-rendering image in the editor window.  The image is 
+		// markup so the following character is used to located the non-rendering image in the editor window.  The image is
 		// also disdplayed, in the editor window where one would expect
 		// Elements containing <img> tags: set non-rendering_img_character to false if you don't use non-rendering img tag in wiki
 		wiki_non_rendering_img_character: '&#8464',
@@ -208,7 +224,7 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 		invalid_elements: 'tbody,thead,tfoot,colgroup,col',
 		browser_spellcheck: true,
 		allow_html_in_named_anchor: true,
-		visual : false,
+		visual: false,
 		wikimagic_context_toolbar: true,
 		browsercontextmenu_context_toolbar: true,
 		contextmenu: "undo redo | cut copy paste insert | link wikimagic inserttable | styleselect removeformat | browsercontextmenu",
@@ -221,7 +237,7 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 		],
 		target_list: false,
 //		visual_table_class : "wikitable",
-		visual_table_class : " ",
+		visual_table_class: " ",
 /*		table_default_attributes: {
 			class: 'wikitable'
 		},*/
@@ -232,9 +248,6 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 		statusbar: false,
 		// the default text direction for the editor
 		directionality: tinyMCEDirectionality,
-		// default language
-		//language: 'en',
-		language_url: tinyMCELangURL,
 		// don't wrap the editable element?
 		nowrap: false,
 		// enable resizing for element like images, tables or media objects
@@ -254,7 +267,7 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 		// save plugin
 		save_enablewhendirty: true,
 		// Allow style tags in body and unordered lists in spans (inline)
-//		valid_children: "+span[ul],+span[div]",
+		valid_children: "+span[ul],+span[div]",
 //		extended_valid_elements: "nowiki",
 //	    custom_elements: "~nowiki",
 //		closed: /^(br|hr|input|meta|img|link|param|area|nowiki)$/,
@@ -284,46 +297,50 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 //DC  TODO fix fontawesome for TinyMCE v5
 		toolbar_sticky: true,
 //		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap fontawesome singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect removeformat | searchreplace ',
-		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap singlelinebreak wikilink unlink table image media wikiupload wikimagic wikisourcecode | formatselect styleselect template removeformat | searchreplace ',
+		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap singlelinebreak link wikilink unlink table image media wikiupload wikimagic wikisourcecode | styleselect template removeformat visualchars visualblocks| searchreplace wslink ',
 		style_formats_merge: true,
 		style_formats: [
-			{title: "Table", items: [
-				{title: "Sortable", selector: "table", classes: "sortable"},
-				{title: "Wikitable", selector: "table", classes: "wikitable"},
-				{title: "Contenttable", selector: "table", classes: "contenttable"},
-			]},
-			{title: "Cell", items: [
-				{title: "Left", selector: "td", format: "alignleft", icon: "alignleft"},
-				{title: "Center", selector: "td", format: "aligncenter", icon: "aligncenter"},
-				{title: "Right", selector: "td", format: "alignright", icon: "alignright"},
-				{title: "Align Top", selector: "td", styles: {verticalalign: "top"}},
-				{title: "Align Middle", selector: "td", styles: {verticalalign: "middle"}},
-				{title: "Align Bottom", selector: "td", styles: {verticalalign: "bottom"}}
-			]},
-			{title: "Pre", block: "pre", classes: "mw_pre_from_space" },
-			{title: "Paragraph", block: "p" }
+			{
+				title: "Table", items: [
+					{title: "Sortable", selector: "table", classes: "sortable"},
+					{title: "Wikitable", selector: "table", classes: "wikitable"},
+					{title: "Contenttable", selector: "table", classes: "contenttable"},
+				]
+			},
+			{
+				title: "Cell", items: [
+					{title: "Left", selector: "td", format: "alignleft", icon: "alignleft"},
+					{title: "Center", selector: "td", format: "aligncenter", icon: "aligncenter"},
+					{title: "Right", selector: "td", format: "alignright", icon: "alignright"},
+					{title: "Align Top", selector: "td", styles: {verticalalign: "top"}},
+					{title: "Align Middle", selector: "td", styles: {verticalalign: "middle"}},
+					{title: "Align Bottom", selector: "td", styles: {verticalalign: "bottom"}}
+				]
+			},
+			{title: "Pre", block: "pre", classes: "mw_pre_from_space"},
+			{title: "Paragraph", block: "p"}
 		],
 		block_formats: 'Paragraph=p;Heading 1=h1;Heading 2=h2;Heading 3=h3;Heading 4=h4;Heading 5=h5;Heading 6=h6;Preformatted=pre;Code=code',
 		images_upload_credentials: true,
 		autoresize_max_height: 400,
 		template_selected_content_classes: "selectedcontent",
-		setup: function(editor) {
+		setup: function (editor) {
 		},
 		init_instance_callback: function (instance) {
 			// For some reason, in some installations this only works as an inline function,
 			// instead of a named function defined elsewhere.
-			var minimizeOnBlur = $("textarea#" + instance.id).hasClass( 'mceMinimizeOnBlur' );
-			if ( minimizeOnBlur ) {
+			var minimizeOnBlur = $("textarea#" + instance.id).hasClass('mceMinimizeOnBlur');
+			if (minimizeOnBlur) {
 				var mcePane = $("textarea#" + instance.id).prev();
 				// Keep a little sliver of the toolbar so that users see it.
 				mcePane.find(".mce-toolbar-grp").css("height", "10px");
 				mcePane.find(".mce-toolbar-grp .mce-flow-layout").hide("medium");
 			}
 		},
-		file_picker_callback: function(cb, value, meta) {
+		file_picker_callback: function (cb, value, meta) {
 			var input = document.createElement('input');
 			input.setAttribute('type', 'file');
-			input.onchange = function() {
+			input.onchange = function () {
 				var file = this.files[0];
 
 				var reader = new FileReader();
@@ -331,17 +348,36 @@ window.mwTinyMCEInit = function( tinyMCESelector ) {
 					var fileContent = file;
 					// call the callback and populate the src field with the file name
 					// and srccontent field with the content of the file
-					cb(e.target.result, { srccontent: fileContent, src: file.name });
+					cb(e.target.result, {srccontent: fileContent, src: file.name});
 				};
 				reader.readAsDataURL(file);
 			};
 
 			input.click();
-		}
-	});
+		},
+//		alert_message: alertMessage,
+//		check_upload_permissions: mw_CheckPermissions
+	};
 };
 
-mwTinyMCEInit( '.tinymce, #wpTextbox1' );
+window.mwTinyMCEInit = function( tinyMCESelector, settings = {} ) {
+	var customSettings = updateSettings(tinyMCESelector, settings);
+	window.tinymce.init(customSettings);
+};
+
+var updateSettings = function(tinyMCESelector, settings) {
+	var defaultSet = defaultSettings(tinyMCESelector);
+	$.each(settings, function (k, v) {
+		defaultSet[k] = v;
+	});
+	return defaultSet;
+};
+
+
+$.each(tinyMCESettings, function (selector, settings) {
+	mwTinyMCEInit(selector, settings);
+});
+// mwTinyMCEInit( '.tinymce, #wpTextbox1' );
 
 // Let others know we're done here
 $( document ).trigger( 'TinyMCELoaded' ); 
