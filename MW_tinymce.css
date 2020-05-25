@@ -20,6 +20,13 @@ th {
     text-align: center;
 }
 
+thead{
+    display: table-header-group;
+    vertical-align: inherit;
+    font-weight: bold;
+    text-align: center;
+}
+
 .mceEditable {
 	border: 1px dotted #0000cc;
 }
@@ -152,12 +159,17 @@ a.new {
 	color: red;
 }
 
+p {
+    margin: 0.4em 0 0em 0;
+}
+
 .mwt-emptylineFirst {
 	line-height: 200%;
 }
 
 .mwt-image {
-	display: initial;
+/*	display: initial;
+	display: inline;*/
 }
 
 .mce-content-body table.sortable th {

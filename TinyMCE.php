@@ -175,6 +175,7 @@ $GLOBALS['wgResourceModules'] += array(
 			'tinymce-upload-alert-correct-and-try-again',
 			'tinymce-upload-alert-destination-filename-needed',
 			'tinymce-upload-alert-source-or-destination-undefined',
+			'tinymce-upload-alert-file-source-empty',
 			'tinymce-upload-confirm-file-already-exists',
 			'tinymce-upload-confirm-file-not-on-wiki',
 			'tinymce-upload-confirm-ignore-warnings',

@@ -152,6 +152,8 @@ class TinyMCEHooks {
 		global $wgCheckFileExtensions, $wgStrictFileExtensions;
 		global $wgFileExtensions, $wgFileBlacklist;
 		global $wgEnableUploads;
+		global $wgTinyMCESettings;
+		global $wgWsTinyMCEModals;
 
 		if ( !$wgTinyMCEEnabled ) {
 			return true;
@@ -215,6 +217,8 @@ class TinyMCEHooks {
 			$userIsBlocked = false;
 		}
 		$vars['wgTinyMCEUserIsBlocked'] = $userIsBlocked ;
+ 		$vars['wgTinyMCESettings'] = $wgTinyMCESettings;
+		$vars['wgWsTinyMCEModals'] = $wgWsTinyMCEModals;
 
 		$jsMacroArray = array();
 		foreach ( $wgTinyMCEMacros as $macro ) {
