@@ -3,14 +3,13 @@ var mw_scriptPath = mw.config.get( 'wgScriptPath' );
 var mw_extensionAssetsPath = mw.config.get( 'wgExtensionAssetsPath' );
 var mw_namespaces = mw.config.get( 'wgNamespaceIds' );
 var mw_url_protocols = mw.config.get( 'wgUrlProtocols' );
-var mw_canonical_namespace = mw.config.get( "wgCanonicalNamespace" ); 
+var mw_canonical_namespace = mw.config.get( "wgCanonicalNamespace" );
 var mw_title = mw.config.get( "wgTitle" );
-var tinyMCETemplates = mw.config.get( 'wgTinyMCETemplates' );
+var tinyMCEMacros = mw.config.get( 'wgTinyMCEMacros' );
 var tinyMCETagList = mw.config.get( 'wgTinyMCETagList' );
 var tinyMCEPreservedTagList = mw.config.get( 'wgTinyMCEPreservedTagList' );
 var tinyMCELanguage = mw.config.get( 'wgTinyMCELanguage' );
 var tinyMCEDirectionality = mw.config.get( 'wgTinyMCEDirectionality' );
-var tinyMCESettings = mw.config.get( 'wgTinyMCESettings' );
 var tinyMCELangURL = null;
 var mw_skin = mw.config.get( 'skin' );
 var mw_skin_css = '/load.php?debug=false&lang=en-gb&modules=mediawiki.legacy.commonPrint%2Cshared%7Cmediawiki.sectionAnchor%7Cmediawiki.skinning.interface%7Cskins.' + mw_skin + '.styles&only=styles&skin=' + mw_skin ;
@@ -18,49 +17,48 @@ var mw_shared_css = '/resources/src/mediawiki.legacy/shared.css' ;
 var	mw_htmlInvariants = [ //these tags have no wiki code equivalents so don't need converting
 //DC TODO make sure TinyMCE set up to process all these tags itself otherwise you'll
 //need to add them back into mw_htmlPairsStatic or mw_htmlSingle. below
-	'abbr', 'b', 'bdi', 'bdo', 
+	'abbr', 'b', 'bdi', 'bdo',
 	'caption', 'center', 'cite',// 'code',
-	'data', 'del', 'dfn',  
+	'data', 'del', 'dfn',
 	'ins', 'kbd', 'mark', 'p', 'q',
 	'rb', 'rp', 'rt', 'rtc', 'ruby',
 	's',  'strike', //'span',
-	'time', 'tt', 'u', 
+	'time', 'tt', 'u',
 	'link', 'meta', 'var', 'wbr',
 ];
 var	mw_htmlPairsStatic = [ //now just non-nestable
-/*	'abbr', 'b', 'bdi', 'big', 'blockquote', 
-	'caption', 'center', 'cite', 'code',
-	'data', 'dd', 'del',  'dfn', 'div', 'dl', 'dt', 'em', 'font',  
-	'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
-	'i', 'ins', 'kbd', 'li', 'mark',  'ol', 'p', 'pre',
-	'ruby', 'rb', 'rp', 'rt', 'rtc',
-	's', 'samp','small', 'span', 'strike', 'strong', 'sub', 'sup', 
-	'table', 'time', 'tt', 'u', 'ul', 'var', */
+	/*	'abbr', 'b', 'bdi', 'big', 'blockquote',
+        'caption', 'center', 'cite', 'code',
+        'data', 'dd', 'del',  'dfn', 'div', 'dl', 'dt', 'em', 'font',
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'i', 'ins', 'kbd', 'li', 'mark',  'ol', 'p', 'pre',
+        'ruby', 'rb', 'rp', 'rt', 'rtc',
+        's', 'samp','small', 'span', 'strike', 'strong', 'sub', 'sup',
+        'table', 'time', 'tt', 'u', 'ul', 'var', */
 //	'abbr',
 	'b',
-//	'bdi', 
+//	'bdi',
 //	'caption', 'center', 'cite',
 	'code', // although code is a wiki invariant html tag treat as static pair so contained wiki code correctly parsed
-//	'data', 'del',  'dfn',  
-	'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
+//	'data', 'del',  'dfn',
+	'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
 	'i',
 //  'ins', 'mark',
-    'p', // 'pre',
+	'p', // 'pre',
 //	'rb', 'rp', 'rt', 'rtc',
-//	's', 'strike', 
-//	'time', 'tt', 'u', 
+//	's', 'strike',
+//	'time', 'tt', 'u',
 ];
 var	mw_htmlBlockPairsStatic = [
-    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-	'img', 
-    'ol', 'ul', 'li',
-    'p', 'pre', 
-    'blockquote',
-    'dl','dd','dt',
-    'div',
-    'hr',
+	'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+	'ol', 'ul', 'li',
+	'p', 'pre',
+	'blockquote',
+	'dl','dd','dt',
+	'div',
+	'hr',
 	'source',
-    'table',
+	'table',
 ];
 var mw_htmlSingle = [
 	//'br', //don't render properly if process as a preserved tag!
@@ -71,10 +69,10 @@ var mw_htmlSingleOnly = [
 	'br', 'hr', 'link', 'meta', 'wbr',
 ];
 var mw_htmlNestable = [
-	'bdo', 'big', 
-	'blockquote', 
+	'bdo', 'big',
+	'blockquote',
 	'dd', 'div', 'dl', 'dt', 'em', 'font',
-	'kbd', 'li', 'ol', 'q', 'ruby', 
+	'kbd', 'li', 'ol', 'q', 'ruby',
 	'samp', 'small', 'span', 'strong', 'sub', 'sup',
 	'table', 'td', 'th', 'tr', 'ul', 'var',
 ];
@@ -82,12 +80,12 @@ var mw_htmlInsideTable = [
 	'td', 'th', 'tr',
 ];
 var mw_htmlList = [
-	'ol', 'ul', 
+	'ol', 'ul',
 ];
 var mw_htmlInsideList = [
 	'li',
 ];
-var mw_preservedTagsList = mw_htmlPairsStatic.concat(mw_htmlSingleOnly, mw_htmlNestable, mw_htmlInvariants).join("|") + "|" + tinyMCETagList; 
+var mw_preservedTagsList = mw_htmlPairsStatic.concat(mw_htmlSingleOnly, mw_htmlNestable, mw_htmlInvariants).join("|") + "|" + tinyMCETagList;
 
 //set up other mw related constants
 
@@ -104,50 +102,39 @@ for (var key in mw_namespaces ) {
 	}
 };
 
-var defaultSettings = function(selector) {
-	return {
-		selector: selector,
-///		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/modern/theme.js',
-		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/silver/theme.js',
-///		skin_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/skins/lightgray',
-		skin_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/skins/ui/oxide',
+window.mwTinyMCEInit = function( tinyMCESelector ) {
+	window.tinymce.init({
+		selector: tinyMCESelector,
+		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/modern/theme.js',
+		skin_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/skins/lightgray',
 		content_css:
 			[
 				mw_scriptPath + mw_skin_css,
 				mw_scriptPath + mw_shared_css,
 				mw_extensionAssetsPath + '/TinyMCE/MW_tinymce.css',
-				mw_extensionAssetsPath + '/TinyMCE/custom_plugins/fontawesome/fontawesome/css/font-awesome.min.css',
+				mw_extensionAssetsPath + '/TinyMCE/fontawesome/plugins/fontawesome/css/font-awesome.min.css',
 				mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.wrapper.css',
 				mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.generated.css',
-				'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.0/css/bootstrap.css',
-				'https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css'
 			],
 		external_plugins: {
 			'anchor': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/anchor/plugin.js',
 			'autolink': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autolink/plugin.js',
-//DC TODO autoresize is broken - it just endlessly extends the editor window?
-//			'autoresize': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autoresize/plugin.js',
+			'autoresize': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autoresize/plugin.js',
 			'autosave': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autosave/plugin.js',
 			'charmap': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/charmap/plugin.js',
 			'insertdatetime': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/insertdatetime/plugin.js',
-//			'image': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/image/plugin.js',
 			'lists': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/lists/plugin.js',
-//			'media': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/media/plugin.js',
 			'noneditable': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/noneditable/plugin.js',
 			'paste': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/paste/plugin.js',
 			'preview': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/preview/plugin.js',
 			'save': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/save/plugin.js',
 			'searchreplace': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/searchreplace/plugin.js',
-			'template': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/template/plugin.js',
 			'visualblocks': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualblocks/plugin.js',
-// DC TODO fix fontawesome for TMCE v 5
-//			'fontawesome': mw_extensionAssetsPath + '/TinyMCE/fontawesome/plugins/fontawesome/plugin.js',
-// DC TODO fix tables for TMCE v 5
-//			'table': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_table/plugin.js',
-//			'table': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/table/plugin.js',
-			'wikicode': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/mw_wikicode/plugin.js',
-			'wslink': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/wikibase/plugins/ws_link/plugin.js',
-//			'wikiupload': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_upload/plugin.js',
+//			'codemirror': mw_extensionAssetsPath + '/TinyMCE/codemirror/plugins/fontawesome/plugin.js',
+			'fontawesome': mw_extensionAssetsPath + '/TinyMCE/fontawesome/plugins/fontawesome/plugin.js',
+			'table': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_table/plugin.js',
+			'wikiupload': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_upload/plugin.js',
+			'wikicode': mw_extensionAssetsPath + '/TinyMCE/mediawiki/plugins/mw_wikicode/plugin.js',
 		},
 		//
 		// *** tinymce configuration ***
@@ -205,14 +192,14 @@ var defaultSettings = function(selector) {
 //		relative_urls: false,
 //		remove_script_host: false,
 //		document_base_url: server,
-		tinyMCETemplates: tinyMCETemplates,
+		tinyMCEMacros: tinyMCEMacros,
 		automatic_uploads: true,
 		paste_data_images: true,
 		paste_word_valid_elements: 'b,strong,i,em,h1,h2,h3,h4,h5,table,tr,th,td,ol,ul,li,a,sub,sup,strike,br,del,div,p',
 		invalid_elements: 'tbody,thead,tfoot,colgroup,col',
 		browser_spellcheck: true,
 		allow_html_in_named_anchor: true,
-		visual: false,
+		visual : false,
 		wikimagic_context_toolbar: true,
 		browsercontextmenu_context_toolbar: true,
 		contextmenu: "undo redo | cut copy paste insert | link wikimagic inserttable | styleselect removeformat | browsercontextmenu",
@@ -225,7 +212,7 @@ var defaultSettings = function(selector) {
 		],
 		target_list: false,
 //		visual_table_class : "wikitable",
-		visual_table_class: " ",
+		visual_table_class : " ",
 		/*		table_default_attributes: {
                     class: 'wikitable'
                 },*/
@@ -280,59 +267,50 @@ var defaultSettings = function(selector) {
 		],
 		menubar: false, //'edit insert view format table tools',
 		contextmenu_never_use_native: false,
-//		removed_menuitems: 'media',
+		removed_menuitems: 'media',
 		// fontawesome configuration
 		noneditable_noneditable_class: 'fa',
 		extended_valid_elements: 'span[*]',
 		// tinymce configuration
-//DC  TODO fix fontawesome for TinyMCE v5
-		toolbar_sticky: true,
-//		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap fontawesome singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect removeformat | searchreplace ',
-//		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap singlelinebreak wikilink unlink table image media wikiupload wikimagic wikisourcecode | formatselect styleselect template removeformat | searchreplace ',
-		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap singlelinebreak wikilink unlink wikimagic wikisourcecode | formatselect styleselect template removeformat | searchreplace wslink ',
+		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap fontawesome singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect removeformat | searchreplace ',
 		style_formats_merge: true,
 		style_formats: [
-			{
-				title: "Table", items: [
+			{title: "Table", items: [
 					{title: "Sortable", selector: "table", classes: "sortable"},
 					{title: "Wikitable", selector: "table", classes: "wikitable"},
 					{title: "Contenttable", selector: "table", classes: "contenttable"},
-				]
-			},
-			{
-				title: "Cell", items: [
+				]},
+			{title: "Cell", items: [
 					{title: "Left", selector: "td", format: "alignleft", icon: "alignleft"},
 					{title: "Center", selector: "td", format: "aligncenter", icon: "aligncenter"},
 					{title: "Right", selector: "td", format: "alignright", icon: "alignright"},
 					{title: "Align Top", selector: "td", styles: {verticalalign: "top"}},
 					{title: "Align Middle", selector: "td", styles: {verticalalign: "middle"}},
 					{title: "Align Bottom", selector: "td", styles: {verticalalign: "bottom"}}
-				]
-			},
-			{title: "Pre", block: "pre", classes: "mw_pre_from_space"},
-			{title: "Paragraph", block: "p"}
+				]},
+			{title: "Pre", block: "pre", classes: "mw_pre_from_space" },
+			{title: "Paragraph", block: "p" }
 		],
 		block_formats: 'Paragraph=p;Heading 1=h1;Heading 2=h2;Heading 3=h3;Heading 4=h4;Heading 5=h5;Heading 6=h6;Preformatted=pre;Code=code',
 		images_upload_credentials: true,
 		autoresize_max_height: 400,
-		template_selected_content_classes: "selectedcontent",
-		setup: function (editor) {
+		setup: function(editor) {
 		},
 		init_instance_callback: function (instance) {
 			// For some reason, in some installations this only works as an inline function,
 			// instead of a named function defined elsewhere.
-			var minimizeOnBlur = $("textarea#" + instance.id).hasClass('mceMinimizeOnBlur');
-			if (minimizeOnBlur) {
+			var minimizeOnBlur = $("textarea#" + instance.id).hasClass( 'mceMinimizeOnBlur' );
+			if ( minimizeOnBlur ) {
 				var mcePane = $("textarea#" + instance.id).prev();
 				// Keep a little sliver of the toolbar so that users see it.
 				mcePane.find(".mce-toolbar-grp").css("height", "10px");
 				mcePane.find(".mce-toolbar-grp .mce-flow-layout").hide("medium");
 			}
 		},
-		file_picker_callback: function (cb, value, meta) {
+		file_picker_callback: function(cb, value, meta) {
 			var input = document.createElement('input');
 			input.setAttribute('type', 'file');
-			input.onchange = function () {
+			input.onchange = function() {
 				var file = this.files[0];
 
 				var reader = new FileReader();
@@ -340,34 +318,17 @@ var defaultSettings = function(selector) {
 					var fileContent = file;
 					// call the callback and populate the src field with the file name
 					// and srccontent field with the content of the file
-					cb(e.target.result, {srccontent: fileContent, src: file.name});
+					cb(e.target.result, { srccontent: fileContent, src: file.name });
 				};
 				reader.readAsDataURL(file);
 			};
 
 			input.click();
 		}
-	};
-}
-
-window.mwTinyMCEInit = function( tinyMCESelector, settings = {} ) {
-	var customSettings = updateSettings(tinyMCESelector, settings);
-	window.tinymce.init(customSettings);
-};
-
-var updateSettings = function(tinyMCESelector, settings) {
-	var defaultSet = defaultSettings(tinyMCESelector);
-	$.each(settings, function (k, v) {
-		defaultSet[k] = v;
 	});
-	return defaultSet;
 };
 
-
-$.each(tinyMCESettings, function (selector, settings) {
-	mwTinyMCEInit(selector, settings);
-});
-// mwTinyMCEInit( '.tinymce, #wpTextbox1' );
+mwTinyMCEInit( '.tinymce, #wpTextbox1' );
 
 // Let others know we're done here
-$( document ).trigger( 'TinyMCELoaded' ); 
+$( document ).trigger( 'TinyMCELoaded' );
