@@ -144,7 +144,7 @@ var defaultSettings = function(selector) {
 			'lists': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/lists/plugin.js',
 //			'media': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/media/plugin.js',
 			'noneditable': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/noneditable/plugin.js',
-			'paste': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/paste/plugin.js',
+//			'paste': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/paste/plugin.js',
 			'preview': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/preview/plugin.js',
 			'save': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/save/plugin.js',
 			'searchreplace': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/searchreplace/plugin.js',
@@ -152,13 +152,12 @@ var defaultSettings = function(selector) {
 //			'visualblocks': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualblocks/plugin.js',
 //			'visualchars': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualchars/plugin.js',
 // DC TODO fix fontawesome for TMCE v 5
-//			'fontawesome': mw_extensionAssetsPath + '/TinyMCE/fontawesome/plugins/fontawesome/plugin.js',
-// DC TODO fix tables for TMCE v 5
-			'table': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/mw_table/plugin.js',
-//			'table': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/table/plugin.js',
-			'wikicode': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/mw_wikicode/plugin.js',
-			'wslink': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/wikibase/ws_link/plugin.js',
-			'wikiupload': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/mw_upload/plugin.js',
+//			'fontawesome': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/fontawesome/plugins/fontawesome/plugin.js',
+			'paste': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_paste/plugin.js',
+			'table': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_table/plugin.js',
+			'wikicode': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikicode/plugin.js',
+//			'wslink': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/wikibase/plugins/ws_link/plugin.js',
+			'wikiupload': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_upload/plugin.js',
 		},
 		//
 		// *** tinymce configuration ***
@@ -212,7 +211,7 @@ var defaultSettings = function(selector) {
 		// set non_rendering_parser_output_character to false if you don't use non-rendering parser output placeholder in wiki
 		wiki_non_rendering_parser_output_character: '&#120090',
 		//
-		valid_elements: mw_preservedTagsList,
+//0525		valid_elements: mw_preservedTagsList,
 		branding: false,
 //		relative_urls: false,
 //		remove_script_host: false,
@@ -220,6 +219,7 @@ var defaultSettings = function(selector) {
 		tinyMCETemplates: tinyMCETemplates,
 		automatic_uploads: true,
 		paste_data_images: true,
+//0525		paste_enable_default_filters: false,
 		paste_word_valid_elements: 'b,strong,i,em,h1,h2,h3,h4,h5,table,tr,th,td,ol,ul,li,a,sub,sup,strike,br,del,div,p',
 		invalid_elements: 'tbody,thead,tfoot,colgroup,col',
 		browser_spellcheck: true,
