@@ -403,7 +403,7 @@ var Ws_Link = function(editor) {
     function setUpTokenFunction(iframe) {
         if ( typeof $.fn.select2 !== 'function' ) {
             $.getScript('/extensions/WSForm/select2.min.js').done(function() {
-               attachTokensIframe(iframe);
+                attachTokensIframe(iframe);
             });
         } else {
             attachTokensIframe(iframe);
@@ -417,7 +417,17 @@ var Ws_Link = function(editor) {
     function attachTokensIframe(iframeBody) {
         iframeBody = $(iframeBody).contents().find('body');
         $(iframeBody).append(
-            `<script>attachIframeTokens();</script>`
+            `<script>
+                if ($('select[data-inputtype="ws-select2"]')[0]) {
+                    $('select[data-inputtype="ws-select2"]').each(function() {
+                        var selectid = $(this).attr('id');
+                        var selectoptionsid = 'select2options-' + selectid;
+                        var select2config = $("input#" + selectoptionsid).val();
+                        var F = new Function(select2config);
+                        return (F());
+                    });
+                }
+            </script>`
         );
     }
 
@@ -452,7 +462,7 @@ var Ws_Link = function(editor) {
         //  create id for new dom element, which wil also be the placeholder
         // temporarily inserted in the text to avoid conversion problems
 
-        id = "<@@@" + tagClass.toUpperCase() + "__--__" + tagEditTemplate + ":" + _createUniqueNumber() + "@@@>";
+        id = "<###" + tagClass.toUpperCase() + "__--__" + tagEditTemplate + ":" + _createUniqueNumber() + "###>";
 
         // if tagWikiText doesn't need to be parsed create dom element now
         if ( tagHTML != 'toParse' && protection == 'nonEditable' ) {
@@ -461,7 +471,7 @@ var Ws_Link = function(editor) {
             displayTagWikiText = _htmlEncode( tagWikiText )
 
             // replace any tag new line placeholders from the title
-            titleWikiText = tagWikiText.replace(/<@@[bht]nl@@>/gmi, "\n");
+            titleWikiText = tagWikiText.replace(/<##[bht]nl##>/gmi, "\n");
 
             // make sure tagHTML is really HTML else will break when
             // converting to DOM element.  If not wrap in <code> tags
@@ -511,13 +521,13 @@ var Ws_Link = function(editor) {
         // sometimes the parameters have been &xxx; encoded.  We want
         // to decode these where they are applied to placeholders so
         // the replacement of placeholders that follows will work
-        tagWikiText = tagWikiText.replace(/(&lt;@@@)/gmi, '<@@@');
-        tagWikiText = tagWikiText.replace(/(@@@&gt;)/gmi, '@@@>');
+        tagWikiText = tagWikiText.replace(/(&lt;###)/gmi, '<###');
+        tagWikiText = tagWikiText.replace(/(###&gt;)/gmi, '###>');
 
         // recover any placeholders embedded in tagWikiText
         // some may be embedded in others so repeat until all gone
-        while (tagWikiText.match(/(\<@@@.*?:\d*@@@>)/gmi)) {
-            tagWikiText = tagWikiText.replace(/(\<@@@.*?:\d*@@@>)/gmi, function(match, $1) {
+        while (tagWikiText.match(/(\<###.*?:\d*###>)/gmi)) {
+            tagWikiText = tagWikiText.replace(/(\<###.*?:\d*###>)/gmi, function(match, $1) {
 
                 return _tags4Wiki[$1];
             });
@@ -536,16 +546,15 @@ var Ws_Link = function(editor) {
         // sometimes the parameters have been &xxx; encoded.  We want
         // to decode these where they are applied to placeholders so
         // the replacement of placeholders that follows will work
-        tagHTML = tagHTML.replace(/(&lt;@@@)/gmi, '<@@@');
-        tagHTML = tagHTML.replace(/(@@@&gt;)/gmi, '@@@>');
+        tagHTML = tagHTML.replace(/(&lt;###)/gmi, '<###');
+        tagHTML = tagHTML.replace(/(###&gt;)/gmi, '###>');
 
         // recover any placeholders embedded in tagHTML
         // some may be embedded in others so repeat until all gone
-        while (tagHTML.match(/(\<@@@.*?:\d*@@@>)/gmi)) {
-            tagHTML = tagHTML.replace(/(\<@@@.*?:\d*@@@>)/gmi, function(match, $1) {
+        while (tagHTML.match(/(\<###.*?:\d*###>)/gmi)) {
+            tagHTML = tagHTML.replace(/(\<###.*?:\d*###>)/gmi, function(match, $1) {
                 // replace '&amp;amp;' with '&amp;' as we double escaped these when
                 // they were converted
-                console.log("_tags4wiki: ", _tags4Wiki, "$1: ", $1);
                 return _tags4Wiki[$1].replace(/&amp;amp;/gmi,'&amp;');
             });
         }
@@ -604,11 +613,11 @@ var Ws_Link = function(editor) {
         text = text.replace(matcher, linkPlaceholder);
         return text;
     }
-    
+
     function _preserveTemplates4Html() {
 
     }
-    
+
     function _convertWiki2Html(text) {
         var textObject;
         // start of function to convert wiki code to html
@@ -703,7 +712,7 @@ var Ws_Link = function(editor) {
         return;
 
     }
-    
+
     function onSubmitForm() {
 
     }
@@ -726,7 +735,7 @@ var Ws_Link = function(editor) {
             blockMatcher;
 
         // replace non rendering new line placeholder with html equivalent
-        text = text.replace(/<@@slb@@>/gmi, _slb);
+        text = text.replace(/<##slb##>/gmi, _slb);
 
         // the block matcher is used in a loop to determine whether to wrap the returned
         // html in div or span tags, we define it here so it only has to be defined once
@@ -737,7 +746,7 @@ var Ws_Link = function(editor) {
         // document to avoid multiple calls to the api parser so speed things up
         // there are two passes one to collect the parser text and the next to insert it
         if (_tags4Html) {
-            text = text.replace(/\<@@@.*?:\d*@@@>/gmi, function(match) {
+            text = text.replace(/\<###.*?:\d*###>/gmi, function(match) {
                 // if the placeholder is in the array replace it otherwise
                 // return the placeholder escaped
                 if ((_tags4Html[match] === 'toParse') && (_tags4Wiki[match])) {
@@ -754,27 +763,27 @@ var Ws_Link = function(editor) {
             // and send it to be parsed, then split out the parsed code and replace it
             // within the text
             if (parserTable.length > 0) {
-                // we need to wrap the seperator {@@@@} with two '\n's because
+                // we need to wrap the seperator {###@} with two '\n's because
                 // of the way pre and pseudo pre tagfs are handled in the wiki parser
-                parserText = _parseWiki4Html (parserTable.join("\n{@@@@}\n"));
+                parserText = _parseWiki4Html (parserTable.join("\n{###@}\n"));
 
-                // sometimes the parser wraps the {@@@@) placeholder in <p> tags!
-                parserText.parsedHtml = parserText.parsedHtml.replace(/<p>\n{@@@@}\n<\/p>/gmi, "\n{@@@@}\n");
+                // sometimes the parser wraps the {###@) placeholder in <p> tags!
+                parserText.parsedHtml = parserText.parsedHtml.replace(/<p>\n{###@}\n<\/p>/gmi, "\n{###@}\n");
 
                 // sometimes the parser return null entries which will be misinterpreted !
-                parserText.parsedHtml = parserText.parsedHtml.replace(/\n{@@@@}\n{@@@@}\n/gmi, function (match) {
+                parserText.parsedHtml = parserText.parsedHtml.replace(/\n{###@}\n{###@}\n/gmi, function (match) {
 
-                    return "\n{@@@@}\n \n{@@@@}\n"
+                    return "\n{###@}\n \n{###@}\n"
                 });
                 // now split the parsed html corresponding to the placeholders
                 // and replace within the text
-                parserTable = parserText.parsedHtml.split("\n{@@@@}\n");
+                parserTable = parserText.parsedHtml.split("\n{###@}\n");
                 for ( count = 0; count < parserTags.length; count++) {
                     parserTag = parserTags[count];
                     regex = parserTag;
                     matcher = new RegExp(regex, 'gmi');
                     text = text.replace(matcher, function(tag) {
-                        var tagClassArray = tag.replace(/<@@@(.*):\d+?@@@>/gm, '$1').split('__--__'),
+                        var tagClassArray = tag.replace(/<###(.*):\d+?###>/gm, '$1').split('__--__'),
                             tagClass = tagClassArray[0].toLowerCase(),
                             editTemplate = tagClassArray[1],
                             wikiText,
@@ -797,7 +806,7 @@ var Ws_Link = function(editor) {
                                 html = html + _img ;
                             }
                             html = '<div>' + html + '</div>';
-                            _tags4Wiki[tag] = '<@@bnl@@>' + _tags4Wiki[tag] + '<@@bnl@@>';
+                            _tags4Wiki[tag] = '<##bnl##>' + _tags4Wiki[tag] + '<##bnl##>';
                         } else {
                             // otherwise wrap in a <span>
                             if (html) {
@@ -937,15 +946,15 @@ var Ws_Link = function(editor) {
             // process 'p' tags (including forced root blocks) by
             // replacing them with their contents
             $dom.find( "p[class*='mwt-paragraph']" ).replaceWith( function(a) {
-                return $( this ).html() + '<@@pnl@@>';
+                return $( this ).html() + '<##pnl##>';
             });
 
             // process 'br' tags, replacing them with placeholders
             $dom.find( "br[class*='mwt-emptylineFirst']" ).replaceWith( function(a) {
-                return '<@@elf@@>';
+                return '<##elf##>';
             });
             $dom.find( "br[class*='mwt-emptyline']" ).replaceWith( function(a) {
-                return '<@@el@@>';
+                return '<##el##>';
             });
             $dom.find( "br[data-mce-bogus]" ).replaceWith( function(a) {
                 return '';
@@ -953,7 +962,7 @@ var Ws_Link = function(editor) {
 
             // process singLineBreak spans, replacing them with placeholders
             $dom.find( "span[class*='mwt-singleLinebreak']" ).replaceWith( function(a) {
-                return '<@@snl@@>';
+                return '<##snl##>';
             });
 
             // process blocks containing parsed wiki text
@@ -968,7 +977,6 @@ var Ws_Link = function(editor) {
             });
 
             $dom.find("*[class*='mwt-ws-link'").replaceWith(function (a) {
-                console.log("Going to replace a element..", this);
                 return this.id;
             });
 //debugger;
@@ -986,7 +994,7 @@ var Ws_Link = function(editor) {
                     elm = $(this),
                     innerHtml = this.innerHTML,
                     outerHtml = this.outerHTML,
-                    id = "<@@@" + this.tagName.toUpperCase() + ":" + _createUniqueNumber() + "@@@>",
+                    id = "<###" + this.tagName.toUpperCase() + ":" + _createUniqueNumber() + "###>",
                     regex = "<" + _mwtBlockTagsList.split('|').join('[\\s>]|<') + "[\\s>]",
                     blockMatcher = new RegExp(regex, 'gmi');
 
@@ -1002,18 +1010,18 @@ var Ws_Link = function(editor) {
 
                 // start block tags on new lines to make wiki text more readable
                 outerHtml = outerHtml.replace(blockMatcher, function (match) {
-                    return '<@@bnl@@>' + match;
+                    return '<##bnl##>' + match;
                 });
 
                 // tidy up end of lists
-                outerHtml = outerHtml.replace(/(<\/li>)(<\/[uo]l>)/gmi, "$1<@@bnl@@>$2");
+                outerHtml = outerHtml.replace(/(<\/li>)(<\/[uo]l>)/gmi, "$1<##bnl##>$2");
 
                 // assume as its html in wiki text there aren't any </li> needed
                 outerHtml = outerHtml.replace(/<\/li>/gmi, "");
 
                 // add a final block new line if this is a block tag
                 if (_mwtBlockTagsList.split('|').indexOf(this.tagName.toLowerCase()) >= 0) {
-                    outerHtml = outerHtml + '<@@bnl@@>';
+                    outerHtml = outerHtml + '<##bnl##>';
                 }
 
                 _tags4Wiki[id] = outerHtml;
@@ -1033,11 +1041,11 @@ var Ws_Link = function(editor) {
 
                 // build the header, including any spaces after the header text
                 heading = (spaces == null) ? altro + text + altro : altro + text + altro + spaces ;
-                heading = '<@@hnl@@>' + heading + '<@@hnl@@>';
+                heading = '<##hnl##>' + heading + '<##hnl##>';
 
                 // build back any new lines after the heading
                 for (var i = 0; i < newlines; i++) {
-                    heading += '<@@nl@@>';
+                    heading += '<##nl##>';
                 }
 
                 return heading;
@@ -1057,14 +1065,14 @@ var Ws_Link = function(editor) {
         function recoverTags2Wiki(text) {
             debugger;
             if (_tags4Wiki){
-                while (text.match(/\<@@@.*?:\d*@@@>/)) {
-                    text = text.replace(/(\<@@@.*?:\d*@@@>)/gi, function(match, $1, offset, string) {
+                while (text.match(/\<###.*?:\d*###>/)) {
+                    text = text.replace(/(\<###.*?:\d*###>)/gi, function(match, $1, offset, string) {
                         // replace '&amp;amp;' with '&amp;' as we double escaped these when they were converted
                         debugger;
 //						return _tags4Wiki[$1].replace(/&amp;amp;/gmi,'&amp;');
                         // '&amp;' is processed by the wiki don and turned into '&'
                         // so we subsitue it with a placeholder which will be replaced later
-                        return _tags4Wiki[$1].replace(/&amp;/gmi,'<@@@@>');
+                        return _tags4Wiki[$1].replace(/&amp;/gmi,'<###@>');
                     });
                 }
             }
@@ -1106,7 +1114,7 @@ var Ws_Link = function(editor) {
             // because _ is called recusrsively we get a problem that
             // html entities of form &xxx; get over converted so we used a
             // placeholder to prevent this.  The next line reverse this
-            text = text.replace(/&lt;/gmi,'<').replace(/&gt;/gmi,'>').replace(/<@@@@>/gmi,"&");
+            text = text.replace(/&lt;/gmi,'<').replace(/&gt;/gmi,'>').replace(/<###@>/gmi,"&");
         }
 
         return text;
@@ -1165,6 +1173,34 @@ var Ws_Link = function(editor) {
         return;
     }
 
+    function _onBeforeWiki2Html(e, data) {
+        var $dom = $( "<div id='tinywrapper'>" + data.text + "</div>", "text/xml" );
+        return data;
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function _onBeforeHtml2Wiki(e, data) {
+        var $dom = $( "<div id='tinywrapper'>" + data.text + "</div>", "text/xml" );
+
+        $dom.find("*[class*='mwt-ws-link']").replaceWith(function (i, el) {
+            return _tags4Wiki[this.id];
+        });
+        data.text = $dom.html();
+
+        return data;
+    }
+
+    function _onAfterWiki2Html(e, data) {
+        return data;
+    }
+
+    function _onAfterHtml2Wiki(e, data) {
+        return data;
+    }
+
     this.init = function (ed, url) {
         _slb = (ed.getParam("wiki_non_rendering_newline_character")) ?
             _markupFormat.format(
@@ -1173,10 +1209,16 @@ var Ws_Link = function(editor) {
                 ed.getParam("wiki_non_rendering_newline_character") )
             : null;
         ed.on('beforeSetContent', _onBeforeSetContent);
-        ed.on('getContent', _onGetContent);
+        // ed.on('getContent', _onGetContent);
         ed.on('dblclick', _onDblclick);
+
         ed.addCommand('mceWsLink', showWsLinkDialog);
     }
+
+    $(document).on('TinyMCEBeforeWikiToHtml', _onBeforeWiki2Html);
+    $(document).on('TinyMCEBeforeHtmlToWiki', _onBeforeHtml2Wiki);
+    $(document).on('TinyMCEAfterHtmlToWiki', _onAfterHtml2Wiki);
+    $(document).on('TinyMCEAfterWikiToHtml', _onAfterWiki2Html);
 
     return;
 }
