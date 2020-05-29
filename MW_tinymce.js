@@ -3,9 +3,9 @@ var mw_scriptPath = mw.config.get( 'wgScriptPath' );
 var mw_extensionAssetsPath = mw.config.get( 'wgExtensionAssetsPath' );
 var mw_namespaces = mw.config.get( 'wgNamespaceIds' );
 var mw_url_protocols = mw.config.get( 'wgUrlProtocols' );
-var mw_canonical_namespace = mw.config.get( "wgCanonicalNamespace" ); 
+var mw_canonical_namespace = mw.config.get( "wgCanonicalNamespace" );
 var mw_title = mw.config.get( "wgTitle" );
-var tinyMCETemplates = mw.config.get( 'wgTinyMCETemplates' );
+var tinyMCETemplates = mw.config.get( 'wgTinyMCETemplates' ) || [];
 var tinyMCETagList = mw.config.get( 'wgTinyMCETagList' );
 var tinyMCEPreservedTagList = mw.config.get( 'wgTinyMCEPreservedTagList' );
 var tinyMCELanguage = mw.config.get( 'wgTinyMCELanguage' );
@@ -18,50 +18,50 @@ var mw_shared_css = '/resources/src/mediawiki.legacy/shared.css' ;
 var	mw_htmlInvariants = [ //these tags have no wiki code equivalents so don't need converting
 //DC TODO make sure TinyMCE set up to process all these tags itself otherwise you'll
 //need to add them back into mw_htmlPairsStatic or mw_htmlSingle. below
-	'abbr', 'b', 'bdi', 'bdo', 
+	'abbr', 'b', 'bdi', 'bdo',
 	'caption', 'center', 'cite',// 'code',
-	'data', 'del', 'dfn',  
+	'data', 'del', 'dfn',
 	'ins', 'kbd', 'mark', 'p', 'q',
 	'rb', 'rp', 'rt', 'rtc', 'ruby',
 	's',  'strike', //'span',
-	'time', 'tt', 'u', 
+	'time', 'tt', 'u',
 	'link', 'meta', 'var', 'wbr',
 ];
 var	mw_htmlPairsStatic = [ //now just non-nestable
-/*	'abbr', 'b', 'bdi', 'big', 'blockquote', 
-	'caption', 'center', 'cite', 'code',
-	'data', 'dd', 'del',  'dfn', 'div', 'dl', 'dt', 'em', 'font',  
-	'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
-	'i', 'ins', 'kbd', 'li', 'mark',  'ol', 'p', 'pre',
-	'ruby', 'rb', 'rp', 'rt', 'rtc',
-	's', 'samp','small', 'span', 'strike', 'strong', 'sub', 'sup', 
-	'table', 'time', 'tt', 'u', 'ul', 'var', */
+	/*	'abbr', 'b', 'bdi', 'big', 'blockquote',
+        'caption', 'center', 'cite', 'code',
+        'data', 'dd', 'del',  'dfn', 'div', 'dl', 'dt', 'em', 'font',
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'i', 'ins', 'kbd', 'li', 'mark',  'ol', 'p', 'pre',
+        'ruby', 'rb', 'rp', 'rt', 'rtc',
+        's', 'samp','small', 'span', 'strike', 'strong', 'sub', 'sup',
+        'table', 'time', 'tt', 'u', 'ul', 'var', */
 //	'abbr',
 	'b',
-//	'bdi', 
+//	'bdi',
 //	'caption', 'center', 'cite',
 	'code', // although code is a wiki invariant html tag treat as static pair so contained wiki code correctly parsed
-//	'data', 'del',  'dfn',  
-	'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
+//	'data', 'del',  'dfn',
+	'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
 	'i',
 //  'ins', 'mark',
-    'p', // 'pre',
+	'p', // 'pre',
 //	'rb', 'rp', 'rt', 'rtc',
-//	's', 'strike', 
-//	'time', 'tt', 'u', 
+//	's', 'strike',
+//	'time', 'tt', 'u',
 ];
 var	mw_htmlBlockPairsStatic = [
-    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-//	'img', 
-    'ol', 'ul', 'li',
-//    'p', 'pre', 
-    'p',
-    'blockquote',
-    'dl','dd','dt',
-    'div',
-    'hr',
+	'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+//	'img',
+	'ol', 'ul', 'li',
+//    'p', 'pre',
+	'p',
+	'blockquote',
+	'dl','dd','dt',
+	'div',
+	'hr',
 	'source',
-    'table',
+	'table',
 ];
 var mw_htmlSingle = [
 	//'br', //don't render properly if process as a preserved tag!
@@ -72,10 +72,10 @@ var mw_htmlSingleOnly = [
 	'br', 'hr', 'link', 'meta', 'wbr',
 ];
 var mw_htmlNestable = [
-	'bdo', 'big', 
-	'blockquote', 
+	'bdo', 'big',
+	'blockquote',
 	'dd', 'div', 'dl', 'dt', 'em', 'font',
-	'kbd', 'li', 'ol', 'q', 'ruby', 
+	'kbd', 'li', 'ol', 'q', 'ruby',
 	'samp', 'small', 'span', 'strong', 'sub', 'sup',
 	'table', 'td', 'th', 'tr', 'ul', 'var',
 ];
@@ -83,19 +83,19 @@ var mw_htmlInsideTable = [
 	'td', 'th', 'tr',
 ];
 var mw_htmlList = [
-	'ol', 'ul', 
+	'ol', 'ul',
 ];
 var mw_htmlInsideList = [
 	'li',
 ];
-// the following tags have wiki equivalents, so if they occur in 
-// the wiki text we will want to preserve them so they don't get 
+// the following tags have wiki equivalents, so if they occur in
+// the wiki text we will want to preserve them so they don't get
 // replaced by their wiki equivalent
 var mw_preserveHtml = [
 	'ol', 'ul', 'li',
 	'dd', 'dt', 'dl',
-]	
-var mw_preservedTagsList = mw_htmlPairsStatic.concat(mw_htmlSingleOnly, mw_htmlNestable, mw_htmlInvariants).join("|") + "|" + tinyMCETagList; 
+]
+var mw_preservedTagsList = mw_htmlPairsStatic.concat(mw_htmlSingleOnly, mw_htmlNestable, mw_htmlInvariants).join("|") + "|" + tinyMCETagList;
 
 //set up other mw related constants
 
@@ -124,11 +124,11 @@ var defaultSettings = function(selector) {
 				mw_scriptPath + mw_shared_css,
 				mw_extensionAssetsPath + '/TinyMCE/MW_tinymce.css',
 //				mw_extensionAssetsPath + '/TinyMCE/custom_plugins/fontawesome/fontawesome/css/font-awesome.min.css',
-				mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.wrapper.css',
-				mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.generated.css',
-				'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.0/css/bootstrap.css',
-				'https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css'
-			],
+			mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.wrapper.css',
+			mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.generated.css',
+			'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.0/css/bootstrap.css',
+			'https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css'
+		],
 		language_url: tinyMCELangURL,
 		language: tinyMCELanguage,
 		external_plugins: {
@@ -155,8 +155,10 @@ var defaultSettings = function(selector) {
 //			'fontawesome': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/fontawesome/plugins/fontawesome/plugin.js',
 			'paste': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_paste/plugin.js',
 			'table': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_table/plugin.js',
+			'wspaste': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/wikibase/plugins/ws_paste/plugin.js',
 			'wikicode': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikicode/plugin.js',
-//			'wslink': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/wikibase/plugins/ws_link/plugin.js',
+			'wslink': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/wikibase/plugins/ws_link/plugin.js',
+			// 'wslink': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/wikibase/ws_link/plugin.js', // duncan
 			'wikiupload': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_upload/plugin.js',
 		},
 		//
