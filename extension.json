@@ -1,7 +1,7 @@
 {
 	"@Note": "When updating this file please also update TinyMCE.php with the same changes.",
 	"name": "TinyMCE",
-	"version": "0.5",
+	"version": "1.0",
 	"author": [
 		"Ephox",
 		"Hallo Welt",
@@ -14,7 +14,7 @@
 	"type": "hook",
 	"callback": "TinyMCEHooks::registerExtension",
 	"requires": {
-		"MediaWiki": ">= 1.29.0"
+		"MediaWiki": ">= 1.31.0"
 	},
 	"MessagesDirs": {
 		"TinyMCE": [
@@ -27,18 +27,14 @@
 	},
 	"AutoloadClasses": {
 		"TinyMCEHooks": "TinyMCE.hooks.php",
-		"TinyMCEAction": "TinyMCEAction.php",
-		"TinyMCEUploadForm": "upload/TinyMCEUploadForm.php",
-		"TinyMCEUploadSourceField": "upload/TinyMCEUploadSourceField.php",
-		"TinyMCEUploadWindow": "upload/TinyMCEUploadWindow.php"
+		"TinyMCEAction": "TinyMCEAction.php"
 	},
 	"ResourceModules": {
 		"ext.tinymce": {
 			"scripts": "MW_tinymce.js",
 			"styles": "MW_tinymce.css",
 			"dependencies": [
-				"ext.tinymce.core",
-				"ext.tinymce.fancybox"
+				"ext.tinymce.core"
 			],
 			"messages": [
 				"tinymce-upload",
@@ -149,11 +145,6 @@
 		},
 		"ext.tinymce.core": {
 			"scripts": "tinymce/tinymce.js"
-		},
-		"ext.tinymce.fancybox": {
-			"scripts": "fancybox/jquery.fancybox.js",
-			"styles": "fancybox/jquery.fancybox.css",
-			"dependencies": "ext.tinymce.browser"
 		},
 		"ext.tinymce.browser": {
 			"scripts": "jquery.browser.js"

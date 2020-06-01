@@ -88,13 +88,6 @@ var mw_htmlList = [
 var mw_htmlInsideList = [
 	'li',
 ];
-// the following tags have wiki equivalents, so if they occur in 
-// the wiki text we will want to preserve them so they don't get 
-// replaced by their wiki equivalent
-var mw_preserveHtml = [
-	'ol', 'ul', 'li',
-	'dd', 'dt', 'dl',
-]	
 var mw_preservedTagsList = mw_htmlPairsStatic.concat(mw_htmlSingleOnly, mw_htmlNestable, mw_htmlInvariants).join("|") + "|" + tinyMCETagList; 
 
 //set up other mw related constants
@@ -126,12 +119,15 @@ var defaultSettings = function(selector) {
 //				mw_extensionAssetsPath + '/TinyMCE/custom_plugins/fontawesome/fontawesome/css/font-awesome.min.css',
 				mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.wrapper.css',
 				mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.generated.css',
-				'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.0/css/bootstrap.css',
-				'https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css'
+//				'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.0/css/bootstrap.css',
+//				'https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css'
 			],
 		language_url: tinyMCELangURL,
 		language: tinyMCELanguage,
 		external_plugins: {
+			// load 'wikiutiilities' first as it is used in other plugins
+			'wikiutiilities': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiutilities/plugin.js',
+			'advlist': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/advlist/plugin.js',
 			'anchor': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/anchor/plugin.js',
 			'autolink': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autolink/plugin.js',
 //DC TODO autoresize is broken - it just endlessly extends the editor window?
@@ -150,14 +146,16 @@ var defaultSettings = function(selector) {
 			'searchreplace': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/searchreplace/plugin.js',
 			'template': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/template/plugin.js',
 //			'visualblocks': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualblocks/plugin.js',
-//			'visualchars': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualchars/plugin.js',
+			'visualchars': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualchars/plugin.js',
 // DC TODO fix fontawesome for TMCE v 5
 //			'fontawesome': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/fontawesome/plugins/fontawesome/plugin.js',
-			'paste': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_paste/plugin.js',
-			'table': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_table/plugin.js',
-			'wikicode': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikicode/plugin.js',
+			'wikipaste': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikipaste/plugin.js',
+			'wikitable': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikitable/plugin.js',
+			'wikilink': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikilink/plugin.js',
+			'wikiparser': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiparser/plugin.js',
+			'wikitext': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikitext/plugin.js',
+			'wikiupload': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiupload/plugin.js',
 //			'wslink': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/wikibase/plugins/ws_link/plugin.js',
-			'wikiupload': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_upload/plugin.js',
 		},
 		//
 		// *** tinymce configuration ***
@@ -186,7 +184,7 @@ var defaultSettings = function(selector) {
 //		wiki_preserved_tags_list: mw_htmlPairsStatic.concat(mw_htmlSingleOnly, mw_htmlNestable).join("|") + tinyMCETagList,
 		wiki_block_tags: mw_htmlBlockPairsStatic.join("|"),
 		wiki_invariant_tags: mw_htmlInvariants.join("|"),
-		wiki_preserved_html_tags: mw_preserveHtml.join("|"),
+//		wiki_preserved_html_tags: mw_preserveHtml.join("|"),
 		//
 		// ** TinyMCE editor settings **
 		//
@@ -297,7 +295,7 @@ var defaultSettings = function(selector) {
 //DC  TODO fix fontawesome for TinyMCE v5
 		toolbar_sticky: true,
 //		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap fontawesome singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect removeformat | searchreplace ',
-		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap singlelinebreak link wikilink unlink table image media wikiupload wikimagic wikisourcecode | styleselect template removeformat visualchars visualblocks| searchreplace wslink ',
+		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist advlist outdent indent | charmap singlelinebreak wikilink wikiunlink table image media wikiupload wikimagic wikisourcecode wikitext| styleselect template removeformat visualchars visualblocks| searchreplace wslink ',
 		style_formats_merge: true,
 		style_formats: [
 			{
