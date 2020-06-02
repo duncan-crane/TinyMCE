@@ -12,7 +12,7 @@
  */
 
 tinymce.PluginManager.add('wikiupload', function(editor) {
-	var utility = editor.getParam("wiki-utility");
+	var utility = editor.getParam("wiki_utility");
 	
 	var setSelection = utility.setSelection;
 	

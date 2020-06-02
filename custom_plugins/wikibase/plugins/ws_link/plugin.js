@@ -1168,12 +1168,18 @@ var Ws_Link = function(editor) {
     }
 
     this.init = function (ed, url) {
-        _slb = (ed.getParam("wiki_non_rendering_newline_character")) ?
+/*        _slb = (ed.getParam("wiki_non_rendering_newline_character")) ?
             _markupFormat.format(
                 "mwt-singleLinebreak",
                 mw.msg( 'tinymce-wikicode-non-rendering-single-linebreak' ),
                 ed.getParam("wiki_non_rendering_newline_character") )
-            : null;
+            : null;*/
+		_slb = 
+			'<span class="mwt-nonEditablePlaceHolder mwt-singleLinebreak mwt-slb' 
+			+ (editor.getParam("directionality")) + '" title="' + 
+			mw.msg('tinymce-wikicode-non-rendering-single-linebreak' ) +
+			'" dragable="true" contenteditable="false">' + 
+			'</span>';
         ed.on('beforeSetContent', _onBeforeSetContent);
         ed.on('getContent', _onGetContent);
         ed.on('dblclick', _onDblclick);

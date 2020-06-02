@@ -31,7 +31,7 @@ var wikiparser = function() {
 		 * Utility functions used in this plugin and others
 		 * @type String
 		 */
-		utility = editor.getParam("wiki-utility"),
+		utility = editor.getParam("wiki_utility"),
 		/**
 		 *
 		 * Points to the mediawiki API for this wiki
@@ -2053,7 +2053,7 @@ var wikiparser = function() {
 				htmlPrefilter = $.htmlPrefilter;
 
 			// sort out starting p tag 
-			text = text.replace(/^<p[^]*?>/gmi,'');
+//			text = text.replace(/^<p[^]*?>/gmi,'');
 
 			// convert html text to DOM
 			$dom = $( "<div id='tinywrapper'>" + text + "</div>", "text/xml" );
