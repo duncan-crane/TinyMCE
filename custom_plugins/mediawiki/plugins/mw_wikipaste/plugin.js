@@ -1696,7 +1696,7 @@ debugger;
     };
 
     function Plugin () {
-      global.add('paste', function (editor) {
+      global.add('wikipaste', function (editor) {
         if (hasProPlugin(editor) === false) {
           var draggingInternallyState = Cell(false);
           var pasteFormat = Cell(isPasteAsTextEnabled(editor) ? 'text' : 'html');

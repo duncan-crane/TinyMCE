@@ -42,8 +42,8 @@ thead{
 	position: relative;
 }
 
-.mceNonEditablePlaceHolder {
-	display: inline-block;
+.mwt-nonEditablePlaceHolder {
+	/*display: inline-block;*/
 	/* Image created at http://www.patternify.com, with a 2-pixel width
 	 * of color #d9f7db on a 10x10 "canvas". */
 	background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAASElEQVQoU2NkgIKb32//BzHVOVUZYWLINFiQkCKQGkZiFMEV4rIO2VlY3YPsNpiNeBUiOwunQnS3Y1WIzYMYCnGFAopCfEEFANTAK18PA4AuAAAAAElFTkSuQmCC");
@@ -161,6 +161,30 @@ a.new {
 
 p {
     margin: 0.4em 0 0em 0;
+}
+
+.mwt-slbltr:before {
+   content:  "\21A9";
+}
+
+.mwt-slbrtl:before {
+   content:  "\21AA";
+}
+
+.mwt-comment:before {
+   content:  "\1F4AC";
+}
+
+.mwt-image:before {
+   content:  "\1F4F7";
+}
+
+.mwt-nowikiesc:before {
+   content:  "\21CE";
+}
+
+.mwt-emptyOutput:before {
+   content:  "\1F532";
 }
 
 .mwt-emptylineFirst {
