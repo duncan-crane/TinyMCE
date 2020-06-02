@@ -3342,13 +3342,15 @@ debugger;
 		var templates = editor.getParam("tinyMCETemplates"),
 			templateItems = [];
 
-		templates.forEach( function( template ) {
-			templateItems.push({
-				title: template['title'],
-				description: template['description'],
-				content: htmlDecode ( template['content'] ),
+		if ( Array.isArray( templates )) {
+			templates.forEach( function( template ) {
+				templateItems.push({
+					title: template['title'],
+					description: template['description'],
+					content: htmlDecode ( template['content'] ),
+				});
 			});
-		});
+		}
 
 		editor.settings['templates'] = templateItems;
 
