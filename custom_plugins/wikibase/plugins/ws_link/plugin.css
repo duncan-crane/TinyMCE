@@ -1,0 +1,14 @@
+.hidden {
+    display: none;
+}
+
+.mwt-ws-non-editable {
+    display: inline-block;
+    /* Image created at http://www.patternify.com, with a 2-pixel width
+     * of color #d9f7db on a 10x10 "canvas". */
+    background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAASElEQVQoU2NkgIKb32//BzHVOVUZYWLINFiQkCKQGkZiFMEV4rIO2VlY3YPsNpiNeBUiOwunQnS3Y1WIzYMYCnGFAopCfEEFANTAK18PA4AuAAAAAElFTkSuQmCC");
+    border: #90c693 1px solid;
+    padding: 8px;
+    opacity: 0.7 !important;
+    position: relative;
+}
