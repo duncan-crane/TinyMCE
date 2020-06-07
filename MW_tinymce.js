@@ -61,7 +61,7 @@ var	mw_htmlBlockPairsStatic = [
     'div',
     'hr',
 	'source',
-    'table',
+    'table', 
 ];
 var mw_htmlSingle = [
 	//'br', //don't render properly if process as a preserved tag!
@@ -77,7 +77,7 @@ var mw_htmlNestable = [
 	'dd', 'div', 'dl', 'dt', 'em', 'font',
 	'kbd', 'li', 'ol', 'q', 'ruby', 
 	'samp', 'small', 'span', 'strong', 'sub', 'sup',
-	'table', 'td', 'th', 'tr', 'ul', 'var',
+	'table', 'td', 'th', 'tr', 'ul', 'var', 'tbody',
 ];
 var mw_htmlInsideTable = [
 	'td', 'th', 'tr',
@@ -158,7 +158,7 @@ for (var key in mw_namespaces ) {
 		return Math.floor( ( Math.random() * 100000000 ) + Date.now());
 	};
 	
-	var onDblClickLaunch = function ( aTarget, aClass, aCommand) {	
+/*	var onDblClickLaunch = function ( editor, aTarget, aClass, aCommand) {	
 		var selectedNodeParents = editor.dom.getParents( aTarget, function ( aNode ) {
 			if ( aNode.className.indexOf( aClass ) > -1 ) {
 				return aNode;
@@ -173,7 +173,7 @@ for (var key in mw_namespaces ) {
 			return true;
 		}
 		return false;	
-	}
+	}*/
 
 	var toggleEnabledState = function( editor, selectors ) {
 		// function to toggle a button's enabled state dependend
@@ -207,7 +207,7 @@ for (var key in mw_namespaces ) {
 		htmlDecode: htmlDecode,
 		htmlEncode: htmlEncode,
 		createUniqueNumber: createUniqueNumber,
-		onDblClickLaunch: onDblClickLaunch,
+//		onDblClickLaunch: onDblClickLaunch,
 		toggleEnabledState: toggleEnabledState
 	};
 
@@ -226,14 +226,14 @@ var defaultSettings = function(selector) {
 //				mw_extensionAssetsPath + '/TinyMCE/custom_plugins/fontawesome/fontawesome/css/font-awesome.min.css',
 				mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.wrapper.css',
 				mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.generated.css',
-				'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.0/css/bootstrap.css',
-				'https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css'
+//				'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.0/css/bootstrap.css',
+//				'https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css'
 			],
 		language_url: tinyMCELangURL,
 		language: tinyMCELanguage,
 		external_plugins: {
 			// load 'wikiutiilities' first as it is used in other plugins
-			'wikiutiilities': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiutilities/plugin.js',
+//			'wikiutiilities': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiutilities/plugin.js',
 			'advlist': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/advlist/plugin.js',
 			'anchor': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/anchor/plugin.js',
 			'autolink': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autolink/plugin.js',
@@ -262,7 +262,7 @@ var defaultSettings = function(selector) {
 			'wikiparser': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiparser/plugin.js',
 			'wikitext': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikitext/plugin.js',
 			'wikiupload': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiupload/plugin.js',
-			'wslink': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/wikibase/plugins/ws_link/plugin.js',
+//			'wslink': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/wikibase/plugins/ws_link/plugin.js',
 		},
 		//
 		// *** tinymce configuration ***
@@ -328,7 +328,7 @@ var defaultSettings = function(selector) {
 		paste_data_images: true,
 //0525		paste_enable_default_filters: false,
 		paste_word_valid_elements: 'b,strong,i,em,h1,h2,h3,h4,h5,table,tr,th,td,ol,ul,li,a,sub,sup,strike,br,del,div,p',
-		invalid_elements: 'tbody,thead,tfoot,colgroup,col',
+//0603		invalid_elements: 'tbody,thead,tfoot,colgroup,col',
 		browser_spellcheck: true,
 		allow_html_in_named_anchor: true,
 		visual: false,
@@ -348,7 +348,7 @@ var defaultSettings = function(selector) {
 /*		table_default_attributes: {
 			class: 'wikitable'
 		},*/
-		height: 400,
+		height: 500,
 		autoresize_max_height: 600,
 		code_dialog_width: 1200,
 		code_dialog_height: 500,

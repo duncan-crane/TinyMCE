@@ -132,6 +132,7 @@ div.mce-throbber{
 }
 
 body.mce-content-body {
+    line-height: 1.6;
 	text-align:left;
 	min-width: 0px;
 	background: none !important;
@@ -173,6 +174,10 @@ p {
 
 .mwt-comment:before {
    content:  "\1F4AC";
+}
+
+.mwt-switch:before {
+   content:  "\00A7";
 }
 
 .mwt-image:before {

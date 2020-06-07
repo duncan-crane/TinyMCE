@@ -1144,7 +1144,7 @@ _mwtCheckUploadPermissions = function( editor ) {
 				editor.selection.setCursorLocation();
 				editor.selection.collapse();
 				editor.nodeChanged();*/
-				setSelection ( editor, {format: 'wiki', convert2html: 'true'} );
+				setSelection ( editor, wikitext, {format: 'wiki', convert2html: 'true'} );
 		
 				return;
 			}

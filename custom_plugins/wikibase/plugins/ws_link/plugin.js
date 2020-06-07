@@ -969,7 +969,7 @@ var Ws_Link = function(editor) {
                 return this.id;
             });
 
-            $dom.find("*[class*='mwt-ws-link'").replaceWith(function (a) {
+            $dom.find("*[class*='mwt-ws-link']").replaceWith(function (a) {
                 console.log("Going to replace a element..", this);
                 return this.id;
             });
