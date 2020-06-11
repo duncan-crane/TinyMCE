@@ -157,7 +157,7 @@
 	"Hooks": {
 		"MakeGlobalVariablesScript": "TinyMCEHooks::setGlobalJSVariables",
 		"MagicWordwgVariableIDs": "TinyMCEHooks::addMagicWordVariableIDs",
-		"ParserBeforeTidy": "TinyMCEHooks::handleMagicWords",
+		"ParserAfterTidy": "TinyMCEHooks::handleMagicWords",
 		"SkinTemplateNavigation": "TinyMCEAction::displayTab",
 		"SkinEditSectionLinks": "TinyMCEHooks::addEditSectionLink",
 		"AlternateEdit": "TinyMCEHooks::determineIfTinyMCEIsEnabled",
