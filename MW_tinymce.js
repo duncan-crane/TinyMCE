@@ -42,7 +42,7 @@ var	mw_htmlPairsStatic = [ //now just non-nestable
 //	'caption', 'center', 'cite',
 	'code', // although code is a wiki invariant html tag treat as static pair so contained wiki code correctly parsed
 //	'data', 'del',  'dfn',  
-	'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
+	'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
 	'i',
 //  'ins', 'mark',
     'p', // 'pre',
@@ -51,15 +51,15 @@ var	mw_htmlPairsStatic = [ //now just non-nestable
 //	'time', 'tt', 'u', 
 ];
 var	mw_htmlBlockPairsStatic = [
-    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+	'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
 //	'img', 
-    'ol', 'ul', 'li',
+	'ol', 'ul', 'li',
 //    'p', 'pre', 
-    'p',
-    'blockquote',
-    'dl','dd','dt',
-    'div',
-    'hr',
+	'p',
+	'blockquote',
+	'dl','dd','dt',
+	'div',
+	'hr',
 	'source',
     'table', 
 ];
@@ -88,7 +88,14 @@ var mw_htmlList = [
 var mw_htmlInsideList = [
 	'li',
 ];
-var mw_preservedTagsList = mw_htmlPairsStatic.concat(mw_htmlSingleOnly, mw_htmlNestable, mw_htmlInvariants).join("|") + "|" + tinyMCETagList; 
+// the following tags have wiki equivalents, so if they occur in 
+// the wiki text we will want to preserve them so they don't get 
+// replaced by their wiki equivalent
+var mw_preserveHtml = [
+	'ol', 'ul', 'li',
+	'dd', 'dt', 'dl',
+]
+var mw_preservedTagsList = mw_htmlPairsStatic.concat(mw_htmlSingleOnly, mw_htmlNestable, mw_htmlInvariants).join("|") + "|" + tinyMCETagList;
 
 //set up other mw related constants
 
@@ -224,11 +231,12 @@ var defaultSettings = function(selector) {
 				mw_scriptPath + mw_shared_css,
 				mw_extensionAssetsPath + '/TinyMCE/MW_tinymce.css',
 //				mw_extensionAssetsPath + '/TinyMCE/custom_plugins/fontawesome/fontawesome/css/font-awesome.min.css',
-				mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.wrapper.css',
-				mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.generated.css',
-//				'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.0/css/bootstrap.css',
-//				'https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css'
-			],
+			mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.wrapper.css',
+			mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.generated.css',
+			'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.0/css/bootstrap.css',
+			'https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css',
+			mw_extensionAssetsPath + '/TinyMCE/custom_plugins/wikibase/plugins/ws_link/plugin.css'
+		],
 		language_url: tinyMCELangURL,
 		language: tinyMCELanguage,
 		external_plugins: {
