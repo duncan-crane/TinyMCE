@@ -114,11 +114,11 @@
 		createUniqueNumber: createUniqueNumber,
 		onDblClickLaunch: onDblClickLaunch,
 		toggleEnabledState: toggleEnabledState
-    };
+	};
 	
 	var wikiutiilities = function (editor) {
 debugger;
-		editor.settings[ "wiki-utility" ] = utility ;
+		editor.settings[ "wiki_utility" ] = utility ;
 		return {};
 	};
 

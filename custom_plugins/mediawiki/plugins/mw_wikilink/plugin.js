@@ -19,7 +19,7 @@ var wikilink = function (editor) {
 
 	var editor = tinymce.activeEditor;
 	
-	var utility = editor.getParam("wiki-utility");
+	var utility = editor.getParam("wiki_utility");
 	
 	var setContent = utility.setContent;
 

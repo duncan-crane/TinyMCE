@@ -8,7 +8,9 @@ var
      *     text: Insert test
      * }
      */
-    wsTinyMCEModals = mw.config.get('wgWsTinyMCEModals');
+    wsTinyMCEModals = mw.config.get('wgWsTinyMCEModals'),
+	scriptPath = mw.config.get( 'wgScriptPath' );
+debugger;
 
 var Ws_Link = function(editor) {
     "use strict";
@@ -78,13 +80,10 @@ var Ws_Link = function(editor) {
          * @type {any[]}
          * @private
          */
-        _tags4Wiki = new Array(),
-        _tags4Replace = new Array(),
-        _tags4Template = new Array(),
-        _idsArray = new Array();
+        _tags4Wiki = new Array();
     // make sure api.parse is loaded
     if ( typeof api.parse !== "function" ) {
-        $.getScript('/resources/src/mediawiki/api/parse.js').done(function () {
+        $.getScript(scriptPath + '/resources/src/mediawiki/api/parse.js').done(function () {
             createMCEMenuItems(wsTinyMCEModals);
         });
     } else {
@@ -208,7 +207,7 @@ var Ws_Link = function(editor) {
                 });
                 setUpTokenFunction(iframe);
                 if ( typeof WsShowOnSelect !== 'function') {
-                    $.getScript('/wikis/modules/wsbasics/WSShowOnSelect.js').done(function () {
+                    $.getScript(scriptPath + '/wikis/modules/wsbasics/WSShowOnSelect.js').done(function () {
                         setUpIFrameWssos(iframe);
                     })
                 } else {
@@ -380,7 +379,7 @@ var Ws_Link = function(editor) {
         if (html.indexOf('<html>') === -1) {
             var contentCssLinks_1 = '';
             $.each(editor.contentCSS, function (i, url) {
-                if ( url.includes("bootstrap") || url.includes('select2') || url.includes('ws_link')) {
+                if ( url.includes("bootstrap") || url.includes('select2')) {
                     contentCssLinks_1 += '<link type="text/css" rel="stylesheet" href="' + editor.documentBaseURI.toAbsolute(url) + '">';
                 }
             });
@@ -405,8 +404,8 @@ var Ws_Link = function(editor) {
      */
     function setUpTokenFunction(iframe) {
         if ( typeof $.fn.select2 !== 'function' ) {
-            $.getScript('/extensions/WSForm/select2.min.js').done(function() {
-                attachTokensIframe(iframe);
+            $.getScript(scriptPath + '/extensions/WSForm/select2.min.js').done(function() {
+               attachTokensIframe(iframe);
             });
         } else {
             attachTokensIframe(iframe);
@@ -420,17 +419,7 @@ var Ws_Link = function(editor) {
     function attachTokensIframe(iframeBody) {
         iframeBody = $(iframeBody).contents().find('body');
         $(iframeBody).append(
-            `<script>
-                if ($('select[data-inputtype="ws-select2"]')[0]) {
-                    $('select[data-inputtype="ws-select2"]').each(function() {
-                        var selectid = $(this).attr('id');
-                        var selectoptionsid = 'select2options-' + selectid;
-                        var select2config = $("input#" + selectoptionsid).val();
-                        var F = new Function(select2config);
-                        return (F());
-                    });
-                }
-            </script>`
+            `<script>attachIframeTokens();</script>`
         );
     }
 
@@ -443,6 +432,7 @@ var Ws_Link = function(editor) {
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.0/js/bootstrap.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+            <script src="/extensions/WSForm/WSForm.general.js"></script>
     `;
     }
 
@@ -456,19 +446,15 @@ var Ws_Link = function(editor) {
             id,
             element;
 
-
-        console.log('taghtml comes in like this', tagHTML);
         // recover any place holders already in the tagWikiText or
         // tagHTML to avoid them being embedded in the new place holder
         tagWikiText = _recoverPlaceholders2Wiki( tagWikiText );
         tagHTML = _recoverPlaceholders2Html( tagHTML );
 
-        console.log('comes out of recoverplaceholder like this:', tagHTML);
-
         //  create id for new dom element, which wil also be the placeholder
         // temporarily inserted in the text to avoid conversion problems
 
-        id = "<###" + tagClass.toUpperCase() + "__--__" + tagEditTemplate + ":" + _createUniqueNumber() + "###>";
+        id = "<@@@" + tagClass.toUpperCase() + "__--__" + tagEditTemplate + ":" + _createUniqueNumber() + "@@@>";
 
         // if tagWikiText doesn't need to be parsed create dom element now
         if ( tagHTML != 'toParse' && protection == 'nonEditable' ) {
@@ -477,7 +463,7 @@ var Ws_Link = function(editor) {
             displayTagWikiText = _htmlEncode( tagWikiText )
 
             // replace any tag new line placeholders from the title
-            titleWikiText = tagWikiText.replace(/<##[bht]nl##>/gmi, "\n");
+            titleWikiText = tagWikiText.replace(/<@@[bht]nl@@>/gmi, "\n");
 
             // make sure tagHTML is really HTML else will break when
             // converting to DOM element.  If not wrap in <code> tags
@@ -485,18 +471,9 @@ var Ws_Link = function(editor) {
                 tagHTML = '<code>' + tagHTML + '</code>';
             };
 
-            console.log({
-                tagClass: tagClass,
-                tagWikiText: tagWikiText,
-                tagHTML: tagHTML,
-                tagEditTemplate: tagEditTemplate,
-                title: titleWikiText,
-                id: id
-            });
-
             // create DOM element from tagHTML
             element = $(tagHTML);
-            element.addClass("mwt-ws-non-editable mwt-" + tagClass);
+            element.addClass("mceNonEditable mwt-" + tagClass);
             element.attr({
                 'id': id,
                 'title': titleWikiText ,
@@ -536,13 +513,13 @@ var Ws_Link = function(editor) {
         // sometimes the parameters have been &xxx; encoded.  We want
         // to decode these where they are applied to placeholders so
         // the replacement of placeholders that follows will work
-        tagWikiText = tagWikiText.replace(/(&lt;###)/gmi, '<###');
-        tagWikiText = tagWikiText.replace(/(###&gt;)/gmi, '###>');
+        tagWikiText = tagWikiText.replace(/(&lt;@@@)/gmi, '<@@@');
+        tagWikiText = tagWikiText.replace(/(@@@&gt;)/gmi, '@@@>');
 
         // recover any placeholders embedded in tagWikiText
         // some may be embedded in others so repeat until all gone
-        while (tagWikiText.match(/(\<###.*?:\d*###>)/gmi)) {
-            tagWikiText = tagWikiText.replace(/(\<###.*?:\d*###>)/gmi, function(match, $1) {
+        while (tagWikiText.match(/(\<@@@.*?:\d*@@@>)/gmi)) {
+            tagWikiText = tagWikiText.replace(/(\<@@@.*?:\d*@@@>)/gmi, function(match, $1) {
 
                 return _tags4Wiki[$1];
             });
@@ -558,19 +535,19 @@ var Ws_Link = function(editor) {
      * @returns {String}
      */
     function _recoverPlaceholders2Html (tagHTML) {
-        console.log('taghtml comes here in like this', tagHTML);
         // sometimes the parameters have been &xxx; encoded.  We want
         // to decode these where they are applied to placeholders so
         // the replacement of placeholders that follows will work
-        tagHTML = tagHTML.replace(/(&lt;###)/gmi, '<###');
-        tagHTML = tagHTML.replace(/(###&gt;)/gmi, '###>');
+        tagHTML = tagHTML.replace(/(&lt;@@@)/gmi, '<@@@');
+        tagHTML = tagHTML.replace(/(@@@&gt;)/gmi, '@@@>');
 
         // recover any placeholders embedded in tagHTML
         // some may be embedded in others so repeat until all gone
-        while (tagHTML.match(/(\<###.*?:\d*###>)/gmi)) {
-            tagHTML = tagHTML.replace(/(\<###.*?:\d*###>)/gmi, function(match, $1) {
+        while (tagHTML.match(/(\<@@@.*?:\d*@@@>)/gmi)) {
+            tagHTML = tagHTML.replace(/(\<@@@.*?:\d*@@@>)/gmi, function(match, $1) {
                 // replace '&amp;amp;' with '&amp;' as we double escaped these when
                 // they were converted
+                console.log("_tags4wiki: ", _tags4Wiki, "$1: ", $1);
                 return _tags4Wiki[$1].replace(/&amp;amp;/gmi,'&amp;');
             });
         }
@@ -629,8 +606,11 @@ var Ws_Link = function(editor) {
         text = text.replace(matcher, linkPlaceholder);
         return text;
     }
+    
+    function _preserveTemplates4Html() {
 
-
+    }
+    
     function _convertWiki2Html(text) {
         var textObject;
         // start of function to convert wiki code to html
@@ -640,7 +620,7 @@ var Ws_Link = function(editor) {
         }
 
         // wrap the text in an object and send it to event listeners
-        textObject = {text: text, isAdded: true};
+        textObject = {text: text};
         $(document).trigger('TinyMCEBeforeWikiToHtml', [textObject]);
         text = textObject.text;
 
@@ -696,6 +676,43 @@ var Ws_Link = function(editor) {
         return;
     }
 
+    /**
+     *
+     * @param e {tinymce.ContentEvent}
+     * @private
+     */
+    function _onGetContent(e) {
+        // console.log('Getting content..', e);
+        var text = e.content;
+
+        if (e.save == true) {
+            e.convert2wiki = true;
+        }
+
+        if (e.convert2wiki) {
+            // _convertHtml2Wiki is a recursive function
+
+            text = _convertHtml2Wiki(text, false);
+
+            e.convert2wiki = false;
+        } else {
+            // if we are just retrieving the html, for example for CodeMirror,
+            // we may have to tidy up some of the 'rationalisation' that
+            // TinyMCE makes to the html, mainly as a result of forcing root blocks
+            text = text.replace(/<br class="mwt-emptylineFirst"><\/p>/gm,"</p>");
+        }
+        e.content = text;
+        return;
+
+    }
+    
+    function onSubmitForm() {
+
+    }
+
+    function _recoverTags4Html() {
+
+    }
 
     function _recoverTags2html(text) {
         var regex,
@@ -711,7 +728,8 @@ var Ws_Link = function(editor) {
             blockMatcher;
 
         // replace non rendering new line placeholder with html equivalent
-        text = text.replace(/<##slb##>/gmi, _slb);
+        text = text.replace(/<@@slb@@>/gmi, _slb);
+
         // the block matcher is used in a loop to determine whether to wrap the returned
         // html in div or span tags, we define it here so it only has to be defined once
         regex = "<(" + _mwtBlockTagsList + ")";
@@ -721,7 +739,7 @@ var Ws_Link = function(editor) {
         // document to avoid multiple calls to the api parser so speed things up
         // there are two passes one to collect the parser text and the next to insert it
         if (_tags4Html) {
-            text = text.replace(/\<###.*?:\d*###>/gmi, function(match) {
+            text = text.replace(/\<@@@.*?:\d*@@@>/gmi, function(match) {
                 // if the placeholder is in the array replace it otherwise
                 // return the placeholder escaped
                 if ((_tags4Html[match] === 'toParse') && (_tags4Wiki[match])) {
@@ -738,27 +756,27 @@ var Ws_Link = function(editor) {
             // and send it to be parsed, then split out the parsed code and replace it
             // within the text
             if (parserTable.length > 0) {
-                // we need to wrap the seperator {###@} with two '\n's because
+                // we need to wrap the seperator {@@@@} with two '\n's because
                 // of the way pre and pseudo pre tagfs are handled in the wiki parser
-                parserText = _parseWiki4Html (parserTable.join("\n{###@}\n"));
+                parserText = _parseWiki4Html (parserTable.join("\n{@@@@}\n"));
 
-                // sometimes the parser wraps the {###@) placeholder in <p> tags!
-                parserText.parsedHtml = parserText.parsedHtml.replace(/<p>\n{###@}\n<\/p>/gmi, "\n{###@}\n");
+                // sometimes the parser wraps the {@@@@) placeholder in <p> tags!
+                parserText.parsedHtml = parserText.parsedHtml.replace(/<p>\n{@@@@}\n<\/p>/gmi, "\n{@@@@}\n");
 
                 // sometimes the parser return null entries which will be misinterpreted !
-                parserText.parsedHtml = parserText.parsedHtml.replace(/\n{###@}\n{###@}\n/gmi, function (match) {
+                parserText.parsedHtml = parserText.parsedHtml.replace(/\n{@@@@}\n{@@@@}\n/gmi, function (match) {
 
-                    return "\n{###@}\n \n{###@}\n"
+                    return "\n{@@@@}\n \n{@@@@}\n"
                 });
                 // now split the parsed html corresponding to the placeholders
                 // and replace within the text
-                parserTable = parserText.parsedHtml.split("\n{###@}\n");
+                parserTable = parserText.parsedHtml.split("\n{@@@@}\n");
                 for ( count = 0; count < parserTags.length; count++) {
                     parserTag = parserTags[count];
                     regex = parserTag;
                     matcher = new RegExp(regex, 'gmi');
                     text = text.replace(matcher, function(tag) {
-                        var tagClassArray = tag.replace(/<###(.*):\d+?###>/gm, '$1').split('__--__'),
+                        var tagClassArray = tag.replace(/<@@@(.*):\d+?@@@>/gm, '$1').split('__--__'),
                             tagClass = tagClassArray[0].toLowerCase(),
                             editTemplate = tagClassArray[1],
                             wikiText,
@@ -781,7 +799,7 @@ var Ws_Link = function(editor) {
                                 html = html + _img ;
                             }
                             html = '<div>' + html + '</div>';
-                            _tags4Wiki[tag] = '<##bnl##>' + _tags4Wiki[tag] + '<##bnl##>';
+                            _tags4Wiki[tag] = '<@@bnl@@>' + _tags4Wiki[tag] + '<@@bnl@@>';
                         } else {
                             // otherwise wrap in a <span>
                             if (html) {
@@ -791,18 +809,9 @@ var Ws_Link = function(editor) {
                             }
                         }
 
-                        console.log({
-                            tagClass: tagClass,
-                            editParams: editParams,
-                            tagHTML: html,
-                            tagEditTemplate: editTemplate,
-                            title: elementTitle,
-                            tag: tag
-                        });
-
                         // now build the html equivalent from each parsed wikicode fragment
                         element = $(html);
-                        element.addClass("mwt-ws-non-editable mwt-ws-link-" + tagClass);
+                        element.addClass("mceNonEditable mwt-ws-link-" + tagClass);
                         element.attr({
                             'title': elementTitle,
                             'id': tag,
@@ -912,6 +921,199 @@ var Ws_Link = function(editor) {
         return parserResult;
     }
 
+    function _convertHtml2Wiki(text, recursed) {
+        var textObject;
+        /*
+		 * Preprocess HTML in DOM form. This is mainly used to replace tags
+		 * @param {String} text
+		 * @returns {String}
+		 */
+        function preprocessHtml2Wiki( text ) {
+            var $dom,
+                done,
+                htmlPrefilter = $.htmlPrefilter;
+
+            // convert html text to DOM
+            $dom = $( "<div id='tinywrapper'>" + text + "</div>", "text/xml" );
+
+            // process 'p' tags (including forced root blocks) by
+            // replacing them with their contents
+            $dom.find( "p[class*='mwt-paragraph']" ).replaceWith( function(a) {
+                return $( this ).html() + '<@@pnl@@>';
+            });
+
+            // process 'br' tags, replacing them with placeholders
+            $dom.find( "br[class*='mwt-emptylineFirst']" ).replaceWith( function(a) {
+                return '<@@elf@@>';
+            });
+            $dom.find( "br[class*='mwt-emptyline']" ).replaceWith( function(a) {
+                return '<@@el@@>';
+            });
+            $dom.find( "br[data-mce-bogus]" ).replaceWith( function(a) {
+                return '';
+            });
+
+            // process singLineBreak spans, replacing them with placeholders
+            $dom.find( "span[class*='mwt-singleLinebreak']" ).replaceWith( function(a) {
+                return '<@@snl@@>';
+            });
+
+            // process blocks containing parsed wiki text
+            $dom.find( "*[class*='mwt-htmlEntity']" ).replaceWith( function(a) {
+//				return _htmlEncode(this.getAttribute("data-mwt-wikiText"));
+                return this.id;
+            });
+
+            // process blocks containing parsed wiki text
+            $dom.find( "*[class*='mwt-wikiMagic']" ).replaceWith( function(a) {
+                return this.id;
+            });
+
+            $dom.find("*[class*='mwt-ws-link']").replaceWith(function (a) {
+                console.log("Going to replace a element..", this);
+                return this.id;
+            });
+//debugger;
+            // convert DOM back to html text
+            text = _htmlDecode($dom[0].innerHTML);
+
+            // now process preserved html in text
+
+            // convert html text to DOM
+            $dom = $( "<div id='tinywrapper'>" + text + "</div>", "text/xml" );
+
+            // process blocks containing preserved html text
+            $dom.find( "*[class*='mwt-preserveHtml']" ).replaceWith( function(a) {
+                var newLine,
+                    elm = $(this),
+                    innerHtml = this.innerHTML,
+                    outerHtml = this.outerHTML,
+                    id = "<@@@" + this.tagName.toUpperCase() + ":" + _createUniqueNumber() + "@@@>",
+                    regex = "<" + _mwtBlockTagsList.split('|').join('[\\s>]|<') + "[\\s>]",
+                    blockMatcher = new RegExp(regex, 'gmi');
+
+                elm.removeClass('mwt-preserveHtml');
+                if ( elm.children() ) innerHtml = _convertHtml2Wiki( innerHtml, true );
+                this.innerHTML = innerHtml;
+
+                // remove empty class attributes
+                outerHtml = this.outerHTML.replace(/ class=(["|'])\1/,"");
+
+                /*				// recover any wiki text from placeholders
+                                html = _recoverPlaceholders2Wiki( html )*/
+
+                // start block tags on new lines to make wiki text more readable
+                outerHtml = outerHtml.replace(blockMatcher, function (match) {
+                    return '<@@bnl@@>' + match;
+                });
+
+                // tidy up end of lists
+                outerHtml = outerHtml.replace(/(<\/li>)(<\/[uo]l>)/gmi, "$1<@@bnl@@>$2");
+
+                // assume as its html in wiki text there aren't any </li> needed
+                outerHtml = outerHtml.replace(/<\/li>/gmi, "");
+
+                // add a final block new line if this is a block tag
+                if (_mwtBlockTagsList.split('|').indexOf(this.tagName.toLowerCase()) >= 0) {
+                    outerHtml = outerHtml + '<@@bnl@@>';
+                }
+
+                _tags4Wiki[id] = outerHtml;
+                return id;
+////				return html;
+            });
+
+            // process heading
+            $dom.find( ":header" ).replaceWith( function(a) {
+                var headingMarkup = '======',
+                    text = this.innerText,
+                    level = this.tagName.substring(1),
+                    spaces = this.getAttribute("data-mwt-headingSpaces"),
+                    newlines = this.getAttribute("data-mwt-headingNewLines"),
+                    altro = headingMarkup.substring(0, level),
+                    heading;
+
+                // build the header, including any spaces after the header text
+                heading = (spaces == null) ? altro + text + altro : altro + text + altro + spaces ;
+                heading = '<@@hnl@@>' + heading + '<@@hnl@@>';
+
+                // build back any new lines after the heading
+                for (var i = 0; i < newlines; i++) {
+                    heading += '<@@nl@@>';
+                }
+
+                return heading;
+            });
+            // convert DOM back to html text
+            text = _htmlDecode($dom[0].innerHTML);
+
+            return text;
+        }
+
+        /**
+         * replaces placeholders with their wiki code equivalent
+         *
+         * @param {String} text
+         * @returns {String}
+         */
+        function recoverTags2Wiki(text) {
+            debugger;
+            if (_tags4Wiki){
+                while (text.match(/\<@@@.*?:\d*@@@>/)) {
+                    text = text.replace(/(\<@@@.*?:\d*@@@>)/gi, function(match, $1, offset, string) {
+                        // replace '&amp;amp;' with '&amp;' as we double escaped these when they were converted
+                        debugger;
+//						return _tags4Wiki[$1].replace(/&amp;amp;/gmi,'&amp;');
+                        // '&amp;' is processed by the wiki don and turned into '&'
+                        // so we subsitue it with a placeholder which will be replaced later
+                        return _tags4Wiki[$1].replace(/&amp;/gmi,'<@@@@>');
+                    });
+                }
+            }
+
+            return text;
+        }
+
+        // save some work
+        if ( text === '' ) return text;
+
+
+        if (!recursed) {
+            // wrap the text in an object to send it to event listeners
+            textObject = {text: text};
+            $(document).trigger('TinyMCEBeforeHtmlToWiki', [textObject]);
+            text = textObject.text;
+        }
+
+        //Remove any '\n' as they are not part of html formatting
+        text = text.replace(/\n/gi, "");
+
+        // preprocess tags in html using placeholders where needed
+        text = preprocessHtml2Wiki(text);
+
+        //recover special tags to wiki code from placeholders
+        text = recoverTags2Wiki(text);
+
+        // finally substitute | with {{!}} if text is part of template
+        if ( _pipeText == '{{!}}' ) {
+            text = text.replace(/\|/gmi, "{{!}}");
+        }
+
+        if (!recursed) {
+            // wrap the text in an object to send it to event listeners
+            textObject = {text: text};
+            $(document).trigger('TinyMCEAfterHtmlToWiki', [textObject]);
+            text = textObject.text;
+
+            // because _ is called recusrsively we get a problem that
+            // html entities of form &xxx; get over converted so we used a
+            // placeholder to prevent this.  The next line reverse this
+            text = text.replace(/&lt;/gmi,'<').replace(/&gt;/gmi,'>').replace(/<@@@@>/gmi,"&");
+        }
+
+        return text;
+    }
+
     /**
      *
      */
@@ -965,145 +1167,24 @@ var Ws_Link = function(editor) {
         return;
     }
 
-    function _onBeforeWiki2Html(e, data) {
-        if ( data.isAdded ) {
-            var $dom = $( "<div id='tinywrapper'>" + data.text + "</div>", "text/xml" );
-            $dom.find("*[class*='mwt-ws-link']").replaceWith(function (i, el) {
-                return _tags4Wiki[this.id];
-            });
-            data.text = $dom.html();
-        } else {
-            var replaceObj = {};
-            $.each(wsTinyMCEModals, function (i, modal) {
-                var reg = new RegExp(`{{${modal.templateName}`, 'g');
-                replaceObj[modal.templateName] = {
-                    matches: [],
-                    editTemplate: modal.template.substring(modal.template.indexOf(':') + 1)
-                };
-                var match = null;
-                while ((match = reg.exec(data.text)) != null) {
-                    replaceObj[modal.templateName].matches.push(match);
-                }
-            });
-
-            $.each(replaceObj, function (template, matchArray) {
-                for ( var i = 0; i < matchArray.matches.length; i++ ) {
-                    var temp = data.text;
-                    var indexOfClosingChars = data.text.indexOf('}}', matchArray.matches[i].index) + 2;
-                    var templateCall = data.text.substring(matchArray.matches[i].index, indexOfClosingChars);
-                    console.log({
-                        indexOfClosingChars: indexOfClosingChars,
-                        templateCall: templateCall,
-                        template: template,
-                        matchArray: matchArray
-                    })
-                    if ( templateCall.includes('|') ) {
-                        var id = _replaceTextIntoHtmlElement(templateCall, template, matchArray.editTemplate);
-                        var placeholder = _createPlaceholderForTemplateCall();
-                        _tags4Replace[id] = placeholder;
-                        _tags4Template[id] = templateCall;
-                        _idsArray.push(id);
-                    }
-                }
-            });
-
-            $.each(_idsArray, function (i, id) {
-                data.text = data.text.replace(_tags4Template[id], _tags4Replace[id]);
-            });
-        }
-
-        return data;
-    }
-
-    function _createPlaceholderForTemplateCall() {
-        return `&#&${_createUniqueNumber()}&#&`;
-    }
-
-    function _replaceTextIntoHtmlElement(templateCall, tagClass, editTemplate) {
-        var id = `<###${tagClass.toUpperCase()}__--__${editTemplate}:${_createUniqueNumber()}###>`;
-
-        _tags4Wiki[id] = templateCall;
-        _tags4Html[id] = 'toParse';
-        _tags4Html[id] = _recoverTags2html(id);
-        return id;
-    }
-
-
-    function _onBeforeHtml2Wiki(e, data) {
-        var $dom = $( "<div id='tinywrapper'>" + data.text + "</div>", "text/xml" );
-        console.log({
-            $dom: $dom,
-            text: data.text,
-            action: 'beforeHtml2Wiki'
-        });
-        $dom.find("*[class*='mwt-ws-link']").replaceWith(function (i, el) {
-            var _tag = _tags4Wiki[this.id];
-            _tag = _tag.replace(/\|/gi, '{{#}}');
-            console.log({
-                _tag: _tag
-            });
-            return _tag;
-        });
-        data.text = $dom.html();
-        console.log({
-            $dom: $dom,
-            text: data.text,
-            action: 'beforeHtml2Wiki'
-        });
-        return data;
-    }
-
-    function _onAfterWiki2Html(e, data) {
-        var $dom = $( "<div id='tinywrapper'>" + data.text + "</div>", "text/xml" );
-
-        $.each(_idsArray, function (i, id) {
-            var html = _tags4Html[id];
-            var replace = _tags4Replace[id];
-
-            console.log({
-                $dom: $dom,
-                text: data.text,
-                action: 'afterWiki2Html',
-                data: data,
-                html: html,
-                replace: replace
-            });
-            data.text = data.text.replace(replace, html);
-        });
-        return data;
-    }
-
-    function _onAfterHtml2Wiki(e, data) {
-        var $dom = $( "<div id='tinywrapper'>" + data.text + "</div>", "text/xml" );
-        console.log({
-            $dom: $dom,
-            text: data.text,
-            action: 'afterHtml2Wiki'
-        });
-        if ( data.text.indexOf('{{#}}') > -1 ) {
-            data.text = data.text.replace(/{{#}}/gi, '|');
-        }
-        return data;
-    }
-
     this.init = function (ed, url) {
-        _slb = (ed.getParam("wiki_non_rendering_newline_character")) ?
+/*        _slb = (ed.getParam("wiki_non_rendering_newline_character")) ?
             _markupFormat.format(
                 "mwt-singleLinebreak",
                 mw.msg( 'tinymce-wikicode-non-rendering-single-linebreak' ),
                 ed.getParam("wiki_non_rendering_newline_character") )
-            : null;
+            : null;*/
+		_slb = 
+			'<span class="mwt-nonEditablePlaceHolder mwt-singleLinebreak mwt-slb' 
+			+ (editor.getParam("directionality")) + '" title="' + 
+			mw.msg('tinymce-wikicode-non-rendering-single-linebreak' ) +
+			'" dragable="true" contenteditable="false">' + 
+			'</span>';
         ed.on('beforeSetContent', _onBeforeSetContent);
-        // ed.on('getContent', _onGetContent);
+        ed.on('getContent', _onGetContent);
         ed.on('dblclick', _onDblclick);
-
         ed.addCommand('mceWsLink', showWsLinkDialog);
     }
-
-    $(document).on('TinyMCEBeforeWikiToHtml', _onBeforeWiki2Html);
-    $(document).on('TinyMCEBeforeHtmlToWiki', _onBeforeHtml2Wiki);
-    $(document).on('TinyMCEAfterHtmlToWiki', _onAfterHtml2Wiki);
-    $(document).on('TinyMCEAfterWikiToHtml', _onAfterWiki2Html);
 
     return;
 }

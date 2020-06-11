@@ -61,7 +61,7 @@ var	mw_htmlBlockPairsStatic = [
 	'div',
 	'hr',
 	'source',
-    'table',
+    'table', 
 ];
 var mw_htmlSingle = [
 	//'br', //don't render properly if process as a preserved tag!
@@ -77,7 +77,7 @@ var mw_htmlNestable = [
 	'dd', 'div', 'dl', 'dt', 'em', 'font',
 	'kbd', 'li', 'ol', 'q', 'ruby', 
 	'samp', 'small', 'span', 'strong', 'sub', 'sup',
-	'table', 'td', 'th', 'tr', 'ul', 'var',
+	'table', 'td', 'th', 'tr', 'ul', 'var', 'tbody',
 ];
 var mw_htmlInsideTable = [
 	'td', 'th', 'tr',
@@ -112,12 +112,119 @@ for (var key in mw_namespaces ) {
 	}
 };
 
+	var editor = tinymce.activeEditor
+
+	var setContent = function ( editor, content, args ) {
+		// sets the content of the editor window
+		editor.focus();
+		editor.undoManager.transact( function () {
+			editor.setContent( content, args );
+		});
+		editor.selection.setCursorLocation();
+		editor.nodeChanged();
+	};
+
+	var setSelection = function ( editor, content, args ) {
+		// sets the content of the selection.  If nothing is selected
+		// it will insert content at the cursor.  If the selection is
+		// contained in non-editable elements, the whole of the top
+		// level non-editable element is replaced with the content
+		editor.focus();
+		var nonEditableParents = editor.dom.getParents( editor.selection.getNode(),function ( aNode ) {
+			if (aNode.contentEditable === 'false') {
+				return aNode
+			}
+		});
+		if (nonEditableParents) {
+			editor.selection.select ( nonEditableParents[ nonEditableParents.length - 1 ] );
+		}
+		editor.undoManager.transact ( function () {
+			editor.selection.setContent ( content, args );
+		});
+		editor.selection.setCursorLocation ();
+		editor.nodeChanged ();
+	};
+
+	var getContent = function ( editor, args ) {
+		return editor.getContent( args );
+	};
+
+	var getSelection = function ( editor, args ) {
+		return editor.selection.getContent( args );
+	};
+
+	var htmlDecode = function ( value ) {
+		return $("<textarea/>").html( value ).text();
+	};
+	
+	var  htmlEncode = function (value) {
+		return $('<textarea/>').text(value).html();
+	};
+	
+	var  createUniqueNumber = function() {
+		return Math.floor( ( Math.random() * 100000000 ) + Date.now());
+	};
+	
+/*	var onDblClickLaunch = function ( editor, aTarget, aClass, aCommand) {	
+		var selectedNodeParents = editor.dom.getParents( aTarget, function ( aNode ) {
+			if ( aNode.className.indexOf( aClass ) > -1 ) {
+				return aNode;
+			} else {
+				return;
+			}
+		});
+
+		if (selectedNodeParents.length > 0 ) {
+			editor.selection.select( selectedNodeParents[ selectedNodeParents.length - 1 ]);
+			editor.execCommand( aCommand );
+			return true;
+		}
+		return false;	
+	}*/
+
+	var toggleEnabledState = function( editor, selectors ) {
+		// function to toggle a button's enabled state dependend
+		// on which nodes are selected in the editor
+		return function (api) {
+			editor.on('NodeChange', function (e) {
+				var selectedNode = e.element;
+				api.setDisabled(true);
+				while (selectedNode.parentNode != null) {
+					if (typeof selectedNode.className != "undefined") {
+						for (var selector in selectors) {
+							if (selectedNode.className.indexOf( selectors[ selector ]) > -1) {
+								editor.selection.select(selectedNode);
+								editor.off('NodeChange', true);
+								return api.setDisabled(false)
+							}
+						}
+					}
+					selectedNode = selectedNode.parentNode;
+				}
+			});
+			return editor.off('NodeChange', true);
+		};
+	};
+
+	var utility = {
+		setContent: setContent,
+		setSelection: setSelection,
+		getContent: getContent,
+		getSelection: getSelection,
+		htmlDecode: htmlDecode,
+		htmlEncode: htmlEncode,
+		createUniqueNumber: createUniqueNumber,
+//		onDblClickLaunch: onDblClickLaunch,
+		toggleEnabledState: toggleEnabledState
+	};
+
 var defaultSettings = function(selector) {
 	return {
 		selector: selector,
 		base_url: mw_extensionAssetsPath + '/TinyMCE/tinymce',
 		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/silver/theme.js',
 		skin_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/skins/ui/oxide',
+		wiki_utility: utility,
 		content_css:
 			[
 				mw_scriptPath + mw_skin_css,
@@ -134,7 +241,7 @@ var defaultSettings = function(selector) {
 		language: tinyMCELanguage,
 		external_plugins: {
 			// load 'wikiutiilities' first as it is used in other plugins
-			'wikiutiilities': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiutilities/plugin.js',
+//			'wikiutiilities': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiutilities/plugin.js',
 			'advlist': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/advlist/plugin.js',
 			'anchor': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/anchor/plugin.js',
 			'autolink': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autolink/plugin.js',
@@ -170,6 +277,8 @@ var defaultSettings = function(selector) {
 		//
 		// ** mediawiki related settings**
 		//
+		// single new lines: set non_rendering_newline_character to false if you don't use non-rendering single new lines in wiki
+		wiki_non_rendering_newline_character: '&#120083', // was &para;
 		// set the page title
 		wiki_page_title: mw_canonical_namespace + ':' + mw_title,
 		// set the path to the wiki api
@@ -227,7 +336,7 @@ var defaultSettings = function(selector) {
 		paste_data_images: true,
 //0525		paste_enable_default_filters: false,
 		paste_word_valid_elements: 'b,strong,i,em,h1,h2,h3,h4,h5,table,tr,th,td,ol,ul,li,a,sub,sup,strike,br,del,div,p',
-		invalid_elements: 'tbody,thead,tfoot,colgroup,col',
+//0603		invalid_elements: 'tbody,thead,tfoot,colgroup,col',
 		browser_spellcheck: true,
 		allow_html_in_named_anchor: true,
 		visual: false,
@@ -247,7 +356,7 @@ var defaultSettings = function(selector) {
 /*		table_default_attributes: {
 			class: 'wikitable'
 		},*/
-		height: 400,
+		height: 500,
 		autoresize_max_height: 600,
 		code_dialog_width: 1200,
 		code_dialog_height: 500,
