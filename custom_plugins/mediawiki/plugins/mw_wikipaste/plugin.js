@@ -808,13 +808,13 @@
       };
     };
     var postProcessFilter = function (editor, html, internal, isWordHtml) {
-debugger;
+
       var tempBody = editor.dom.create('div', { style: 'display:none' }, html);
       var postProcessArgs = firePastePostProcess(editor, tempBody, internal, isWordHtml);
       return processResult(postProcessArgs.node.innerHTML, postProcessArgs.isDefaultPrevented());
     };
     var filterContent = function (editor, content, internal, isWordHtml) {
-debugger;
+
       var preProcessArgs = firePastePreProcess(editor, content, internal, isWordHtml);
       var filteredContent = preProcess$1(editor, preProcessArgs.content);
       if (editor.hasEventListeners('PastePostProcess') && !preProcessArgs.isDefaultPrevented()) {
@@ -830,14 +830,14 @@ debugger;
     };
 
     var pasteHtml = function (editor, html) {
-debugger;
+
 /*      editor.insertContent(html, {
         merge: shouldMergeFormats(editor),
         paste: true
       });*/
 		editor.focus();
 		var nonEditableParents = editor.dom.getParents(editor.selection.getNode(),function ( anode ) {
-debugger;
+
 			if (anode.contentEditable === 'false') {
 				return anode
 			}
@@ -863,7 +863,7 @@ debugger;
       return isAbsoluteUrl(url) && /.(gif|jpe?g|png)$/.test(url);
     };
     var createImage = function (editor, url, pasteHtmlFn) {
-debugger;
+
       editor.undoManager.extra(function () {
         pasteHtmlFn(editor, url);
       }, function () {
@@ -876,7 +876,7 @@ debugger;
       return true;
     };
     var createLink = function (editor, url, pasteHtmlFn) {
-debugger;
+
       editor.undoManager.extra(function () {
         pasteHtmlFn(editor, url);
       }, function () {
@@ -885,11 +885,11 @@ debugger;
       return true;
     };
     var linkSelection = function (editor, html, pasteHtmlFn) {
-debugger;
+
       return editor.selection.isCollapsed() === false && isAbsoluteUrl(html) ? createLink(editor, html, pasteHtmlFn) : false;
     };
     var insertImage = function (editor, html, pasteHtmlFn) {
-debugger;
+
       return isImageUrl(html) ? createImage(editor, html, pasteHtmlFn) : false;
     };
     var smartInsertContent = function (editor, html) {
@@ -1014,13 +1014,13 @@ debugger;
       return settings.images_dataimg_filter ? settings.images_dataimg_filter(imgElm) : true;
     };
     var extractFilename = function (editor, str) {
-debugger;
+
       var m = str.match(/([\s\S]+?)\.(?:jpeg|jpg|png|gif)$/i);
       return m ? editor.dom.encode(m[1]) : null;
     };
     var uniqueId = createIdGenerator('mceclip');
     var pasteImage = function (editor, imageItem) {
-debugger;
+
       var _a = parseDataUri(imageItem.uri), base64 = _a.data, type = _a.type;
       var id = uniqueId();
       var name = editor.settings.images_reuse_filename && imageItem.blob.name ? extractFilename(editor, imageItem.blob.name) : id;
@@ -1168,7 +1168,7 @@ debugger;
         return pasteBin.getLastRng() || editor.selection.getRng();
       };
       editor.on('paste', function (e) {
-debugger;
+
         var isKeyBoardPaste = keyboardPasteEvent.isSet();
         var clipboardContent = getClipboardContent(editor, e);
         var plainTextMode = pasteFormat.get() === 'text' || keyboardPastePlainTextState;

@@ -495,7 +495,7 @@ _mwtCheckUploadPermissions = function( editor ) {
 					data = dialogData,
 					meta = dialogData.fileSrc.meta,
 					fileType;
-
+debugger;
 				var srcURL,
 					prependURL,
 					absoluteURLPattern,
@@ -950,7 +950,7 @@ _mwtCheckUploadPermissions = function( editor ) {
 				function doUpload(fileType, fileToUpload, fileName, fileSummary, ignoreWarnings){
 					var uploadData = new FormData(),
 						uploadDetails;
-						
+debugger;						
 					uploadData.append("action", "upload");
 					uploadData.append("filename", fileName);
 					uploadData.append("text", fileSummary);

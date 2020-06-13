@@ -2020,10 +2020,15 @@ var wikiparser = function() {
 		if (text === '') {
 			return text;
 		}
+		
+		// add blank lines to end of text so can always edit at end of content
+		text = text.trimRight() + '\n\n';
+		
 		// wrap the text in an object and send it to event listeners
 		textObject = {text: text};
 		$(document).trigger('TinyMCEBeforeWikiToHtml', [textObject]);
 		text = textObject.text;
+
 		// substitute {{!}} with | if text is part of template
 		if ( _pipeText == '{{!}}' ) {
 			text = text.replace(/{{!}}/gmi, "|");
@@ -2630,7 +2635,7 @@ var wikiparser = function() {
 			text = text.replace(/\|/gmi, "{{!}}");
 		}
 		// clean up empty space at end of text
-		text = text.trimEnd() + '\n';
+		text = text.trimRight() + '\n';
 		// wrap the text in an object to send it to event listeners
 		textObject = {text: text};
 		$(document).trigger('TinyMCEAfterHtmlToWiki', [textObject]);
@@ -2682,6 +2687,7 @@ var wikiparser = function() {
 					console.log(error);
 				}
 			});
+
 			return uploadDetails;
 		}
 		/**
@@ -2771,13 +2777,15 @@ var wikiparser = function() {
 			// determine if this is a local image or external
 			if ((protocol == 'https:') || (protocol == 'http:')) {
 				fileType = 'URL';
+				uploadDetails = doUpload(fileType, sourceURI, dstName, fileSummary, ignoreWarnings);
+				uploadResult = checkUploadDetail(uploadDetails, ignoreWarnings, dstName);
 			} else {
+				// the image is base64 data so create a link as a placeholder with details
 				fileType = 'File';
+				dstName = 'data_image';
 			}
 			// upload the image (or use existing image on wiki if already uploaded
 			// checking the response and process any errors or warning appropriately
-			uploadDetails = doUpload(fileType, sourceURI, dstName, fileSummary, ignoreWarnings);
-			uploadResult = checkUploadDetail(uploadDetails, ignoreWarnings, dstName);
 			// build the wiki code for the image link
 			for (var j = 0; j < attributes.length; j++) {
 				attribute = attributes[j].name;
