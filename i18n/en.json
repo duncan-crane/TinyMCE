@@ -43,8 +43,8 @@
 	"tinymce-upload": "Upload/insert wiki image",
 	"tooltip-tinymce-upload": "Start upload/insert file",
 	"tinymce-openlink": "Open link",
-	"tinymce-wikimagic": "Add wiki templates, parser functions and magic words",
-	"tinymce-wikimagic-title": "Wiki templates, parser functions and magic words",
+	"tinymce-wikimagic": "View and edit wiki text",
+	"tinymce-wikimagic-title": "View and edit wiki text",
 	"tinymce-browsercontextmenu": "You can access the browser's context menu by keying ctrl-rightclick. To switch off the TinyMCE context menu, click Yes",
 	"tinymce-browsercontextmenu-title": "Browser context menu",
 	"tinymce-wikisourcecode": "View and edit wiki source code",
@@ -145,5 +145,7 @@
 	"tinymce-link-link-remove-button-tooltip": "Remove link",
 	"tinymce-link-open-link": "Open link",
 	"tinymce-link-context-menu": "openlink | link unlink",
-	"tinymce-link": "Link"
+	"tinymce-link": "Link",
+	"tinymce-toggle-button-toggle-wiki-placeholders": "Toggle wiki placeholders"
+
 }

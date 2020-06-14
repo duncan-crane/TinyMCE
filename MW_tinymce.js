@@ -95,9 +95,16 @@
 	
 	// set up language url if language not 'en'
 	if ( tinyMCELanguage !== 'en' ) {
-	  tinyMCELangURL = mw_extensionAssetsPath + '/TinyMCE/tinymce/langs/' +
-		  tinyMCELanguage + '.js';
+		tinyMCELanguage = tinyMCELanguage.replace(/^([^-]*)(-)([^-]*)$/i, function( match, $1, $2, $3 ) {
+			// tinymce expects '-' to be '_' and part after '_' to be upper case
+			
+			if ( $2 == '-' ) $2 = '_';
+			return $1 + $2 + $3.toUpperCase;
+		});
+		tinyMCELangURL = mw_extensionAssetsPath + '/TinyMCE/tinymce/langs/' +
+			tinyMCELanguage + '.js';
 	};
+
 	//get the local language name of the 'file' namespace
 	mw_fileNamespace = 'file';
 	for (var key in mw_namespaces ) {
@@ -256,7 +263,7 @@ var defaultSettings = function(selector) {
 //			'visualblocks': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualblocks/plugin.js',
 //			'visualchars': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualchars/plugin.js',
 // DC TODO fix fontawesome for TMCE v 5
-//			'fontawesome': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/fontawesome/plugins/fontawesome/plugin.js',
+			'fontawesome': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/fontawesome/plugins/fontawesome/plugin.js',
 //			'wikicode': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikicode/plugin.js',
 			'wikipaste': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikipaste/plugin.js',
 			'wikitable': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikitable/plugin.js',
@@ -275,7 +282,7 @@ var defaultSettings = function(selector) {
 		// single new lines: set non_rendering_newline_character to false if you don't use non-rendering single new lines in wiki
 		wiki_non_rendering_newline_character: '&#120083', // was &para;
 		// set the page title
-		wiki_page_title: mw_canonical_namespace + ':' + mw_title,
+		wiki_page_mwtPageTitle: mw_canonical_namespace + ':' + mw_title,
 		// set the path to the wiki api
 		wiki_api_path: mw_scriptPath + '/api.php',
 		// set the valid wiki namespaces
@@ -480,7 +487,6 @@ var updateSettings = function(tinyMCESelector, settings) {
 	$.each(settings, function (k, v) {
 		defaultSet[k] = v;
 	});
-debugger;
 	return defaultSet;
 };
 

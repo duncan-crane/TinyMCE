@@ -216,6 +216,7 @@ $GLOBALS['wgResourceModules'] += array(
 			'tinymce-link-context-menu',
 			'tinymce-link',
 			'tinymce-insert-linebreak',
+			'tinymce-toggle-button-toggle-wiki-placeholders'
 		)
 	),
 	'ext.tinymce.core' => $wgTinyMCEResourceTemplate + array(
