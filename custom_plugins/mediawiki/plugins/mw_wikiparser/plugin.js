@@ -3196,8 +3196,9 @@ debugger;
 		//
 		// add processing for non rendered new line functionality
 		//
+		var slbIcon = 'slb' + (editor.getParam("directionality"));
 		editor.ui.registry.addButton('singlelinebreak', {
-			icon: 'visualchars',
+			icon: slbIcon,
 			tooltip: mw.msg("tinymce-insert-linebreak"),
 			onAction:  insertSingleLinebreak
 		});

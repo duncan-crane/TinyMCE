@@ -202,7 +202,7 @@
 					selectedNode = selectedNode.parentNode;
 				}
 			});
-			return editor.off('NodeChange', true);
+//			return editor.off('NodeChange', true);
 		};
 	};
 
@@ -230,12 +230,8 @@ var defaultSettings = function(selector) {
 				mw_scriptPath + mw_skin_css,
 				mw_scriptPath + mw_shared_css,
 				mw_extensionAssetsPath + '/TinyMCE/MW_tinymce.css',
-				mw_extensionAssetsPath + '/TinyMCE/custom_plugins/fontawesome/plugins/fontawesome/css/font-awesome.min.css',
 				mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.wrapper.css',
 				mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.generated.css',
-//				'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.0/css/bootstrap.css',
-//				'https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css'
-//				mw_extensionAssetsPath + '/TinyMCE/custom_plugins/wikibase/plugins/ws_link/plugin.css'
 			],
 		language_url: tinyMCELangURL,
 		language: tinyMCELanguage,
@@ -263,7 +259,6 @@ var defaultSettings = function(selector) {
 //			'visualblocks': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualblocks/plugin.js',
 //			'visualchars': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualchars/plugin.js',
 // DC TODO fix fontawesome for TMCE v 5
-			'fontawesome': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/fontawesome/plugins/fontawesome/plugin.js',
 //			'wikicode': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikicode/plugin.js',
 			'wikipaste': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikipaste/plugin.js',
 			'wikitable': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikitable/plugin.js',
@@ -414,7 +409,7 @@ var defaultSettings = function(selector) {
 //DC  TODO fix fontawesome for TinyMCE v5
 		toolbar_sticky: true,
 //		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap fontawesome singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect removeformat | searchreplace ',
-		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist advlist outdent indent | fontawesome charmap singlelinebreak wikilink wikiunlink table image media wikiupload wikimagic wikisourcecode wikitext| styleselect template removeformat wikitoggle visualchars visualblocks| searchreplace wslink ',
+		toolbar: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist advlist outdent indent | charmap singlelinebreak wikilink wikiunlink table image media wikiupload wikimagic wikisourcecode wikitext| styleselect template removeformat wikitoggle visualchars visualblocks| searchreplace wslink',
 		style_formats_merge: true,
 		style_formats: [
 			{
@@ -485,7 +480,51 @@ window.mwTinyMCEInit = function( tinyMCESelector, settings = {} ) {
 var updateSettings = function(tinyMCESelector, settings) {
 	var defaultSet = defaultSettings(tinyMCESelector);
 	$.each(settings, function (k, v) {
-		defaultSet[k] = v;
+		if ( k.endsWith( '+' ) ) {
+			// adding to default parameter
+			k = k.slice( 0, - 1 );
+			if ($.type( defaultSet[k] ) === "string") {
+				defaultSet[k] = defaultSet[k] + v;
+			} else if (Array.isArray ( defaultSet[k] ) ) {
+				defaultSet[k] = defaultSet[k].concat( v );
+			} else if ( Object.keys( defaultSet[k]).length > 0 ) {
+				$.extend( defaultSet[k], v );
+			}
+		} else if ( k.endsWith( '-' ) ) {
+			// removing from default parameter
+			k = k.slice( 0, - 1 );
+			if ($.type( defaultSet[k] ) === "string") {
+				var str = defaultSet[k],
+					regex,
+					matcher;
+				regex = '\\s*' + v + '\\s*';
+				matcher = new RegExp(regex, 'gm');
+				str = str.replace(matcher, ' ');
+				defaultSet[k] = str;
+			} else if (Array.isArray ( defaultSet[k] ) ) {
+				var i = 0,
+					arr = defaultSet[k];
+				while (i < arr.length) {
+					if (arr[i] === v) {
+						arr.splice(i, 1);
+    				} else {
+     					++i;
+    				}
+				}
+				defaultSet[k] = arr;
+			} else if ( Object.keys( defaultSet[k] ).length > 0 ) {
+				var obj = defaultSet[k];
+				$.each( v, function ( key, val ) {
+					if ( obj[ key ] == val ) {
+						delete obj[ key ];
+					}
+				});
+				defaultSet[k] = obj;
+			}
+		} else {
+			//replacing default parameter
+			defaultSet[k] = v;
+		}
 	});
 	return defaultSet;
 };
