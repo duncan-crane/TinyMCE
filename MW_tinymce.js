@@ -224,7 +224,11 @@ var defaultSettings = function(selector) {
 		base_url: mw_extensionAssetsPath + '/TinyMCE/tinymce',
 		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/silver/theme.js',
 		skin_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/skins/ui/oxide',
-		wiki_utility: utility,
+		icons_url: mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiparser/icons/icons.js',
+		icons: 'mwt',
+		language_url: tinyMCELangURL,
+		language: tinyMCELanguage,
+  		wiki_utility: utility,
 		content_css:
 			[
 				mw_scriptPath + mw_skin_css,
@@ -233,8 +237,6 @@ var defaultSettings = function(selector) {
 				mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.wrapper.css',
 				mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.generated.css',
 			],
-		language_url: tinyMCELangURL,
-		language: tinyMCELanguage,
 		external_plugins: {
 			// load 'wikiutiilities' first as it is used in other plugins
 //			'wikiutiilities': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiutilities/plugin.js',
@@ -339,7 +341,7 @@ var defaultSettings = function(selector) {
 		visual: false,
 		wikimagic_context_toolbar: true,
 		browsercontextmenu_context_toolbar: true,
-		contextmenu: "undo redo | cut copy paste insert | link wikimagic inserttable | styleselect removeformat | browsercontextmenu",
+		contextmenu: "undo redo | cut copy paste insert | link wikimagic table | styleselect removeformat | browsercontextmenu",
 		convert_fonts_to_spans: true,
 		link_title: false,
 		link_assume_external_targets: true,

@@ -2395,7 +2395,8 @@ var wikiparser = function() {
 							// $1 = any html attributes of the header
 							// $2 = content of the tag
 							var cellPipeText = '!',
-								cellNewLine = '<@@tnl@@>';
+								cellNewLine = '<@@tnl@@>',
+								cellEmptyLineFirst = '';
 							$1 = $1.replace(/ data-mwt-wikiPipe\="(.*?)"/gmi, function (match, $1) {
 								if ($1 == '!!') {
 									cellPipeText += cellPipeText;
@@ -2410,12 +2411,22 @@ var wikiparser = function() {
 								}
 								return "";
 							});
+							$1 = $1.replace(/ data-mwt-cellEmptyLineFirst\=("|')(.*?)\1/gmi, function (match, $1, $2) {
+								// $1 = type of quotation mark
+								// $2 = the value of the parameter
+								if ($2 == 'false') {
+									cellEmptyLineFirst = "";
+								} else {
+									cellEmptyLineFirst = "<@@tnl@@>";
+								}
+								return "";
+							});
 							// process other attributes
 							$1 = processAttributes2Html( $1 );
 							if ($1) {
-								return cellNewLine + cellPipeText + $1 + ' ' + _pipeText + $2;
+								return cellNewLine + cellPipeText + $1 + ' ' + _pipeText + cellEmptyLineFirst + $2;
 							} else {
-								return cellNewLine + cellPipeText + $2;
+								return cellNewLine + cellPipeText + cellEmptyLineFirst + $2;
 							}
 						});
 						_tags4Wiki[id] = outerHtml;
@@ -2446,9 +2457,10 @@ var wikiparser = function() {
 								}
 								return "";
 							});
-							$1 = $1.replace(/ data-mwt-cellEmptyLineFirst\="(.*?)"/gmi, function (match, $1) {
-								// $1 = the value of the parameter
-								if ($1 == 'false') {
+							$1 = $1.replace(/ data-mwt-cellEmptyLineFirst\=("|')(.*?)\1/gmi, function (match, $1, $2) {
+								// $1 = type of quotation mark
+								// $2 = the value of the parameter
+								if ($2 == 'false') {
 									cellEmptyLineFirst = "";
 								} else {
 									cellEmptyLineFirst = "<@@tnl@@>";

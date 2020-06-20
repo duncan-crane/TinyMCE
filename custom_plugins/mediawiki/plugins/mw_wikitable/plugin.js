@@ -2509,7 +2509,6 @@
         }
       });
       editor.on('BeforeSetContent', function (e) {
-debugger;
         if (e.selection === true && e.paste === true) {
           var cellOpt = Option.from(editor.dom.getParent(editor.selection.getStart(), 'th,td'));
           cellOpt.each(function (domCell) {
@@ -5386,7 +5385,7 @@ debugger;
         type: 'input',
         label: 'Height'
       },
-      {
+/*      {
         name: 'celltype',
         type: 'selectbox',
         label: 'Cell type',
@@ -5400,7 +5399,7 @@ debugger;
             value: 'th'
           }
         ]
-      },
+      },*/
       {
         name: 'scope',
         type: 'selectbox',
@@ -5530,8 +5529,19 @@ debugger;
       modifiers.setStyle('border-width', addSizeSuffix(data.borderwidth));
     };
     var applyToSingle = function (editor, cells, data) {
+debugger;
       var dom = editor.dom;
       var cellElm = data.celltype && cells[0].nodeName.toLowerCase() !== data.celltype ? dom.rename(cells[0], data.celltype) : cells[0];
+/*	  var wikiPipe = cellElm.getAttribute("data-mwt-wikipipe");
+		if ( cellElm.localName == 'td' ) {
+			wikiPipe = wikiPipe.replace(/\!{1}/gmi,'|');
+			wikiPipe = wikiPipe.replace(/\!{2}/gmi,'||');
+			outerHtml = outerHtml.replace(/("|')\!\!\1/gmi,'$1||$1');
+		} else if ( cellElm.localName == 'th' ) {
+			wikiPipe = wikiPipe.replace(/\|{1}/gmi,'!');
+			wikiPipe = wikiPipe.replace(/\|{2}/gmi,'!!');
+		}*/
+		cellElm.setAttribute("data-mwt-wikipipe", wikiPipe);
       var modifiers = DomModifier.normal(dom, cellElm);
       updateSimpleProps(modifiers, data);
       if (hasAdvancedCellTab(editor)) {
@@ -5547,6 +5557,7 @@ debugger;
       }
     };
     var applyToMultiple = function (editor, cells, data) {
+debugger;
       var dom = editor.dom;
       global$1.each(cells, function (cellElm) {
         if (data.celltype && cellElm.nodeName.toLowerCase() !== data.celltype) {
@@ -5566,6 +5577,7 @@ debugger;
       });
     };
     var onSubmitCellForm = function (editor, cells, api) {
+debugger;
       var data = api.getData();
       api.close();
       editor.undoManager.transact(function () {
@@ -5654,23 +5666,23 @@ debugger;
       return Option.none();
     };
     var formChildren = [
-      {
+     {
         type: 'selectbox',
         name: 'type',
         label: 'Row type',
         items: [
           {
             text: 'Header',
-            value: 'thead'
+            value: 'th'
           },
           {
             text: 'Body',
-            value: 'tbody'
+            value: 'td'
           },
-          {
+/*          {
             text: 'Footer',
             value: 'tfoot'
-          }
+          }*/
         ]
       },
       {
@@ -5712,7 +5724,17 @@ debugger;
     var RowDialogGeneralTab = { getItems: getItems$1 };
 
     var switchRowType = function (dom, rowElm, toType) {
-      var tableElm = dom.getParent(rowElm, 'table');
+debugger;
+		if ( toType == 'td' ) {
+			rowElm.innerHTML = rowElm.innerHTML.replace(/<th/gmi,'<td');
+			rowElm.innerHTML = rowElm.innerHTML.replace(/("|')\!\1/gmi,'$1|$1');
+			rowElm.innerHTML = rowElm.innerHTML.replace(/("|')\!\!\1/gmi,'$1||$1');
+		} else if ( toType == 'th' ) {
+			rowElm.innerHTML = rowElm.innerHTML.replace(/<td/gmi,'<th');
+			rowElm.innerHTML = rowElm.innerHTML.replace(/("|')\|\1/gmi,'$1!$1');
+			rowElm.innerHTML = rowElm.innerHTML.replace(/("|')\|\|\1/gmi,'$1!!$1');
+		}
+/*      var tableElm = dom.getParent(rowElm, 'table');
       var oldParentElm = rowElm.parentNode;
       var parentElm = dom.select(toType, tableElm)[0];
       if (!parentElm) {
@@ -5730,7 +5752,7 @@ debugger;
       parentElm.appendChild(rowElm);
       if (!oldParentElm.hasChildNodes()) {
         dom.remove(oldParentElm);
-      }
+      }*/
     };
     var updateAdvancedProps$1 = function (modifier, data) {
       modifier.setStyle('background-color', data.backgroundcolor);
@@ -5952,7 +5974,6 @@ debugger;
       set(table, 'data-mce-id', '__mce');
       var html = getOuter$2(table);
 //      editor.insertContent(html);
-debugger;
 /*		editor.focus();
 		editor.selection.setContent(html);
 		editor.undoManager.add();
