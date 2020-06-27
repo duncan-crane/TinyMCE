@@ -384,8 +384,14 @@ var wikilink = function (editor) {
 			},
 			onSetup: toggleEnabledState(editor, ["mwt-internallink", "mwt-externallink"])
 		});
-		editor.shortcuts.add('Meta+K', '', function () {
+		editor.shortcuts.add('Meta+' + 219, 'open link dialog', function () {
 			open( editor );
+		});
+		editor.shortcuts.add('Meta+' + 221, 'open link dialog', function () {
+			open( editor );
+		});
+		editor.shortcuts.add('Meta+K', '', function () {
+				open( editor );
 		});
 	};
 

@@ -374,6 +374,7 @@ var defaultSettings = function(selector) {
 		forced_root_block_attrs: {
 			'class': 'mwt-paragraph'
 		},
+//		end_container_on_empty_block: true,
 		remove_trailing_brs: false,
 		// indentation depth
 		// keep current style on pressing return

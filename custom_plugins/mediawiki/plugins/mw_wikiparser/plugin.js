@@ -168,7 +168,14 @@ var wikiparser = function() {
 		 * code that has already been converted!
 		 * @type Array
 		 */
-		_tags4Wiki = new Array();
+		_tags4Wiki = new Array(),
+		/**
+		 *
+		 * following use to holde the cursor position before and 
+		 * after up or down arrow kepress
+		 */
+		_caretOnDown,
+		_caretOnUp;
 
 	/**
 	 *
@@ -192,6 +199,29 @@ var wikiparser = function() {
 	var createUniqueNumber = utility.createUniqueNumber;
 
 	var onDblClickLaunch = utility.onDblClickLaunch;
+
+	/**
+	 * find the offset of the caret within the displayed text
+	 *
+	 * @param {String} text
+	 * @returns {String}
+	 */
+	function getCaretOffset() {
+		var temp = editor.selection.getSel(),
+			range = editor.selection.getRng(),
+			text;
+			
+		range.setStart(editor.getBody().firstChild, 0);
+		text = range.toString();
+
+		// clear selection
+		editor.selection.getSel().collapseToEnd();
+	
+		return {
+			caret: text.length, 
+			text: text
+		}
+	} 
 
 	/**
 	 * replace any wiki placeholders in the text with their 
@@ -1469,7 +1499,7 @@ var wikiparser = function() {
 						}
 						if ($1) {
 							indented = true;
-							return '<dl><dd data-mwt-sameLine="true">' + tableTag;
+							return '<dl><dd data-mwt-sameLine="false">' + tableTag;
 						} else {
 							return tableTag;
 						}
@@ -1902,9 +1932,11 @@ var wikiparser = function() {
 			blockTagList = _mwtBlockTagsList.split("|").join(":\\d*@@@>|<@@@") 
 				+ ':\\d*@@@>|<@@@pre:\\d*@@@>'
 				+ ':\\d*@@@>|<@@@ppre:\\d*@@@>';
-			regex = '(<@@@' + blockTagList + '|<' + _mwtBlockTagsList.split("|").join("[^>]*>|<") +
-				 '|<\\/' + _mwtBlockTagsList.split("|").join(">|<\\/") +
-				 '|<br[^>]*>|<@@slb@@>)' ;
+			regex = '(<@@@' + blockTagList 
+					+ '|<' 
+					+ _mwtBlockTagsList.split("|").join("[^>]*>|<") 
+					+ '|<\\/' + _mwtBlockTagsList.split("|").join(">|<\\/") 
+					+ '|<br[^>]*>|<@@slb@@>)' ;
 			matcher = new RegExp(regex, 'i');
 
 			//Walk through text line by line
@@ -1988,7 +2020,9 @@ var wikiparser = function() {
 								if ( lines[i-1].search(/<br class="mwt-emptyline" \/>$/) > -1 ) {
 									lines[i] = lines[i] + '<@@slb@@>';
 								} else {
-									lines[i] = lines[i] + '<@@slb@@><@@slb@@>';
+									if ( !lastLine) { 
+										lines[i] = lines[i] + '<@@slb@@><@@slb@@>';
+									}
 								}
 							} else {
 								lines[i] = lines[i] + '<br class="mwt-emptylineFirst"/>';
@@ -2020,9 +2054,6 @@ var wikiparser = function() {
 		if (text === '') {
 			return text;
 		}
-		
-		// add blank lines to end of text so can always edit at end of content
-		text = text.trimRight() + '\n\n';
 		
 		// wrap the text in an object and send it to event listeners
 		textObject = {text: text};
@@ -2088,11 +2119,11 @@ var wikiparser = function() {
 			// preprocess text before dom walkthrough
 			// the tables plugin uses thead tags to identify headers whereas
 			// mediawiki uses th tags in the body of the table.  This converts between the two
-//DC TODO change tables plugin to do this
-			text = text.replace(/<thead[^>]*>(.*?)<\/thead>/gmi, function (match, $1) {
+//DC DONE change tables plugin to do this
+/*			text = text.replace(/<thead[^>]*>(.*?)<\/thead>/gmi, function (match, $1) {
 				// $1 = content of the thead tags
 				return $1.replace(/<(\/)?td/gmi,'<$1th');
-			});
+			});*/
 			function processAttributes2Html( text ) {
 				// replace any data-mwt-attr attributes with their values
 				text = text.replace(/data-mwt-attr=('|")(.*?)\1/gmi, function(match, $1, $2) {
@@ -2143,9 +2174,6 @@ var wikiparser = function() {
 					// process all descendents before further processing
 						elm.children().each( function ( index ) {
 							processElement ( $(this), level + '.' + index );
-// DC The next two lines are used in debugging so leave in for now
-//							console.log( 'Level: ' + level + '.' + index + '    ' + elm[0].tagName + ':' + elm[0].className);
-//							console.log( this.outerHTML );
 						});
 					}
 					if ( elm[0].tagName == 'TBODY' ) {
@@ -2188,8 +2216,6 @@ var wikiparser = function() {
 							elm.removeAttr( 'class' );
 						}
 						outerHtml = elm[0].outerHTML;
-						// remove empty class attributes
-//						outerHtml = outerHtml.replace(/ class=(["|'])\1/,"");
 						// add back new lines and spaces
 						outerHtml = tagNewline + tagSpaces + outerHtml + newLineAfter;
 						_tags4Wiki[id] = outerHtml;
@@ -2278,7 +2304,9 @@ var wikiparser = function() {
 						var html,
 							id = "<@@@" + elm[0].tagName.toUpperCase() + ":" + createUniqueNumber() + "@@@>";
 						// add new lines
-						html  = elm.html() + '<@@pnl@@>';
+//						html  = elm.html() + '<@@pnl@@>';
+//						html  = elm.html() + '<@@elf@@>';
+						html  = '<@@pnl@@>' + elm.html();
 						elm.replaceWith( function(a) {
 							return html;
 						});
@@ -3147,6 +3175,7 @@ debugger;
 		// Hide progress for the active editor
 		editor.setProgressState(false);
 	}
+
 	/**
 	 * Event handler for "dblclick"
 	 * Add function for processing when double clicking items.
@@ -3183,6 +3212,48 @@ debugger;
 		}
 		return;
 	}
+
+	/**
+	 * Event handler for "onKeyDown"
+	 * Add function for processing when using down or up arrow in
+	 * the bottom or top rows, to add a new paragraph.
+	 *
+	 * @param {tinymce.onKeyDownEvent} e
+	 */	
+	function _onKeyDown(evt) {
+		if ( evt.keyCode == 38 ) {
+			_caretOnDown = getCaretOffset().caret;
+		} else if ( evt.keyCode == 40 ) {
+			_caretOnDown = getCaretOffset().caret;
+		}
+	};
+
+	/**
+	 * Event handler for "onKeyUp"
+	 * Add function for processing when using down or up arrow in
+	 * the bottom or top rows, to add a new paragraph.
+	 *
+	 * @param {tinymce.onKeyUpEvent} e
+	 */	
+	function _onKeyUp(evt) {
+		if ( evt.keyCode == 38 ) {
+			_caretOnUp = getCaretOffset().caret;
+			var text = getCaretOffset().text;
+			if (_caretOnDown == _caretOnUp) {
+				var el = editor.dom.create( 'p', { 'class' : 'mwt-paragraph' }, '<br>' );
+				editor.getBody().insertBefore(el, editor.getBody().firstChild);
+				editor.selection.setCursorLocation();
+			}
+		} else if ( evt.keyCode == 40 ) {
+			_caretOnUp = getCaretOffset().caret;
+			if (_caretOnDown >= _caretOnUp) {
+				var el = editor.dom.create( 'p', { 'class' : 'mwt-paragraph' }, '<br>' );
+				$(el).insertAfter(editor.getBody().lastChild);;
+				editor.selection.setCursorLocation( el );
+			}
+		}
+	};
+
 	/**
 	 * Initialise editor function
 	 * Defines event handlers.
@@ -3205,6 +3276,8 @@ debugger;
 		editor.on('pastePreProcess', _onPastePreProcess);
 		editor.on('pastePostProcess', _onPastePostProcess);
 		editor.on('dblclick', _onDblClick);
+		editor.on('keydown', _onKeyDown);
+		editor.on('keyup', _onKeyUp);
 		//
 		// add processing for non rendered new line functionality
 		//
@@ -3249,6 +3322,19 @@ debugger;
 					}
 				});
 			}
+		});
+		//
+		// add processing for inserting empty <p> block before or after curent block
+		//
+		editor.shortcuts.add('meta+' + 13, 'empty paragraph after this block', function (a) {
+			var el = ed.dom.create('p', {'class' : 'mwt-paragraph'}, '<br>');
+			editor.dom.insertAfter( el, editor.selection.getNode() );
+			editor.selection.setCursorLocation( el );
+		});
+		editor.shortcuts.add('access+' + 13, 'empty paragraph before this block', function (a) {
+			var el = ed.dom.create('p', {'class' : 'mwt-paragraph'}, '<br>');
+			$(el).insertBefore( editor.selection.getNode() );
+			editor.selection.setCursorLocation( el );
 		});
 		//
 		// setup MW TinyMCE macros - these are defined in localSettings.php
