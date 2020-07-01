@@ -383,9 +383,9 @@ _mwtCheckUploadPermissions = function( editor ) {
 				if (!submittedData.summary) submittedData.summary = '';
 				if (!submittedData.alt) submittedData.alt = '';
 				if (!submittedData.link) submittedData.link = '';
-				if (submittedData.dimensions.width == 0) submittedData.dimensions.width = 0;
-				if (submittedData.dimensions.height == 0) submittedData.dimensions.height = 0;
-				if (submittedData.dimensions.height == "NaN") submittedData.dimensions.height = 0;
+//				if (submittedData.dimensions.width == 0) submittedData.dimensions.width = 0;
+//				if (submittedData.dimensions.height == 0) submittedData.dimensions.height = 0;
+//				if (submittedData.dimensions.height == "NaN") submittedData.dimensions.height = 0;
 				if (!submittedData.horizontalalignment) submittedData.horizontalalignment = '';
 				if (!submittedData.verticalalignment) submittedData.verticalalignment = '';
 				if (!submittedData.format) submittedData.format = '';
@@ -495,7 +495,7 @@ _mwtCheckUploadPermissions = function( editor ) {
 					data = dialogData,
 					meta = dialogData.fileSrc.meta,
 					fileType;
-debugger;
+
 				var srcURL,
 					prependURL,
 					absoluteURLPattern,
@@ -711,8 +711,10 @@ debugger;
 				if (!dialogData.summary) dialogData.summary = '';
 				if (!dialogData.link) dialogData.link = '';
 				if (!dialogData.alt) dialogData.alt = '';
-				if (!dialogData.dimensions["width"]) dialogData.dimensions["width"] = "0";
-				if (!dialogData.dimensions["height"]) dialogData.dimensions["height"] = "0";
+//				if (!dialogData.dimensions["width"]) dialogData.dimensions["width"] = "0";
+				if (!dialogData.dimensions["width"]) dialogData.dimensions["width"] = "";
+//				if (!dialogData.dimensions["height"]) dialogData.dimensions["height"] = "0";
+				if (!dialogData.dimensions["height"]) dialogData.dimensions["height"] = "";
 				if (!dialogData.horizontalalignment) dialogData.horizontalalignment = 'right';
 				if (!dialogData.verticalalignment) dialogData.verticalalignment = 'middle';
 				if (!dialogData.format) dialogData.format = 'thumb';
@@ -881,9 +883,11 @@ debugger;
 				dialogData.alt = wikiImageObject.alt;
 				if ( dialogData.alt == undefined) dialogData.alt = '';
 				dialogData.dimensions["width"] = wikiImageObject.sizewidth;
-				if ( !dialogData.dimensions["width"]) dialogData.dimensions["width"] = "0";
+//				if ( !dialogData.dimensions["width"]) dialogData.dimensions["width"] = "0";
+				if ( !dialogData.dimensions["width"]) dialogData.dimensions["width"] = "";
 				dialogData.dimensions["height"] = wikiImageObject.sizeheight;
-				if ( !dialogData.dimensions["height"]) dialogData.dimensions["height"] = "0";
+//				if ( !dialogData.dimensions["height"]) dialogData.dimensions["height"] = "0";
+				if ( !dialogData.dimensions["height"]) dialogData.dimensions["height"] = "";
 				dialogData.horizontalalignment = wikiImageObject.horizontalalignment;
 				if ( dialogData.horizontalalignment == undefined) dialogData.horizontalalignment = null;
 				dialogData.verticalalignment = wikiImageObject.verticalalignment;
@@ -950,7 +954,7 @@ debugger;
 				function doUpload(fileType, fileToUpload, fileName, fileSummary, ignoreWarnings){
 					var uploadData = new FormData(),
 						uploadDetails;
-debugger;						
+
 					uploadData.append("action", "upload");
 					uploadData.append("filename", fileName);
 					uploadData.append("text", fileSummary);
@@ -991,6 +995,14 @@ debugger;
 						
 					if (typeof uploadDetails == "undefined") {
 						editor.windowManager.alert(mw.msg("tinymce-upload-alert-unknown-error-uploading"));
+						result = false;
+					} else if (typeof uploadDetails.error != "undefined") {
+						if (typeof uploadDetails.error.info != "undefined") {
+							message = mw.msg("tinymce-upload-alert-error-uploading",uploadDetails.error.info);
+						} else {
+							message = mw.msg("tinymce-upload-alert-error-uploading");		
+						}
+						editor.windowManager.alert(message);
 						result = false;
 					} else if (typeof uploadDetails.upload.responseText != "undefined") {
 						message = mw.msg("tinymce-upload-alert-error-uploading",uploadDetails.upload.responseText);
@@ -1077,17 +1089,17 @@ debugger;
 								uploadDetails = doUpload(fileType, fileContent, fileName, fileSummary, ignoreWarnings);
 								result = checkUploadDetail(uploadDetails, ignoreWarnings);
 								if (result) {
-									uploadResult = result["url"];
-									uploadPage = result["page"];
-								}
-//								if (uploadResult == 'ignore_warning') {
-								if (result == 'ignore_warning') {
-									ignoreWarnings = true;
-								} else {
-									ignoreWarnings = false;								
+									if ( Array.isArray( result ) ) {
+										uploadResult = result["url"];
+										uploadPage = result["page"];
+									} else if (result == 'ignore_warning') {
+										ignoreWarnings = true;
+									} else {
+										ignoreWarnings = false;								
+									}
 								}
 							} while (ignoreWarnings)
-							if (uploadResult == false) {
+							if (result === false) {
 								return;
 							}
 						} else {

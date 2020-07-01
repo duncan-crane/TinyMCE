@@ -159,7 +159,8 @@
 		"MakeGlobalVariablesScript": "TinyMCEHooks::setGlobalJSVariables",
 		"MagicWordwgVariableIDs": "TinyMCEHooks::addMagicWordVariableIDs",
 		"ParserAfterTidy": "TinyMCEHooks::handleMagicWords",
-		"SkinTemplateNavigation": "TinyMCEAction::displayTab",
+		"SkinTemplateNavigation": "TinyMCEAction::displayTabAndModifyAddTopicLink",
+		"SkinTemplateTabAction": "TinyMCEHooks::modifyTalkPageLink",
 		"SkinEditSectionLinks": "TinyMCEHooks::addEditSectionLink",
 		"AlternateEdit": "TinyMCEHooks::determineIfTinyMCEIsEnabled",
 		"EditPageBeforeEditToolbar": "TinyMCEHooks::removeDefaultToolbar",
@@ -171,9 +172,6 @@
 	},
 	"Actions": {
 		"tinymceedit": "TinyMCEAction"
-	},
-	"SpecialPages": {
-		"TinyMCEUploadWindow": "TinyMCEUploadWindow"
 	},
 	"DefaultUserOptions": {
 		"tinymce-use": 1
