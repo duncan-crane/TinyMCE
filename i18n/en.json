@@ -113,7 +113,7 @@
 	"tinymce-upload-alert-correct-and-try-again": "Please correct the errors and try again",
 	"tinymce-upload-alert-destination-filename-needed": "I'm sorry, you have to provide a destination file name. If the one generated is OK then press Submit again or else change it",
 	"tinymce-upload-alert-source-or-destination-undefined": "I'm sorry, there's a problem with either the source or destination being undefined.  Please check and try again",
-	"tinymce-upload-alert-file-source-empty" : "You must provide a source file to upload before before you do this",
+	"tinymce-upload-alert-file-source-empty" : "You must provide an image source file in the File details tab before you can access the image properties",
 "tinymce-upload-confirm-file-already-exists": "The destination file $1 already exists on this wiki.  Select Yes if you would like to use the existing file or select Cancel and enter a different destination filename for this upload",
 	"tinymce-upload-confirm-file-not-on-wiki": "The file does not exist on this wiki.  Select Yes if you would like to upload a new file or select Cancel and enter a different filename for this link",
 	"tinymce-upload-confirm-ignore-warnings": "Select Yes if you wish to retry while ignoring these warnings, else select No",

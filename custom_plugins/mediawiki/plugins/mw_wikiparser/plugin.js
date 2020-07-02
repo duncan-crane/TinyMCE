@@ -207,10 +207,11 @@ var wikiparser = function() {
 	 * @returns {String}
 	 */
 	function getCaretOffset() {
-		var temp = editor.selection.getSel(),
-			range = editor.selection.getRng(),
+		var range,
 			text;
 			
+		editor.selection.getSel().collapseToEnd();
+		range = editor.selection.getRng();
 		range.setStart(editor.getBody().firstChild, 0);
 		text = range.toString();
 
@@ -2743,6 +2744,14 @@ var wikiparser = function() {
 				message = mw.msg("tinymce-upload-alert-unknown-error-uploading",
 					destinationName );
 				result = false;
+			} else if (typeof uploadDetails.error != "undefined") {
+				if (typeof uploadDetails.error.info != "undefined") {
+					message = mw.msg("tinymce-upload-alert-error-uploading",uploadDetails.error.info);
+				} else {
+					message = mw.msg("tinymce-upload-alert-error-uploading");		
+				}
+				editor.windowManager.alert(message);
+				result = false;
 			} else if (typeof uploadDetails.responseText != "undefined") {
 				message = mw.msg("tinymce-upload-alert-error-uploading",uploadDetails.responseText);
 				editor.windowManager.alert(message);
@@ -3221,10 +3230,10 @@ debugger;
 	 * @param {tinymce.onKeyDownEvent} e
 	 */	
 	function _onKeyDown(evt) {
-		if ( evt.keyCode == 38 ) {
+		if (( evt.keyCode == 38 ) || ( evt.keyCode == 40 )) {
+			// up-arrow
 			_caretOnDown = getCaretOffset().caret;
-		} else if ( evt.keyCode == 40 ) {
-			_caretOnDown = getCaretOffset().caret;
+console.log( "down: " + _caretOnDown);
 		}
 	};
 
@@ -3238,19 +3247,27 @@ debugger;
 	function _onKeyUp(evt) {
 		if ( evt.keyCode == 38 ) {
 			_caretOnUp = getCaretOffset().caret;
-			var text = getCaretOffset().text;
-			if (_caretOnDown == _caretOnUp) {
+			if (( _caretOnDown == _caretOnUp ) && ( _caretOnDown == 0)) {
+				// carret stopped moving at start of text
 				var el = editor.dom.create( 'p', { 'class' : 'mwt-paragraph' }, '<br>' );
 				editor.getBody().insertBefore(el, editor.getBody().firstChild);
 				editor.selection.setCursorLocation();
 			}
+console.log( "up: " + _caretOnUp);
 		} else if ( evt.keyCode == 40 ) {
 			_caretOnUp = getCaretOffset().caret;
-			if (_caretOnDown >= _caretOnUp) {
+			var range = editor.selection.getRng();
+			editor.selection.select(tinyMCE.activeEditor.getBody(), true);
+			var ftxt = editor.selection.getRng().toString().length;
+			editor.selection.setRng( range );
+			if (( _caretOnDown >= _caretOnUp ) && (_caretOnUp == ftxt)) {
+				// caret stopped moving at end of text
 				var el = editor.dom.create( 'p', { 'class' : 'mwt-paragraph' }, '<br>' );
 				$(el).insertAfter(editor.getBody().lastChild);;
 				editor.selection.setCursorLocation( el );
 			}
+console.log( "up: " + _caretOnUp);
+console.log( "buffer length: " + ftxt);
 		}
 	};
 
