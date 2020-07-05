@@ -10,11 +10,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License v2 or later
  * @filesource
  */
-var wikiparser = function() {
 
+(function (domGlobals) {
 	"use strict";
 
-	var 
 	/**
 	 *
 	 * definition of variables used 
@@ -25,7 +24,7 @@ var wikiparser = function() {
 		 * global variable that contains the editor instance
 		 * @type TinyMCE
 		 */
-		editor = tinymce.activeEditor,
+		var	editor = tinymce.activeEditor,
 		/**
 		 *
 		 * Utility functions used in this plugin and others
@@ -199,6 +198,8 @@ var wikiparser = function() {
 	var createUniqueNumber = utility.createUniqueNumber;
 
 	var onDblClickLaunch = utility.onDblClickLaunch;
+
+    var pluginManager = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
 	/**
 	 * find the offset of the caret within the displayed text
@@ -3271,6 +3272,7 @@ console.log( "buffer length: " + ftxt);
 		}
 	};
 
+function wikiparser( editor ) {
 	/**
 	 * Initialise editor function
 	 * Defines event handlers.
@@ -3375,14 +3377,20 @@ console.log( "buffer length: " + ftxt);
 		if ( minimizeOnBlur ) {
 			editor.on('focus', function(e) {
 				var mcePane = $("textarea#" + e.target.id).prev();
-				mcePane.find(".mce-toolbar-grp").css("height", "");
-				mcePane.find(".mce-toolbar-grp .mce-flow-layout").show("medium");
+/*				mcePane.find(".mce-toolbar-grp").css("height", "");
+				mcePane.find(".mce-toolbar-grp .mce-flow-layout").show("medium");*/
+				mcePane.find(".tox-toolbar__primary").css("height", "");
+				mcePane.find(".tox-toolbar__primary .tox-flow-layout").show("medium");
+
 			});
 			editor.on('blur', function(e) {
 				var mcePane = $("textarea#" + e.target.id).prev();
 				// Keep a little sliver of the toolbar so that users see it.
-				mcePane.find(".mce-toolbar-grp").css("height", "10px");
-				mcePane.find(".mce-toolbar-grp .mce-flow-layout").hide("medium");
+/*				mcePane.find(".mce-toolbar-grp").css("height", "10px");
+				mcePane.find(".mce-toolbar-grp .mce-flow-layout").hide("medium");*/
+				mcePane.find(".tox-toolbar__primary").css("height", "10px");
+				mcePane.find(".tox-toolbar__primary .tox-flow-layout").hide("medium");
+tox-toolbar-overlord
 			});
 		}
 	};
@@ -3396,4 +3404,7 @@ console.log( "buffer length: " + ftxt);
 		return info;
 	};
 };
-tinymce.PluginManager.add('wikiparser', wikiparser);
+
+	pluginManager.add('wikiparser', wikiparser);
+
+}(window));

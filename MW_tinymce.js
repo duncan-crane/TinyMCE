@@ -437,7 +437,7 @@ var defaultSettings = function(selector) {
 		],
 		block_formats: 'Paragraph=p;Heading 1=h1;Heading 2=h2;Heading 3=h3;Heading 4=h4;Heading 5=h5;Heading 6=h6;Preformatted=pre;Code=code',
 		images_upload_credentials: true,
-		autoresize_max_height: 400,
+//		autoresize_max_height: 400,
 		template_selected_content_classes: "selectedcontent",
 		setup: function (editor) {
 		},
@@ -494,9 +494,11 @@ var updateSettings = function(tinyMCESelector, settings) {
 				$.extend( defaultSet[k], v );
 			}
 		} else if ( k.endsWith( '-' ) ) {
+debugger;
 			// removing from default parameter
 			k = k.slice( 0, - 1 );
 			if ($.type( defaultSet[k] ) === "string") {
+				// if default value is a string remove the value from it
 				var str = defaultSet[k],
 					regex,
 					matcher;
@@ -505,6 +507,8 @@ var updateSettings = function(tinyMCESelector, settings) {
 				str = str.replace(matcher, ' ');
 				defaultSet[k] = str;
 			} else if (Array.isArray ( defaultSet[k] ) ) {
+				// if default value is an array remove the element with
+				// key == value from it
 				var i = 0,
 					arr = defaultSet[k];
 				while (i < arr.length) {
@@ -516,6 +520,8 @@ var updateSettings = function(tinyMCESelector, settings) {
 				}
 				defaultSet[k] = arr;
 			} else if ( Object.keys( defaultSet[k] ).length > 0 ) {
+				// if default value is an object remove the element with
+				// key == value from it
 				var obj = defaultSet[k];
 				$.each( v, function ( key, val ) {
 					if ( obj[ key ] == val ) {
@@ -523,6 +529,16 @@ var updateSettings = function(tinyMCESelector, settings) {
 					}
 				});
 				defaultSet[k] = obj;
+			} else if ( v == '' ) {
+				// if the value is blank remove the key from the default values 
+				// key == value from it
+				var obj = defaultSet;
+//				$.each( v, function ( key, val ) {
+					if ( obj[ k ]) {
+						delete obj[ k ];
+					}
+//				});
+				defaultSet = obj;
 			}
 		} else {
 			//replacing default parameter
