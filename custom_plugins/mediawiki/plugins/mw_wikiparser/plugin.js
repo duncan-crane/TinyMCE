@@ -173,8 +173,14 @@
 		 * following use to holde the cursor position before and 
 		 * after up or down arrow kepress
 		 */
-		_caretOnDown,
-		_caretOnUp;
+		_cursorOnDown,
+		_cursorOnUp,
+		_cursorOnDownIndex,
+		_cursorOnUpIndex,
+		_cursorOnDownPreviousNode,
+		_cursorOnUpPreviousNode,
+		_cursorOnDownNextNode,
+		_cursorOnUpNextNode;
 
 	/**
 	 *
@@ -202,26 +208,47 @@
     var pluginManager = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
 	/**
-	 * find the offset of the caret within the displayed text
+	 * find the offset of the cursor within the displayed text
 	 *
 	 * @param {String} text
 	 * @returns {String}
 	 */
-	function getCaretOffset() {
+	function getCursorOffset() {
 		var range,
-			text;
-			
-		editor.selection.getSel().collapseToEnd();
+			text,
+			bm,
+			index,
+			currentNode,
+			previousNode,
+			nextNode,
+			firstNode = false;
+
+		currentNode = editor.selection.getNode()
+		previousNode = currentNode.previousSibling;
+		if ( !previousNode ) {
+			previousNode = editor.dom.getParent( currentNode, function ( aParent) {
+				return aParent.previousSiblineg
+			});
+		}
+		nextNode = currentNode.nextSibling;
+		if ( !nextNode ) {
+			nextNode = editor.dom.getParent( currentNode, function ( aParent) {
+				return aParent.nextSiblineg
+			});
+		}
+
+		bm = tinymce.activeEditor.selection.getBookmark();
 		range = editor.selection.getRng();
 		range.setStart(editor.getBody().firstChild, 0);
 		text = range.toString();
+		tinymce.activeEditor.selection.moveToBookmark(bm);
 
-		// clear selection
-		editor.selection.getSel().collapseToEnd();
-	
 		return {
-			caret: text.length, 
-			text: text
+			cursor: text.length, 
+			text: text,
+			index: index,
+			previousNode: previousNode,
+			nextNode: nextNode
 		}
 	} 
 
@@ -3233,8 +3260,12 @@ debugger;
 	function _onKeyDown(evt) {
 		if (( evt.keyCode == 38 ) || ( evt.keyCode == 40 )) {
 			// up-arrow
-			_caretOnDown = getCaretOffset().caret;
-console.log( "down: " + _caretOnDown);
+			var cursorLocation = getCursorOffset();
+
+			_cursorOnDown = cursorLocation.cursor;
+			_cursorOnDownPreviousNode = cursorLocation.previousNode;
+			_cursorOnDownNextNode = cursorLocation.nextNode;
+console.log( "down: " + _cursorOnDown);
 		}
 	};
 
@@ -3247,28 +3278,58 @@ console.log( "down: " + _caretOnDown);
 	 */	
 	function _onKeyUp(evt) {
 		if ( evt.keyCode == 38 ) {
-			_caretOnUp = getCaretOffset().caret;
-			if (( _caretOnDown == _caretOnUp ) && ( _caretOnDown == 0)) {
-				// carret stopped moving at start of text
-				var el = editor.dom.create( 'p', { 'class' : 'mwt-paragraph' }, '<br>' );
-				editor.getBody().insertBefore(el, editor.getBody().firstChild);
-				editor.selection.setCursorLocation();
+			var cursorLocation = getCursorOffset();
+
+			_cursorOnUp = cursorLocation.cursor;
+			_cursorOnUpPreviousNode = cursorLocation.previousNode;
+
+			if ( _cursorOnDown == _cursorOnUp) {
+				// cursor didn't move
+				if ( !_cursorOnDownPreviousNode ) {
+					// there is no previous nodes
+					if ( _cursorOnDown == 0) {
+						// we are already at start of text
+						var el = editor.dom.create( 'p', { 'class' : 'mwt-paragraph' }, '<br class="mwt-emptyline"/>' );
+						editor.getBody().insertBefore(el, editor.getBody().firstChild);
+						editor.selection.setCursorLocation();
+					} else {
+						// edge will not place cursor at start of text automatically
+						// so we make sure here
+						editor.selection.setCursorLocation();
+					}
+				}
 			}
-console.log( "up: " + _caretOnUp);
+console.log( "up: " + _cursorOnUp);
+console.log( "previoustNode: " + _cursorOnDownPreviousNode);
 		} else if ( evt.keyCode == 40 ) {
-			_caretOnUp = getCaretOffset().caret;
+			var range,
+				ftxt,
+				cursorLocation = getCursorOffset();
+
+			_cursorOnUp = cursorLocation.cursor;
+			_cursorOnUpNextNode = cursorLocation.nextNode;
 			var range = editor.selection.getRng();
 			editor.selection.select(tinyMCE.activeEditor.getBody(), true);
 			var ftxt = editor.selection.getRng().toString().length;
 			editor.selection.setRng( range );
-			if (( _caretOnDown >= _caretOnUp ) && (_caretOnUp == ftxt)) {
-				// caret stopped moving at end of text
-				var el = editor.dom.create( 'p', { 'class' : 'mwt-paragraph' }, '<br>' );
-				$(el).insertAfter(editor.getBody().lastChild);;
-				editor.selection.setCursorLocation( el );
+			if ( _cursorOnDown >= _cursorOnUp ) 
+				// the cursor din't move forward
+				if ( !_cursorOnDownNextNode ) {
+					// there are no more nodes
+					if (_cursorOnUp >= ftxt ) {
+						// we're already at the end of the text
+						var el = editor.dom.create( 'p', { 'class' : 'mwt-paragraph' }, '<br class="mwt-emptyline"/>' );
+						$(el).insertAfter(editor.getBody().lastChild);;
+						editor.selection.select( el );
+						editor.selection.collapse();
+					} else {
+						editor.selection.select( editor.getBody(), true );
+						editor.selection.collapse();
+					}
 			}
-console.log( "up: " + _caretOnUp);
+console.log( "up: " + _cursorOnUp);
 console.log( "buffer length: " + ftxt);
+console.log( "nextNode: " + _cursorOnUpNextNode);
 		}
 	};
 
