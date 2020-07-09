@@ -29,20 +29,14 @@
 	  'link', 'meta', 'var', 'wbr',
 	];
 	var	mw_htmlPairsStatic = [ //now just non-nestable
-	/*	'abbr', 'b', 'bdi', 'big', 'blockquote', 
-	  'caption', 'center', 'cite', 'code',
-	  'data', 'dd', 'del',  'dfn', 'div', 'dl', 'dt', 'em', 'font',  
-	  'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
-	  'i', 'ins', 'kbd', 'li', 'mark',  'ol', 'p', 'pre',
-	  'ruby', 'rb', 'rp', 'rt', 'rtc',
-	  's', 'samp','small', 'span', 'strike', 'strong', 'sub', 'sup', 
-	  'table', 'time', 'tt', 'u', 'ul', 'var', */
+		'a',
 	//	'abbr',
 	  'b',
 	//	'bdi', 
 	//	'caption', 'center', 'cite',
 	  'code', // although code is a wiki invariant html tag treat as static pair so contained wiki code correctly parsed
 	//	'data', 'del',  'dfn',  
+		'img', 
 	  'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
 	  'i',
 	//  'ins', 'mark',
@@ -52,17 +46,16 @@
 	//	'time', 'tt', 'u', 
 	];
 	var	mw_htmlBlockPairsStatic = [
-	  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-	//	'img', 
-	  'ol', 'ul', 'li',
-	//    'p', 'pre', 
-	  'p',
-	  'blockquote',
-	  'dl','dd','dt',
-	  'div',
-	  'hr',
-	  'source',
-	  'table', 
+		'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+		'ol', 'ul', 'li',
+//		p', 'pre', 
+		'p',
+		'blockquote',
+		'dl','dd','dt',
+		'div',
+		'hr',
+		'source',
+		'table', 
 	];
 	var mw_htmlSingle = [
 	  //'br', //don't render properly if process as a preserved tag!
@@ -222,7 +215,7 @@ var defaultSettings = function(selector) {
 	return {
 		selector: selector,
 		base_url: mw_extensionAssetsPath + '/TinyMCE/tinymce',
-		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/silver/theme.js',
+		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/silver/theme.min.js',
 		skin_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/skins/ui/oxide',
 		icons_url: mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiparser/icons/icons.js',
 		icons: 'mwt',
@@ -309,7 +302,7 @@ var defaultSettings = function(selector) {
 		// identified and edited in the TinyMCE editore window
 		//
 		// single new lines: set non_rendering_newline_character to false if you don't use non-rendering single new lines in wiki
-		wiki_non_rendering_newline_character: '&#120083', // was &para;
+/*		wiki_non_rendering_newline_character: '&#120083', // was &para;
 		// comments: set non_rendering_comment_character to false if you don't use non-rendering comments in wiki
 		wiki_non_rendering_comment_character: '&#8493',
 		// <nowiki /> tags: set non_rendering_nowiki_character to false if you don't use non-rendering nowiki tag in wiki
@@ -323,14 +316,14 @@ var defaultSettings = function(selector) {
 		wiki_non_rendering_img_character: '&#8464',
 		// non-rendering parser output: this is used so the parsed element can be edited in the editor.
 		// set non_rendering_parser_output_character to false if you don't use non-rendering parser output placeholder in wiki
-		wiki_non_rendering_parser_output_character: '&#120090',
+		wiki_non_rendering_parser_output_character: '&#120090',*/
 		//
 //0525		valid_elements: mw_preservedTagsList,
 		branding: false,
 //		relative_urls: false,
 //		remove_script_host: false,
 //		document_base_url: server,
-		tinyMCETemplates: tinyMCETemplates,
+//		tinyMCETemplates: tinyMCETemplates,
 		automatic_uploads: true,
 		paste_data_images: true,
 //0525		paste_enable_default_filters: false,
@@ -357,8 +350,8 @@ var defaultSettings = function(selector) {
 		},*/
 		height: 500,
 		autoresize_max_height: 600,
-		code_dialog_width: 1200,
-		code_dialog_height: 500,
+//		code_dialog_width: 1200,
+//		code_dialog_height: 500,
 		statusbar: false,
 		// the default text direction for the editor
 		directionality: tinyMCEDirectionality,

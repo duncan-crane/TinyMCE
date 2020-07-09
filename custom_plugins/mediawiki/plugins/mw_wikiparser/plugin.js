@@ -857,7 +857,7 @@
 			// first unrecognised tag pairs
 			regex = '<(?!' + _mwtPreservedTagsList + '|@@@|\\/)(.*?)(>([\\S\\s]*?)<\\/\\1>)';
 			matcher = new RegExp(regex, 'gmi');
-			text = text.replace(matcher, function(match) {
+			text = text.replace(matcher, function(match, $1, $2, $3) {
 				var html;
 
 				html = '<code class="mceNonEditable mwt-wikiMagic">' + match.replace(/\</gmi, '&lt;') + '</code>';
@@ -1000,7 +1000,6 @@
 					if ((extensionTags.indexOf(elmTagName) > -1) || 
 						(preservedTags.indexOf(elmTagName) > -1)) {
 						// process other tags that are allowed by mediawiki
-
 						elm.addClass( "mwt-preserveHtml" );
 						if (elm.attr( "title")) {
 							elm.attr( "title", function (i, title) {
@@ -1023,7 +1022,11 @@
 						// this tag is unrecognised as an html or a mediawiki tag
 						// so we wrap it in <code> tags.  All these should have be caught 
 						// before now so this is just a failsafe.
-						elm.wrap("<code class='mceNonEditable mwt-wikiMagic mwt-" + elmTagName + "'></code>")
+//						elm.wrap("<code class='mceNonEditable mwt-wikiMagic mwt-" + elmTagName + )
+						html = "<source class='mceNonEditable mwt-wikiMagic mwt-unknown'>" 
+							+ outerHTML
+							+ "'</source>"
+						elm.replaceWith( _getPlaceHolder4Html( html, 'toParse', 'unknown', 'nonEditable' ));
 					}
 
 					return;
@@ -2148,11 +2151,7 @@
 			// preprocess text before dom walkthrough
 			// the tables plugin uses thead tags to identify headers whereas
 			// mediawiki uses th tags in the body of the table.  This converts between the two
-//DC DONE change tables plugin to do this
-/*			text = text.replace(/<thead[^>]*>(.*?)<\/thead>/gmi, function (match, $1) {
-				// $1 = content of the thead tags
-				return $1.replace(/<(\/)?td/gmi,'<$1th');
-			});*/
+
 			function processAttributes2Html( text ) {
 				// replace any data-mwt-attr attributes with their values
 				text = text.replace(/data-mwt-attr=('|")(.*?)\1/gmi, function(match, $1, $2) {
@@ -2169,8 +2168,7 @@
 				});
 				return text;
 			}
-			// convert html text to DOM
-			$dom = $( "<div id='tinywrapper'>" + text + "</div>", "text/xml" );
+
 			function processElement( elm, level ) {
 				// first deal with elements that need no further processing
 				if (elm.hasClass( 'mwt-wikiMagic' )) {
@@ -2202,9 +2200,10 @@
 					if ( elm.children().length > 0) {
 					// process all descendents before further processing
 						elm.children().each( function ( index ) {
-							processElement ( $(this), level + '.' + index );
-						});
+							processElement ( $(this), level + '.' + index )
+						})
 					}
+
 					if ( elm[0].tagName == 'TBODY' ) {
 						// tbody tags aren't recognised by mediawiki so replace with contents
 						var html,
@@ -2251,6 +2250,13 @@
 						elm.replaceWith( function(a) {
 							return id;
 						});
+					} else if ( elm[0].tagName == 'BR' ) {
+						// remove 'bogus' br tags inserted by the editor
+						if ( elm.attr('data-mce-bogus') == 1 ) {
+							elm.replaceWith( function(a) {
+								return '';
+							});
+						}
 					} else if (( elm[0].tagName == 'LI' )
 							|| ( elm[0].tagName == 'DD' )
 							|| ( elm[0].tagName == 'DT' )
@@ -2264,9 +2270,6 @@
 							tagSpaces = '';
 						// if this is a table in a definition then remove
 						// the new line before the table
-/*						if ( elm[0].tagName == 'DD' ) {
-							elm[0].innerHTML = elm[0].innerHTML.replace(/^&lt;@@tnl@@&gt;/, '')
-						}*/
 						// if this item isn't empty (eg starts with a block new line
 						if ( !elm[0].innerHTML.match(/^&lt;@@bnl@@&gt;/) ) {
 							// build the wiki text list tag
@@ -2303,7 +2306,7 @@
 							if ( elm[0].tagName != 'DT' ) {
 							} else if ( elm[0].nextSibling == null ) {
 							} else if ( elm[0].nextSibling.tagName != 'DD' ) {
-							} else if ( elm[0].nextSibling.attributes['data-mwt-sameLine'] == "undefined" ) {
+							} else if ( elm[0].nextSibling.attributes['data-mwt-sameLine'] == undefined ) {
 							} else if ( elm[0].nextSibling.attributes['data-mwt-sameLine'].value != 'false' ) {
 								newLineAfter = ''
 							}
@@ -2494,6 +2497,7 @@
 					// process table cells
 						var outerHtml = elm[0].outerHTML,
 							id = "<@@@" + elm[0].tagName.toUpperCase() + ":" + createUniqueNumber() + "@@@>";
+
 						outerHtml = outerHtml.replace(/\n?<td([^>]*)>(.*)<\/td>$/gmi, function (match, $1, $2 ) {
 							// $1 = any attributes associated with the cell
 							// $2 = content of the tag
@@ -2593,16 +2597,24 @@
 					}
 				}
 			};
+
+			// convert html text to DOM
+			$dom = $( "<div id='tinywrapper'>" + text + "</div>", "text/xml" );
+
 			// walk through the dom element by element converting the
 			// html to wiki text from the leaves up to the root
 			processElement ( $dom, '0' );
+
 			// convert DOM back to html text
 			text = htmlDecode ($dom[0].innerHTML);
+
 			// remove any unwanted attributes
 			text = text.replace(/data-mce-[^=]*?=\s*("|')[^\1]*?\1\s*/gmi, '');
 			text = text.replace(/data-mwt-[^=]*?=\s*("|')[^\1]*?\1\s*/gmi, '');
+
 			// remove non-breaking space after ||
 			text = text.replace(/\|\|&nbsp;/gi, _pipeText + _pipeText);
+
 			// clean up newline before images
 			// do it here before placeholders are converted back
 			text = text.replace(/<@@pnl@@>(<@@@IMAGE:)/gmi, '$1');
@@ -3085,6 +3097,7 @@
 		args = {format: 'raw'};
 		setSelection( editor, _slb, args );
 	}
+
 	/**
 	 * Event handler for "onChange"
 	 * @param {tinymce.ContentEvent} e
@@ -3092,6 +3105,7 @@
 	function _onChange(e) {
 //debugger;
 	}
+
 	/**
 	 * Event handler for "beforeSetContent"
 	 * This is used to process the wiki code into html.
@@ -3117,6 +3131,7 @@ debugger;
 		}
 		return;
 	}
+
 	/**
 	 * Event handler for "onSetContent".
 	 * This is currently not used.
@@ -3162,6 +3177,7 @@ debugger;
 		e.content = text;
 		return;
 	}
+
 	/**
 	 * Event handler for "loadContent".
 	 * This is currently not used.
@@ -3171,6 +3187,7 @@ debugger;
 debugger;
 		return;
 	}
+
 	/**
 	 * Event handler for "drop"
 	 * Add function for processing when drag/dropping items.
@@ -3180,16 +3197,25 @@ debugger;
 debugger;
 		return;
 	}
+
 	/**
 	 * Event handler for "onPastePreProcess"
 	 * Add function for processing when drag/dropping items.
 	 * @param {tinymce.DropEvent} e
 	 */
 	function _onPastePreProcess(e) {
-		// check if this is the content of a drag/drop event
-		// if it is then no need to convert wiki to html
+		// if this is html then covert to wiki and back so it displays correctly
+		var text;
 debugger;
+
+		text = e.content;
+		text = text.replace(/\[/gmi, '&amp;#91;' )
+		text = text.replace(/\{/gmi, '&amp;#123;' )
+		text = _convertHtml2Wiki( text );
+		text = _convertWiki2Html( text );
+		e.content = text;
 	}
+
 	/**
 	 * Event handler for "onPastePreProcess"
 	 * Add function for processing when drag/dropping items.
@@ -3201,14 +3227,18 @@ debugger;
 debugger;
 		var text,
 			$dom;
+
 		$dom = $(e.node);
 		$dom.find( "meta" ).replaceWith( function() {
 			return '';
 		});
+
 		// Show progress for the active editor
 		editor.setProgressState(true);
+
 		// upload any images in the dropped content before continuing with paste
 		e.node = _uploadImages(editor, $dom);
+
 		// Hide progress for the active editor
 		editor.setProgressState(false);
 	}
@@ -3451,7 +3481,6 @@ function wikiparser( editor ) {
 				mcePane.find(".mce-toolbar-grp .mce-flow-layout").hide("medium");*/
 				mcePane.find(".tox-toolbar__primary").css("height", "10px");
 				mcePane.find(".tox-toolbar__primary .tox-flow-layout").hide("medium");
-tox-toolbar-overlord
 			});
 		}
 	};
