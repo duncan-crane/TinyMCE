@@ -346,10 +346,10 @@
 			if ( !tagHTML.match(/^<.*>$/gmi) ) {
 				tagHTML = '<code>' + tagHTML + '</code>';
 			};
-
+debugger;
 			// create DOM element from tagHTML
 			element = $(tagHTML);							
-			element.addClass("mceNonEditable mwt-wikiMagic mwt-" + tagClass);
+			element.addClass("mwt-nonEditable mwt-wikiMagic mwt-" + tagClass);
 			element.attr({
 				'id': id,
 				'title': titleWikiText ,
@@ -698,7 +698,11 @@
 
 						// now build the html equivalent from each parsed wikicode fragment
 						element = $(html);							
-						element.addClass("mceNonEditable mwt-wikiMagic mwt-" + tagClass);
+						if (tagClass == 'image' ) {
+							element.addClass("mwt-nonEditableImage mwt-wikiMagic mwt-" + tagClass);
+						} else {
+							element.addClass("mwt-nonEditable mwt-wikiMagic mwt-" + tagClass);
+						}
 						element.attr({
 							'title': elementTitle,
 							'id': tag,
@@ -765,7 +769,7 @@
 				//$1 = the text in the escaped tag
 				var html;
 
-				html = '<span class="mceNonEditable mwt-wikiMagic">&lt;' + $1 + '</span>';
+				html = '<span class="mwt-nonEditable mwt-wikiMagic">&lt;' + $1 + '</span>';
 				return _getPlaceHolder4Html(match, html, 'nowikiesc', 'nonEditable');
 			});
 
@@ -796,7 +800,7 @@
 
 				// double encode &amp; otherwise will display incorrectly if recoverred
 				match = htmlEncode(match);
-				html = '<span class="mceNonEditable mwt-wikiMagic ">&' + $1 + ';</span>';
+				html = '<span class="mwt-nonEditable mwt-wikiMagic ">&' + $1 + ';</span>';
 				return _getPlaceHolder4Html(match, html, 'htmlEntity', 'nonEditable')
 			});
 
@@ -860,7 +864,7 @@
 			text = text.replace(matcher, function(match, $1, $2, $3) {
 				var html;
 
-				html = '<code class="mceNonEditable mwt-wikiMagic">' + match.replace(/\</gmi, '&lt;') + '</code>';
+				html = '<code class="mwt-nonEditable mwt-wikiMagic">' + match.replace(/\</gmi, '&lt;') + '</code>';
 				return _getPlaceHolder4Html(match, html, 'unknown', 'nonEditable');
 			});
 
@@ -870,7 +874,7 @@
 			text = text.replace(matcher, function(match) {
 				var html;
 
-				html = '<code class="mceNonEditable mwt-wikiMagic">' + match.replace(/\</gmi, '&lt;') + '</code>';
+				html = '<code class="mwt-nonEditable mwt-wikiMagic">' + match.replace(/\</gmi, '&lt;') + '</code>';
 				return _getPlaceHolder4Html(match, html, 'unknown', 'nonEditable');
 			});
 
@@ -893,7 +897,7 @@
 			text = text.replace(matcher, function(match) {
 				var html;
 
-				html = '<code class="mceNonEditable mwt-wikiMagic">' + match.replace(/\</gmi, '&lt;') + '</code>';
+				html = '<code class="mwt-nonEditable mwt-wikiMagic">' + match.replace(/\</gmi, '&lt;') + '</code>';
 				return _getPlaceHolder4Html(match, html, 'unknown', 'nonEditable');
 			});
 
@@ -1022,8 +1026,8 @@
 						// this tag is unrecognised as an html or a mediawiki tag
 						// so we wrap it in <code> tags.  All these should have be caught 
 						// before now so this is just a failsafe.
-//						elm.wrap("<code class='mceNonEditable mwt-wikiMagic mwt-" + elmTagName + )
-						html = "<source class='mceNonEditable mwt-wikiMagic mwt-unknown'>" 
+//						elm.wrap("<code class='mwt-nonEditable mwt-wikiMagic mwt-" + elmTagName + )
+						html = "<source class='mwt-nonEditable mwt-wikiMagic mwt-unknown'>" 
 							+ outerHTML
 							+ "'</source>"
 						elm.replaceWith( _getPlaceHolder4Html( html, 'toParse', 'unknown', 'nonEditable' ));
@@ -2331,17 +2335,17 @@
 						elm.replaceWith( function(a) {
 							return elm[0].innerHTML;
 						});
-					} else if (elm.hasClass( 'mwt-paragraph' )) {
-						// process 'p' tags (including forced root blocks) by
-						var html,
-							id = "<@@@" + elm[0].tagName.toUpperCase() + ":" + createUniqueNumber() + "@@@>";
-						// add new lines
-//						html  = elm.html() + '<@@pnl@@>';
-//						html  = elm.html() + '<@@elf@@>';
-						html  = '<@@pnl@@>' + elm.html();
-						elm.replaceWith( function(a) {
-							return html;
-						});
+					} else if ( elm[0].tagName == 'P' ) {
+						if (elm.hasClass( 'mwt-paragraph' )) {
+							// process 'p' tags (including forced root blocks) by
+							var html,
+								id = "<@@@" + elm[0].tagName.toUpperCase() + ":" + createUniqueNumber() + "@@@>";
+							// add new lines
+							html  = '<@@pnl@@>' + elm.html();
+							elm.replaceWith( function(a) {
+								return html;
+							});
+						}
 					} else if (elm.hasClass( 'mwt-heading' )) {
 						// process headings
 						var headingMarkup = '======',
@@ -2389,7 +2393,7 @@
 							$1 = processAttributes2Html( $1 );
 							// if this table is nested in another or there is text on
 							// the same line as the table closure, then no new line after
-							if ( elm[0].nextSibling != null ) {
+							if (( elm[0].nextSibling != null ) && ( elm[0].tagName != 'TABLE' )) {
 								if ( elm[0].nextSibling.className.indexOf( 'mwt-closeTable' ) > -1 ) {
 									newLineAfter = '';
 								}

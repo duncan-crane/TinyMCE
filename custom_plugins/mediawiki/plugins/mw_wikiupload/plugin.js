@@ -383,9 +383,6 @@ _mwtCheckUploadPermissions = function( editor ) {
 				if (!submittedData.summary) submittedData.summary = '';
 				if (!submittedData.alt) submittedData.alt = '';
 				if (!submittedData.link) submittedData.link = '';
-//				if (submittedData.dimensions.width == 0) submittedData.dimensions.width = 0;
-//				if (submittedData.dimensions.height == 0) submittedData.dimensions.height = 0;
-//				if (submittedData.dimensions.height == "NaN") submittedData.dimensions.height = 0;
 				if (!submittedData.horizontalalignment) submittedData.horizontalalignment = '';
 				if (!submittedData.verticalalignment) submittedData.verticalalignment = '';
 				if (!submittedData.format) submittedData.format = '';
@@ -654,16 +651,17 @@ _mwtCheckUploadPermissions = function( editor ) {
 					// file is to be uploaded
 					if (destinationFileDetails) { 
 						// file of this name already exists on this wiki
-						editor.windowManager.confirm(mw.msg("tinymce-upload-confirm-file-already-exists"),
+						editor.windowManager.confirm(mw.msg("tinymce-upload-confirm-file-already-exists", srcURL),
 							function(ok) {
 								if (ok) {
 									dialogData.type = 'Wiki';
 									dialogData.wikiSrc = destinationFile.split('/').pop().split(':').pop().split('#')[0].split('?')[0];
 									dialogData.dest = dialogData.wikiSrc;
-									api.redial( makeDialog( newImageDialogBody( wikiDialogItems ), dialogData ));
+									api.redial( makeDialog( imageDialogBody, dialogData ));
+
 								} else {
 									dialogData = initialiseDialogData( '' );
-									dialogData.type = type;
+									dialogData.type = 'File';
 									api.redial( makeDialog( newImageDialogBody( dialogItems ), dialogData ));
 								}
 							});
@@ -711,9 +709,7 @@ _mwtCheckUploadPermissions = function( editor ) {
 				if (!dialogData.summary) dialogData.summary = '';
 				if (!dialogData.link) dialogData.link = '';
 				if (!dialogData.alt) dialogData.alt = '';
-//				if (!dialogData.dimensions["width"]) dialogData.dimensions["width"] = "0";
 				if (!dialogData.dimensions["width"]) dialogData.dimensions["width"] = "";
-//				if (!dialogData.dimensions["height"]) dialogData.dimensions["height"] = "0";
 				if (!dialogData.dimensions["height"]) dialogData.dimensions["height"] = "";
 				if (!dialogData.horizontalalignment) dialogData.horizontalalignment = 'right';
 				if (!dialogData.verticalalignment) dialogData.verticalalignment = 'middle';
@@ -883,10 +879,8 @@ _mwtCheckUploadPermissions = function( editor ) {
 				dialogData.alt = wikiImageObject.alt;
 				if ( dialogData.alt == undefined) dialogData.alt = '';
 				dialogData.dimensions["width"] = wikiImageObject.sizewidth;
-//				if ( !dialogData.dimensions["width"]) dialogData.dimensions["width"] = "0";
 				if ( !dialogData.dimensions["width"]) dialogData.dimensions["width"] = "";
 				dialogData.dimensions["height"] = wikiImageObject.sizeheight;
-//				if ( !dialogData.dimensions["height"]) dialogData.dimensions["height"] = "0";
 				if ( !dialogData.dimensions["height"]) dialogData.dimensions["height"] = "";
 				dialogData.horizontalalignment = wikiImageObject.horizontalalignment;
 				if ( dialogData.horizontalalignment == undefined) dialogData.horizontalalignment = null;
@@ -1022,13 +1016,14 @@ _mwtCheckUploadPermissions = function( editor ) {
 								result = false;
 							} else if (warning == 'exists') {
 								// this warning will also be trapped by destchange so just return warning
-								message = message + "	" + mw.msg("tinymce-upload-alert-destination-filename-already-exists") + "\n";
+								duplicate = warningDetails[0];
+								message = message + "	" + mw.msg("tinymce-upload-alert-destination-filename-already-exists", duplicate ) + "\n";
 								result = false;
 							} else if (warning == 'duplicate') {
 								duplicate = warningDetails[0];
-								message = message + "	" + mw.msg("tinymce-upload-alert-duplicate-file",duplicate) + "\n"
+								message = message + "	" + mw.msg("tinymce-upload-alert-duplicate-file", duplicate ) + "\n"
 							} else {
-								message = message + "	" + mw.msg("tinymce-upload-alert-other-warning",warning) + "\n"
+								message = message + "	" + mw.msg("tinymce-upload-alert-other-warning",warning ) + "\n"
 								result = false;
 							}
 						}
@@ -1106,7 +1101,7 @@ _mwtCheckUploadPermissions = function( editor ) {
 							editor.windowManager.alert(mw.msg("tinymce-upload-alert-source-or-destination-undefined"));
 							return;
 						}
-					} else if (dialogData.type == 'Wiki') {
+					} else if ((dialogData.type == 'Wiki') || (dialogData.type == '')) {
 						fileName = dialogData.dest;
 						uploadPage = _mwtFileNamespace + ":" + fileName;
 					}

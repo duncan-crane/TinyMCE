@@ -428,6 +428,15 @@ var defaultSettings = function(selector) {
 			{title: "Pre", block: "pre", classes: "mw_pre_from_space"},
 			{title: "Paragraph", block: "p"}
 		],
+		formats: {
+			// Changes the default format for h1 to have a class of mwt-heading
+			h1: { block: 'h1', classes: 'mwt-heading' },
+			h2: { block: 'h2', classes: 'mwt-heading' },
+			h3: { block: 'h3', classes: 'mwt-heading' },
+			h4: { block: 'h4', classes: 'mwt-heading' },
+			h5: { block: 'h5', classes: 'mwt-heading' },
+			h6: { block: 'h6', classes: 'mwt-heading' }
+		},
 		block_formats: 'Paragraph=p;Heading 1=h1;Heading 2=h2;Heading 3=h3;Heading 4=h4;Heading 5=h5;Heading 6=h6;Preformatted=pre;Code=code',
 		images_upload_credentials: true,
 //		autoresize_max_height: 400,

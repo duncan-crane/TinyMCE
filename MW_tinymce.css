@@ -31,7 +31,7 @@ thead{
 	border: 1px dotted #0000cc;
 }
 
-.mceNonEditable {
+.mwt-nonEditable {
 /*	display: inline-block;*/
 	/* Image created at http://www.patternify.com, with a 2-pixel width
 	 * of color #d9f7db on a 10x10 "canvas". */
@@ -53,7 +53,7 @@ thead{
 	position: relative;
 }
 
-.mceNonEditableImage {
+.mwt-nonEditableImage {
 	display: contents;
 	/* Image created at http://www.patternify.com, with a 2-pixel width
 	 * of color #d9f7db on a 10x10 "canvas". */
@@ -64,7 +64,7 @@ thead{
 	position: relative;
 }
 
-.mceNonEditableOverlay {
+.mwt-nonEditableOverlay {
 	position: relative;
 	top: 0;
 	left: 0;
