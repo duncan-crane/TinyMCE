@@ -2746,6 +2746,7 @@ debugger;
 		 * @returns {String}
 		 */
 		function doUpload(fileType, fileToUpload, fileName, fileSummary, ignoreWarnings){
+debugger;
 			var uploadData = new FormData();
 			uploadData.append("action", "upload");
 			uploadData.append("filename", fileName);
@@ -2846,7 +2847,11 @@ debugger;
 		 */
 		function getWikiImagePlaceHolder(imageElm, imageLink) {
 			var aLink,
+				file,
 				fileType,
+				fileName,
+				mimeType,
+				extension,
 				uploadDetails,
 				uploadResult,
 				ignoreWarnings = true,
@@ -2867,11 +2872,51 @@ debugger;
 				value,
 				imageCaption,
 				size;
+
+			//return a promise that resolves with a File instance
+			function urltoFile(url, filename, mimeType){
+				return (fetch(url)
+					.then(function(res){return res.arrayBuffer();})
+					.then(function(buf){return new File([buf], filename,{type:mimeType});})
+				);
+			}
+
+			// return a file from the datat image
+			function dataURLtoFile(dataurl, filename) {
+				var arr = dataurl.split(','),
+				mime = arr[0].match(/:(.*?);/)[1],
+				bstr = atob(arr[1]), 
+				n = bstr.length, 
+				u8arr = new Uint8Array(n);
+
+
+				while(n--){
+					u8arr[n] = bstr.charCodeAt(n);
+				}
+					return new File([u8arr], filename, {type:mime});
+			}
+
 			// determine if this is a local image or external
+debugger;
 			if ((protocol == 'https:') || (protocol == 'http:')) {
 				fileType = 'URL';
 				uploadDetails = doUpload(fileType, sourceURI, dstName, fileSummary, ignoreWarnings);
 				uploadResult = checkUploadDetail(uploadDetails, ignoreWarnings, dstName);
+			} else if (protocol == 'data:image') {
+				fileType = 'File';
+				mimeType = attributes[ 'src' ].value.split( ':' )[1].split( ';' )[0];
+				extension = mimeType.split( '/' )[1];
+				fileName = extension + createUniqueNumber() + '.' + extension;
+				dstName = fileName;
+				file = dataURLtoFile( attributes['src'].value, fileName )
+				uploadDetails = doUpload( fileType, file, file.name, fileSummary, ignoreWarnings );
+				uploadResult = checkUploadDetail( uploadDetails, ignoreWarnings, file.name );
+/*				urltoFile( attributes['src'].value, dstName, mimeType )
+				.then ( function ( file ) {
+debugger;
+					uploadDetails = doUpload( fileType, file, file.name, fileSummary, ignoreWarnings );
+					uploadResult = checkUploadDetail( uploadDetails, ignoreWarnings, file.name );
+				});*/
 			} else {
 				// the image is base64 data so create a link as a placeholder with details
 				fileType = 'File';
