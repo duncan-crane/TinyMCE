@@ -63,7 +63,7 @@ var wikilink = function (editor) {
 			aTrail = '',
 			dialogItems,
 			initialData;
-
+debugger;
 		if (typeof(selectedNode.attributes["data-mwt-type"]) !== "undefined" ) {
 			aClass = selectedNode.attributes["class"].value;
 			dataType = selectedNode.attributes["data-mwt-type"].value;
@@ -132,8 +132,8 @@ var wikilink = function (editor) {
 				type: 'selectbox',
 				label: mw.msg("tinymce-link-type-label"),
 				items: [
-					{text: mw.msg("tinymce-link-type-external"), value: 'mceNonEditable mwt-wikiMagic mwt-externallink'},
-					{text: mw.msg("tinymce-link-type-internal"), value: 'mceNonEditable mwt-wikiMagic mwt-internallink'},
+					{text: mw.msg("tinymce-link-type-external"), value: 'mwt-nonEditable mwt-wikiMagic mwt-externallink'},
+					{text: mw.msg("tinymce-link-type-internal"), value: 'mwt-nonEditable mwt-wikiMagic mwt-internallink'},
 				]
 			};
 	

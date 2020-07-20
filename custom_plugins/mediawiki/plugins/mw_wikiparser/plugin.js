@@ -3338,13 +3338,36 @@ debugger;
 	 */	
 	function _onKeyDown(evt) {
 		if (( evt.keyCode == 38 ) || ( evt.keyCode == 40 )) {
-			// up-arrow
+			// up-arrow or down arrow at start or end of editor
+			// content results in an empty paragraph being added
 			var cursorLocation = getCursorOffset();
 
 			_cursorOnDown = cursorLocation.cursor;
 			_cursorOnDownPreviousNode = cursorLocation.previousNode;
 			_cursorOnDownNextNode = cursorLocation.nextNode;
 console.log( "down: " + _cursorOnDown);
+		} else if ( evt.keyCode == 219 ) {
+			var html,
+				args,
+				element,
+				outerHTML;
+
+			html = '<span class="mwt-nonEditable mwt-wikiMagic ">&#91;</span>';
+			element = $( html );							
+			element.addClass("mwt-nonEditable mwt-wikiMagic mwt-htmlEntity");
+			element.attr({
+				'id': '&amp;#91;',
+				'title': '&#91;' ,
+				'data-mwt-type': 'htmlEntity',
+				'data-mwt-wikitext': '&amp;#91;',
+				'draggable': "true",
+				'contenteditable': "false"
+			});
+			outerHTML = element.prop("outerHTML");
+
+			args = {format: 'raw'};
+			setSelection( editor, outerHTML, args );
+			return false;
 		}
 	};
 

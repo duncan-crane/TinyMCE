@@ -122,20 +122,28 @@
 		// it will insert content at the cursor.  If the selection is
 		// contained in non-editable elements, the whole of the top
 		// level non-editable element is replaced with the content
+		var nonEditableParents = [],
+			bm;
+
 		editor.focus();
-		var nonEditableParents = editor.dom.getParents( editor.selection.getNode(),function ( aNode ) {
-			if (aNode.contentEditable === 'false') {
+		nonEditableParents = editor.dom.getParents( editor.selection.getNode(),function ( aNode ) {
+			if ( aNode.contentEditable === 'false' ) {
 				return aNode
 			}
 		});
-		if (nonEditableParents) {
+
+		if ( nonEditableParents.length > 0 ) {
 			editor.selection.select ( nonEditableParents[ nonEditableParents.length - 1 ] );
 		}
+
 		editor.undoManager.transact ( function () {
 			editor.selection.setContent ( content, args );
 		});
-		editor.selection.setCursorLocation ();
-		editor.nodeChanged ();
+		bm = editor.selection.getBookmark();
+
+//		editor.selection.setCursorLocation ();
+//		editor.nodeChanged ();
+		editor.selection.moveToBookmark( bm )
 	};
 
 	var getContent = function ( editor, args ) {
@@ -339,8 +347,8 @@ var defaultSettings = function(selector) {
 		link_title: false,
 		link_assume_external_targets: true,
 		link_class_list: [
-			{title: 'External', value: 'mceNonEditable mwt-wikiMagic mwt-externallink'},
-			{title: 'Internal', value: 'mceNonEditable mwt-wikiMagic mwt-internallink'},
+			{title: 'External', value: 'mwt-nonEditable mwt-wikiMagic mwt-externallink'},
+			{title: 'Internal', value: 'mwt-nonEditable mwt-wikiMagic mwt-internallink'},
 		],
 		target_list: false,
 //		visual_table_class : "wikitable",
