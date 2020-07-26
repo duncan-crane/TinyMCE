@@ -1,7 +1,7 @@
 Note:
 The following is an example of the content needed on LocalSettings.php when using the 'Upgrade to TinyMCE 5' branch code:
 
-<code>
+
 wfLoadExtension( 'TinyMCE' );
 	$wgTinyMCEEnabled = true;
 #Custom TinyMCE configuration
@@ -39,7 +39,6 @@ wfLoadExtension( 'TinyMCE' );
 			)
 		)
 	);
-</code>
 
 == About ==
 
