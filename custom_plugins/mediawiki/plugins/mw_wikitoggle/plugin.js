@@ -18,15 +18,16 @@ var wikitoggle = function (editor) {
 	var editor = tinymce.activeEditor;
 	
     var translate = tinymce.util.I18n.translate;
-
+	
 	var toggle = function ( editor ) {
-		var selectedNode = editor.selection.getNode(),
-			selectors = ["mwt-nonEditablePlaceHolder"],
-			args = {format: 'wiki', load: 'true', convert2html: false};
-		var domQuery = editor.dom.$;
-			
+		var selectedNode = editor.selection.getNode(), 
+			showPlaceholders = editor.getParam("showPlaceholders");
+
+		editor.settings.showPlaceholders = !showPlaceholders;
+
 		var test =	editor.dom.select('span.mwt-nonEditablePlaceHolder').forEach( function(a) {
-				$(a).toggle();
+				$(a).toggleClass( "showPlaceholder", !showPlaceholders );
+				$(a).toggleClass( "hidePlaceholder", showPlaceholders );
 			});
 	};
 

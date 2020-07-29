@@ -261,11 +261,10 @@ var defaultSettings = function(selector) {
 			'template': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/template/plugin.js',
 //			'visualblocks': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualblocks/plugin.js',
 //			'visualchars': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualchars/plugin.js',
-// DC TODO fix fontawesome for TMCE v 5
-//			'wikicode': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikicode/plugin.js',
 			'wikipaste': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikipaste/plugin.js',
 			'wikitable': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikitable/plugin.js',
 			'wikilink': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikilink/plugin.js',
+			'wikinonbreaking': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikinonbreaking/plugin.js',
 			'wikiparser': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiparser/plugin.js',
 			'wikitext': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikitext/plugin.js',
 			'wikitoggle': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikitoggle/plugin.js',
@@ -310,23 +309,7 @@ var defaultSettings = function(selector) {
 		// identified and edited in the TinyMCE editore window
 		//
 		// single new lines: set non_rendering_newline_character to false if you don't use non-rendering single new lines in wiki
-/*		wiki_non_rendering_newline_character: '&#120083', // was &para;
-		// comments: set non_rendering_comment_character to false if you don't use non-rendering comments in wiki
-		wiki_non_rendering_comment_character: '&#8493',
-		// <nowiki /> tags: set non_rendering_nowiki_character to false if you don't use non-rendering nowiki tag in wiki
-		wiki_non_rendering_nowiki_character: '&#120081',
-		// <br /> tags: set rendering_br_character to false if you don't use rendering br tag in wiki
-		wiki_rendering_br_character: '&#8492',
-		// Images are frequntly displayed on the page in a location separate from where the markup appears within the wiki
-		// markup so the following character is used to located the non-rendering image in the editor window.  The image is
-		// also disdplayed, in the editor window where one would expect
-		// Elements containing <img> tags: set non-rendering_img_character to false if you don't use non-rendering img tag in wiki
-		wiki_non_rendering_img_character: '&#8464',
-		// non-rendering parser output: this is used so the parsed element can be edited in the editor.
-		// set non_rendering_parser_output_character to false if you don't use non-rendering parser output placeholder in wiki
-		wiki_non_rendering_parser_output_character: '&#120090',*/
-		//
-//0525		valid_elements: mw_preservedTagsList,
+		showPlaceholders: true,
 		branding: false,
 //		relative_urls: false,
 //		remove_script_host: false,
@@ -337,6 +320,7 @@ var defaultSettings = function(selector) {
 //0525		paste_enable_default_filters: false,
 		paste_word_valid_elements: 'b,strong,i,em,h1,h2,h3,h4,h5,table,tr,th,td,ol,ul,li,a,sub,sup,strike,br,del,div,p',
 //0603		invalid_elements: 'tbody,thead,tfoot,colgroup,col',
+		paste_webkit_styles: "none",
 		browser_spellcheck: true,
 		allow_html_in_named_anchor: true,
 		visual: false,
@@ -413,7 +397,7 @@ var defaultSettings = function(selector) {
 //DC  TODO fix fontawesome for TinyMCE v5
 		toolbar_sticky: true,
 //		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap fontawesome singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect removeformat | searchreplace ',
-		toolbar: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist advlist outdent indent | charmap singlelinebreak wikilink wikiunlink table image media wikiupload wikimagic wikisourcecode wikitext| styleselect template removeformat wikitoggle visualchars visualblocks| searchreplace wslink',
+		toolbar: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist advlist outdent indent | wikilink wikiunlink table image media wikiupload wikimagic wikisourcecode wikitext| styleselect template removeformat| wikitoggle nonbreaking singlelinebreak visualchars visualblocks| searchreplace wslink',
 		style_formats_merge: true,
 		style_formats: [
 			{

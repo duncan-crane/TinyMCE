@@ -469,7 +469,8 @@
       };
     }
     var isMsEdge = function () {
-      return domGlobals.navigator.userAgent.indexOf(' Edge/') !== -1;
+// DC did this
+//      return domGlobals.navigator.userAgent.indexOf(' Edge/') !== -1;
     };
 
     function isWordContent(content) {
@@ -1168,7 +1169,6 @@
         return pasteBin.getLastRng() || editor.selection.getRng();
       };
       editor.on('paste', function (e) {
-
         var isKeyBoardPaste = keyboardPasteEvent.isSet();
         var clipboardContent = getClipboardContent(editor, e);
         var plainTextMode = pasteFormat.get() === 'text' || keyboardPastePlainTextState;

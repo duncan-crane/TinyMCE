@@ -25,60 +25,70 @@
 		 * @type TinyMCE
 		 */
 		var	editor = tinymce.activeEditor,
+
 		/**
 		 *
 		 * Utility functions used in this plugin and others
 		 * @type String
 		 */
 		utility = editor.getParam("wiki_utility"),
+
 		/**
 		 *
 		 * Points to the mediawiki API for this wiki
 		 * @type String
 		 */
 		_mwtWikiApi = editor.getParam("wiki_api_path"),
+
 		/**
 		 *
 		 * Points to the title of the mediawiki page to be accessed by API
 		 * @type String
 		 */
 		_mwtPageTitle = editor.getParam("wiki_page_mwtPageTitle"),
+
 		/**
 		 *
 		 * allowable url protocols defined in wiki
 		 * @type Array
 		 */
 		_mwtUrlProtocols = editor.getParam("wiki_url_protocols"),
+
 		/**
 		 *
 		 * allowable namespace ID's, defined by wiki
 		 * @type Array
 		 */
 		_mwtNamespaces = editor.getParam("wiki_namespaces"),
+
 		/**
 		 *
 		 * local name of the 'file' namespace
 		 * @type Array
 		 */
 		_mwtFileNamespace = editor.getParam("wiki_fileNamespace"),
+
 		/**
 		 *
 		 * allowable extension tags, defined by wiki
 		 * @type Array
 		 */
 		_mwtExtensionTagsList = editor.getParam("wiki_extension_tags_list"),
+
 		/**
 		 *
 		 * allowable tags html tags, defined in MW_tinymce.js
 		 * @type Array
 		 */
 		_mwtPreservedTagsList = editor.getParam("wiki_preserved_tags_list"),
+
 		/**
 		 *
 		 * allowable tags that form html blocks, defined in MW_tinymce.js
 		 * @type Array
 		 */
 		_mwtBlockTagsList = editor.getParam("wiki_block_tags"),
+
 		/**
 		 *
 		 * allowable tags that are processed identically by mediawiki
@@ -86,6 +96,7 @@
 		 * @type Array
 		 */
 		_mwtInvariantTagsList = editor.getParam("wiki_invariant_tags"),
+
 		/**
 		 *
 		 * tags which have a wiki equivalent that we want to preserve in 
@@ -93,6 +104,7 @@
 		 * @type Array
 		 */
 		_mwtPreservedHtmlTagsList = editor.getParam("wiki_preserved_html_tags"),
+
 		/**
 		 *
 		 * global used to store the form of pipe used in the original wikicode
@@ -102,8 +114,16 @@
 		 * @type String
 		 */
 		_pipeText = ($(editor.targetElm).hasClass('mcePartOfTemplate')) ? '{{!}}' : '|',
+
 		/**
 		 *
+		 * Flag used for toggling visible placeholders on or off and
+		 * variable containing initial class value for the placeholders
+		 *
+		 */
+		_showPlaceholders = editor.getParam("showPlaceholders"),
+		_placeholderClass = _showPlaceholders ? "showPlaceholder" : "hidePlaceholder",
+
 		/**
 		 *
 		 * span for inserting a placeholder in editor text for 
@@ -113,10 +133,12 @@
 		 */
 		_slb = 
 			'<span class="mwt-nonEditablePlaceHolder mwt-singleLinebreak mwt-slb' 
-			+ (editor.getParam("directionality")) + '" title="' + 
-			mw.msg('tinymce-wikicode-non-rendering-single-linebreak' ) +
-			'" dragable="true" contenteditable="false">' + '&thinsp;' +
-			'</span>',
+			+ (editor.getParam("directionality")) + ' ' + _placeholderClass 
+			+ '" title="'
+			+ mw.msg('tinymce-wikicode-non-rendering-single-linebreak' )
+			+ '" dragable="true" contenteditable="false">' + '&thinsp;'
+			+ '</span>',
+
 		/**
 		 *
 		 * span for inserting a placeholder in editor text for 
@@ -125,9 +147,10 @@
 		 * @type String
 		 */
 		_swt = 
-			'<span class="mwt-nonEditablePlaceHolder mwt-switch"' +
-			'" dragable="true" contenteditable="false">' + 
-			'</span>',
+			'<span class="mwt-nonEditablePlaceHolder mwt-switch '  + _placeholderClass
+			+ '" dragable="true" contenteditable="false">' 
+			+ '</span>',
+
 		/**
 		 *
 		 * span for inserting a placeholder in editor text for 
@@ -136,9 +159,10 @@
 		 * @type String
 		 */
 		_cmt = 
-			'<span class="mwt-nonEditablePlaceHolder mwt-comment"' +
-			'" dragable="true" contenteditable="false">' + 
-			'</span>',
+			'<span class="mwt-nonEditablePlaceHolder mwt-comment '  + _placeholderClass
+			+ '" dragable="true" contenteditable="false">' 
+			+ '</span>',
+
 		/**
 		 *
 		 * span for inserting a placeholder in editor text for 
@@ -147,9 +171,22 @@
 		 * @type String
 		 */
 		_nrw = 
-			'<span class="mwt-nonEditablePlaceHolder mwt-emptyOutput"' +
-			'" dragable="true" contenteditable="false">' + 
-			'</span>',
+			'<span class="mwt-nonEditablePlaceHolder mwt-emptyOutput '  + _placeholderClass
+			+ '" dragable="true" contenteditable="false">' 
+			+ '</span>',
+
+		/**
+		 *
+		 * span for inserting a placeholder in editor text for 
+		 * non-breaking spaces.  
+		 * The character displayed is defined in MW_tinymce.css 
+		 * @type String
+		 */
+		_nbs = 
+			'<span class="mwt-nonEditablePlaceHolder  mwt-nonBreakingSpace '  + _placeholderClass
+			+ '" dragable="true" contenteditable="false">' 
+			+ '</span>',
+
 		/**
 		 *
 		 * array to store html snippets and placeholders for each.
@@ -346,7 +383,7 @@
 			if ( !tagHTML.match(/^<.*>$/gmi) ) {
 				tagHTML = '<code>' + tagHTML + '</code>';
 			};
-debugger;
+
 			// create DOM element from tagHTML
 			element = $(tagHTML);							
 			element.addClass("mwt-nonEditable mwt-wikiMagic mwt-" + tagClass);
@@ -699,7 +736,7 @@ debugger;
 						// now build the html equivalent from each parsed wikicode fragment
 						element = $(html);							
 						if (tagClass == 'image' ) {
-							element.addClass("mwt-nonEditableImage mwt-wikiMagic mwt-" + tagClass);
+							element.addClass("mwt-nonEditableImage mwt-wikiMagic mwt-" + tagClass + " " + _placeholderClass);
 						} else {
 							element.addClass("mwt-nonEditable mwt-wikiMagic mwt-" + tagClass);
 						}
@@ -747,7 +784,7 @@ debugger;
 			matcher = new RegExp(regex, 'gmi');
 			text = text.replace(matcher, function(match) {
 
-				return _getPlaceHolder4Html(match, _swt, 'switch', 'nonEditable');
+				return _getPlaceHolder4Html(match, _swt, 'switch', 'editable');
 			});
 
 			// find and process all the comment tags in the wiki code
@@ -756,7 +793,7 @@ debugger;
 			matcher = new RegExp(regex, 'gmi');
 			text = text.replace(matcher, function(match) {
 
-				return _getPlaceHolder4Html(match, _cmt, 'comment', 'nonEditable');
+				return _getPlaceHolder4Html(match, _cmt, 'comment', 'editable');
 			});
 
 			// nowiki tags can be used to escape html so process
@@ -798,10 +835,16 @@ debugger;
 				//$1 = the encoded character
 				var html;
 
-				// double encode &amp; otherwise will display incorrectly if recoverred
 				match = htmlEncode(match);
-				html = '<span class="mwt-nonEditable mwt-wikiMagic ">&' + $1 + ';</span>';
-				return _getPlaceHolder4Html(match, html, 'htmlEntity', 'nonEditable')
+				if ( $1  == 'nbsp' ) {
+					// process non-breaking spaces 
+					html = _nbs;
+					return _getPlaceHolder4Html(match, html, 'htmlEntity', 'editable')
+				} else {
+					// double encode &amp; otherwise will display incorrectly if recoverred
+					html = '<span class="mwt-nonEditable mwt-wikiMagic ">&' + $1 + ';</span>';
+					return _getPlaceHolder4Html(match, html, 'htmlEntity', 'nonEditable')
+				}
 			});
 
 			// find and process all the pre and nowiki tags in the wiki code as wiki markup is ignored
@@ -906,12 +949,17 @@ debugger;
 			// If the space is followed by any tag or | then ignore
 			regex = '(^|\\n)( +[^\\s][^]+?)(?=(\\n\\S|\\n\\s*\\n|\\n\\s*$))';
 			matcher = new RegExp(regex, 'gmi');
+
 			text = text.replace(matcher, function(match, $1, $2, $3, offset, string) {
 				// $1 = the new lines preceding the text in pseudo <pre>s
 				// $2 = lines starting with spaces to be placed in the pseudo <pre>s
 				// $3 = the line following the text in pseudo <pre>s
 				var parserResult,
 					tableCloseNewLine = '';
+
+				// edge seems to match a '.' as a new line so check if $1 is '' and offset >0
+				
+				if (( $1.search(/\n/) > -1 ) && ( offset > 0 )) return match;
 
 				// spaces before the opening '{|' of a table aren't treated as a pseodo pre
 				if ( $2.match( /^\s*\{\|/ ) ) {
@@ -1009,6 +1057,7 @@ debugger;
 							elm.attr( "title", function (i, title) {
 								title = _recoverPlaceholders2Wiki( title );
 								return title;
+//								return tinymce.trim( title );
 							});
 						}
 
@@ -1070,6 +1119,7 @@ debugger;
 			// step through text a line at a time looking for lines 
 			// that contain html tags
 			var lines = text.split(/\n/);
+
 			for (var i = 0; i < lines.length; i++) {
 				var line = lines[i];
 				line = line.replace(matcher, function (match, $1, $2, $3, $4) {
@@ -2633,7 +2683,8 @@ debugger;
 		function recoverTags2Wiki(text) {
 			if (_tags4Wiki){
 				while (text.match(/\<@@@.*?:\d*@@@>/)) {
-					text = text.replace(/(\<@@@.*?:\d*@@@>)/gi, function(match, $1, offset, string) {
+					text = text.replace(/(\<@@@.*?:\d*@@@>)/gi, function(match, $1, offset, text) {
+
 						// replace '&amp;amp;' with '&amp;' as we double escaped these when they were converted
 //						return _tags4Wiki[$1].replace(/&amp;amp;/gmi,'&amp;');
 						// '&amp;' is processed by the wiki don and turned into '&'
@@ -2746,7 +2797,6 @@ debugger;
 		 * @returns {String}
 		 */
 		function doUpload(fileType, fileToUpload, fileName, fileSummary, ignoreWarnings){
-debugger;
 			var uploadData = new FormData();
 			uploadData.append("action", "upload");
 			uploadData.append("filename", fileName);
@@ -2838,6 +2888,7 @@ debugger;
 			}
 			return result;
 		}
+
 		/**
 		 * creates a wiki link for an image and returns a place
 		 * holder for the html text, which is substituted later
@@ -2876,8 +2927,10 @@ debugger;
 			//return a promise that resolves with a File instance
 			function urltoFile(url, filename, mimeType){
 				return (fetch(url)
-					.then(function(res){return res.arrayBuffer();})
-					.then(function(buf){return new File([buf], filename,{type:mimeType});})
+/*					.then(function(res){return res.arrayBuffer();})
+					.then(function(buf){return new File([buf], filename,{type:mimeType});})*/
+					.await (function(res){return res.arrayBuffer();})
+					.await (function(buf){return new File([buf], filename,{type:mimeType});})
 				);
 			}
 
@@ -2897,7 +2950,6 @@ debugger;
 			}
 
 			// determine if this is a local image or external
-debugger;
 			if ((protocol == 'https:') || (protocol == 'http:')) {
 				fileType = 'URL';
 				uploadDetails = doUpload(fileType, sourceURI, dstName, fileSummary, ignoreWarnings);
@@ -2906,17 +2958,38 @@ debugger;
 				fileType = 'File';
 				mimeType = attributes[ 'src' ].value.split( ':' )[1].split( ';' )[0];
 				extension = mimeType.split( '/' )[1];
-				fileName = extension + createUniqueNumber() + '.' + extension;
+				fileName = 'img' + createUniqueNumber() + '.' + extension;
 				dstName = fileName;
 				file = dataURLtoFile( attributes['src'].value, fileName )
 				uploadDetails = doUpload( fileType, file, file.name, fileSummary, ignoreWarnings );
 				uploadResult = checkUploadDetail( uploadDetails, ignoreWarnings, file.name );
 /*				urltoFile( attributes['src'].value, dstName, mimeType )
 				.then ( function ( file ) {
-debugger;
 					uploadDetails = doUpload( fileType, file, file.name, fileSummary, ignoreWarnings );
 					uploadResult = checkUploadDetail( uploadDetails, ignoreWarnings, file.name );
 				});*/
+/*			} else if (protocol.split(':')[0].toLowerCase() == 'blob') {
+//				var reader = new FileReader;
+//reader.onload = function(e) {
+	// browser completed reading file - display it
+//	alert(e.target.result);
+//};
+//				file = urltoFile( sourceURI );
+				fileType = 'File';
+				mimeType = 'image/jpeg';
+				extension = 'jpg';
+				fileName = 'img' + createUniqueNumber() + '.' + extension;
+				dstName = fileName;
+				file = urltoFile( sourceURI, fileName, mimeType )
+				uploadDetails = doUpload( fileType, file, file.name, fileSummary, ignoreWarnings );
+				uploadResult = checkUploadDetail( uploadDetails, ignoreWarnings, file.name );*/
+
+/*  let file = input.files[0];
+
+  let reader = new FileReader();
+
+  reader.readAsText(file);*/
+
 			} else {
 				// the image is base64 data so create a link as a placeholder with details
 				fileType = 'File';
@@ -3001,9 +3074,11 @@ debugger;
 			if (htmlImageObject['link']) {
 				wikiImageObject.caption = htmlImageObject['link'];
 			}
+
 			// Build wikitext
 			wikiText = [];
 			wikiText.push(wikiImageObject.imagename);
+
 			// process attributes of image
 			for (property in wikiImageObject) {
 				if ($.inArray(property, ['imagename', 'thumbsize']) !== -1) {
@@ -3079,6 +3154,7 @@ debugger;
 					continue;
 				}
 			}
+
 			// make sure image caption comes in the end
 			if ( imageCaption ) {
 				wikiText.push( imageCaption );
@@ -3142,8 +3218,18 @@ debugger;
 	 * @returns {String}
 	 */
 	function insertSingleLinebreak() {
-		var args,
-		args = {format: 'raw'};
+		var args = {format: 'raw'};
+
+		_showPlaceholders = editor.getParam("showPlaceholders");
+		_placeholderClass = _showPlaceholders ? "showPlaceholder" : "hidePlaceholder";
+		_slb = 
+			'<span class="mwt-nonEditablePlaceHolder mwt-singleLinebreak mwt-slb' 
+			+ (editor.getParam("directionality")) + ' ' + _placeholderClass 
+			+ '" title="'
+			+ mw.msg('tinymce-wikicode-non-rendering-single-linebreak' )
+			+ '" dragable="true" contenteditable="false">' + '&thinsp;'
+			+ '</span>';
+
 		setSelection( editor, _slb, args );
 	}
 
@@ -3258,10 +3344,12 @@ debugger;
 debugger;
 
 		text = e.content;
+console.log(text);
 		text = text.replace(/\[/gmi, '&amp;#91;' )
 		text = text.replace(/\{/gmi, '&amp;#123;' )
 		text = _convertHtml2Wiki( text );
 		text = _convertWiki2Html( text );
+console.log(text);
 		e.content = text;
 	}
 
@@ -3278,6 +3366,7 @@ debugger;
 			$dom;
 
 		$dom = $(e.node);
+text = htmlDecode ($dom[0].innerHTML);
 		$dom.find( "meta" ).replaceWith( function() {
 			return '';
 		});
@@ -3368,6 +3457,15 @@ console.log( "down: " + _cursorOnDown);
 			args = {format: 'raw'};
 			setSelection( editor, outerHTML, args );
 			return false;
+		} else if ( evt.keyCode == 32 ) {
+			var html,
+				args,
+				element,
+				outerHTML;
+			if (( evt.ctrlKey == true ) && ( evt.shiftKey == true )) {
+				editor.execCommand('mceNonBreaking');
+			}
+			return true;
 		}
 	};
 
