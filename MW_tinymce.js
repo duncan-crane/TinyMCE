@@ -264,7 +264,7 @@ var defaultSettings = function(selector) {
 			'wikipaste': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikipaste/plugin.js',
 			'wikitable': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikitable/plugin.js',
 			'wikilink': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikilink/plugin.js',
-			'wikinonbreaking': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikinonbreaking/plugin.js',
+ 			'wikinonbreaking': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikinonbreaking/plugin.js',
 			'wikiparser': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiparser/plugin.js',
 			'wikitext': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikitext/plugin.js',
 			'wikitoggle': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikitoggle/plugin.js',
@@ -324,6 +324,7 @@ var defaultSettings = function(selector) {
 		browser_spellcheck: true,
 		allow_html_in_named_anchor: true,
 		visual: false,
+		nonbreaking_wrap: false,
 		wikimagic_context_toolbar: true,
 		browsercontextmenu_context_toolbar: true,
 		contextmenu: "undo redo | cut copy paste insert | link wikimagic table | styleselect removeformat | browsercontextmenu",
@@ -488,7 +489,6 @@ var updateSettings = function(tinyMCESelector, settings) {
 				$.extend( defaultSet[k], v );
 			}
 		} else if ( k.endsWith( '-' ) ) {
-debugger;
 			// removing from default parameter
 			k = k.slice( 0, - 1 );
 			if ($.type( defaultSet[k] ) === "string") {

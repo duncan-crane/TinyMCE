@@ -133,6 +133,25 @@ p {
    content:  "\00A0";
 }
 
+.showPlaceholder.mwt-reference::before {
+  content: "[\2020 ";
+  color: red;
+}
+
+.showPlaceholder.mwt-reference::after {
+  content: "]";
+  color: red;
+}
+
+.hidePlaceholder.mwt-reference {
+   display:  none;
+}
+
+/*.mwt-reference {
+    background-color: #f8f9fa !important;
+    border: 1px solid #eaecf0 !important;
+}*/
+
 .mwt-nonEditable {
 /*	display: inline-block;*/
 	/* Image created at http://www.patternify.com, with a 2-pixel width
@@ -144,7 +163,7 @@ p {
 	position: relative;
 }
 
-.showPlaceholder.mwt-nonEditablePlaceHolder {
+.showPlaceholder.mwt-nonEditable.mwt-placeHolder {
 	/*display: inline-block;*/
 	/* Image created at http://www.patternify.com, with a 2-pixel width
 	 * of color #d9f7db on a 10x10 "canvas". */
@@ -155,7 +174,27 @@ p {
 	position: relative;
 }
 
-.hidePlaceholder.mwt-nonEditablePlaceHolder {
+.hidePlaceholder.mwt-nonEditable.mwt-placeHolder {
+	padding: 2px;
+	position: relative;
+}
+
+.showPlaceholder.mwt-editable.mwt-placeHolder {
+    color: #000;
+    background-color: #f8f9fa;
+/*    border: 1px solid #eaecf0;*/
+    border-radius: 2px;
+/*    padding: 1px 4px;*/
+	/*display: inline-block;*/
+	/* Image created at http://www.patternify.com, with a 2-pixel width
+	 * of color #d9f7db on a 10x10 "canvas". */
+	border: #90c693 1px solid;
+	padding: 1px;
+/*	opacity: 0.7 !important;*/
+	position: relative;
+}
+
+.hidePlaceholder.mwt-editable.mwt-placeHolder {
 	padding: 2px;
 	position: relative;
 }
