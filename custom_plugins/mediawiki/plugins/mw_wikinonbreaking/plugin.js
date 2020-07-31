@@ -7,9 +7,9 @@
  * Version: 5.3.0 (2020-05-21)
  */
 (function () {
-    'use strict';
+	'use strict';
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+	var pluginManager = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
 	var	editor = tinymce.activeEditor;
 
@@ -17,12 +17,12 @@
 
 	var setSelection = utility.setSelection;
 
-    var insertNbsp = function (editor, times) {
+	var insertNbsp = function (editor, times) {
 
 		var args = {format: 'raw'},
 			showPlaceholders = editor.getParam("showPlaceholders"),
 			placeholderClass = showPlaceholders ? "showPlaceholder" : "hidePlaceholder",
-			nbsSpan = '<span class="mwt-nonEditablePlaceHolder  mwt-nonBreakingSpace '  + placeholderClass
+			nbsSpan = '<span class="mwt-nonEditable mwt-placeHolder mwt-nonBreakingSpace '  + placeholderClass
 			  	+ '" dragable="true" contenteditable="false">' 
 			  	+ '</span>';
   
@@ -30,36 +30,53 @@
 
     };
 
-    var register = function (editor) {
-      editor.addCommand('mceNonBreaking', function () {
-        insertNbsp(editor, 1);
-      });
-    };
+	var registerCommand = function (editor) {
+		editor.addCommand('mceNonBreaking', function () {
+			insertNbsp(editor, 1);
+		});
+	};
 
 
-    var register$1 = function (editor) {
-      editor.ui.registry.addButton('nonbreaking', {
-        icon: 'non-breaking',
-        tooltip: 'Nonbreaking space',
-        onAction: function () {
-          return editor.execCommand('mceNonBreaking');
-        }
-      });
-      editor.ui.registry.addMenuItem('nonbreaking', {
-        icon: 'non-breaking',
-        text: 'Nonbreaking space',
-        onAction: function () {
-          return editor.execCommand('mceNonBreaking');
-        }
-      });
+	var registerButtons = function (editor) {
+		editor.ui.registry.addButton('nonbreaking', {
+			icon: 'non-breaking',
+			tooltip: 'Nonbreaking space',
+			onAction: function () {
+				return editor.execCommand('mceNonBreaking');
+			}
+		});
+		editor.ui.registry.addMenuItem('nonbreaking', {
+			icon: 'non-breaking',
+			text: 'Nonbreaking space',
+			onAction: function () {
+				return editor.execCommand('mceNonBreaking');
+			}
+		});
+	};
+
+    var setup = function (editor) {
+		editor.on('keydown', function (evt) {
+			if ( evt.keyCode == 32 ) {
+				var html,
+					args,
+					element,
+					outerHTML;
+				if (( evt.ctrlKey == true ) && ( evt.shiftKey == true )) {
+					editor.execCommand('mceNonBreaking');
+				}
+				return true;
+			}
+		});
     };
+
 
     function Plugin () {
-      global.add('wikinonbreaking', function (editor) {
-        register(editor);
-        register$1(editor);
-      });
-    }
+		pluginManager.add('wikinonbreaking', function (editor) {
+			registerCommand( editor );
+			registerButtons( editor );
+			setup( editor );
+		});
+	}
 
     Plugin();
 

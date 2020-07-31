@@ -132,7 +132,7 @@
 		 * @type String
 		 */
 		_slb = 
-			'<span class="mwt-nonEditablePlaceHolder mwt-singleLinebreak mwt-slb' 
+			'<span class="mwt-nonEditable mwt-placeHolder mwt-singleLinebreak mwt-slb' 
 			+ (editor.getParam("directionality")) + ' ' + _placeholderClass 
 			+ '" title="'
 			+ mw.msg('tinymce-wikicode-non-rendering-single-linebreak' )
@@ -147,7 +147,7 @@
 		 * @type String
 		 */
 		_swt = 
-			'<span class="mwt-nonEditablePlaceHolder mwt-switch '  + _placeholderClass
+			'<span class="mwt-nonEditable mwt-placeHolder mwt-switch '  + _placeholderClass
 			+ '" dragable="true" contenteditable="false">' 
 			+ '</span>',
 
@@ -159,7 +159,7 @@
 		 * @type String
 		 */
 		_cmt = 
-			'<span class="mwt-nonEditablePlaceHolder mwt-comment '  + _placeholderClass
+			'<span class="mwt-nonEditable mwt-placeHolder mwt-comment '  + _placeholderClass
 			+ '" dragable="true" contenteditable="false">' 
 			+ '</span>',
 
@@ -171,7 +171,7 @@
 		 * @type String
 		 */
 		_nrw = 
-			'<span class="mwt-nonEditablePlaceHolder mwt-emptyOutput '  + _placeholderClass
+			'<span class="mwt-nonEditable mwt-placeHolder mwt-emptyOutput '  + _placeholderClass
 			+ '" dragable="true" contenteditable="false">' 
 			+ '</span>',
 
@@ -183,7 +183,7 @@
 		 * @type String
 		 */
 		_nbs = 
-			'<span class="mwt-nonEditablePlaceHolder  mwt-nonBreakingSpace '  + _placeholderClass
+			'<span class="mwt-nonEditable mwt-placeHolder  mwt-nonBreakingSpace '  + _placeholderClass
 			+ '" dragable="true" contenteditable="false">' 
 			+ '</span>',
 
@@ -873,6 +873,32 @@
 				// $1 = the tag name
 
 				return _getPlaceHolder4Html(match, 'toParse', $1, 'nonEditable');
+			});
+
+			// treat <ref> here as we want to make them editable by TinyMCE
+			regex = '<(ref)[\\S\\s]*?>([\\S\\s]*?)<\\/\\1>';
+			matcher = new RegExp(regex, 'gmi');
+			text = text.replace(matcher, function(match, $1, $2, offset) {
+				// $1 = the tag
+				// $2 = contents of tag
+				var parserResult,
+					refHtml,
+					refNote;
+debugger;
+
+			  	refHtml = 
+				  '<span class="mwt-editable mwt-placeHolder mwt-reference '  + _placeholderClass
+				  + '" dragable="true" contenteditable="true">' 
+				  + $2
+				  + '</span>';
+
+				parserResult = _parseWiki4Html(match);
+				refNote = $.trim(parserResult.parsedHtml);
+				refNote = refNote.substr(0, refNote.search('<\/sup>') + 6);
+//				refNote = refNote.replace(/(^.*\<\/sup\>).*$/gmi, '$1');
+
+				// remove the extraneous new line if inserted at end!
+				return _getPlaceHolder4Html(parserResult.parsedWikiText, refNote + refHtml, $1, 'editable')
 			});
 
 			// treat any extension tag pairs in the wikicode 
@@ -2235,6 +2261,11 @@
 					elm.replaceWith( function(a) {
 						return this.id;
 					});
+				} else if (elm.hasClass( 'mwt-nonBreakingSpace' )) {
+					// process html entities
+					elm.replaceWith( function(a) {
+						return '&nbsp;';
+					});
 				} else if (elm.hasClass( 'mwt-emptylineFirst' )) {
 					// process empty line first tags
 					elm.replaceWith( function(a) {
@@ -2249,6 +2280,11 @@
 					// process non rendering new lines
 					elm.replaceWith( function(a) {
 						return '<@@snl@@>';
+					});
+				} else if (elm.hasClass( 'reference' )) {
+					// process non rendering new lines
+					elm.replaceWith( function(a) {
+						return '';
 					});
 				} else {
 					if ( elm.children().length > 0) {
@@ -2272,7 +2308,15 @@
 						elm.replaceWith( function(a) {
 							return html;
 						});
-					} else if ( elm.hasClass( 'mwt-preserveHtml' )) {
+ 					} else if ( elm.hasClass( 'mwt-reference' )) {
+						// spans with class mwt-rference are coverted to mediawiki <rfe>
+						var html;
+
+						html = '<ref>' + elm[0].innerHTML + '</ref>';
+						elm.replaceWith( function(a) {
+							return html;
+						});
+ 					} else if ( elm.hasClass( 'mwt-preserveHtml' )) {
 						// process html that is preserved in wiki text
 						var outerHtml,
 							tagNewline = '',
@@ -3223,7 +3267,7 @@
 		_showPlaceholders = editor.getParam("showPlaceholders");
 		_placeholderClass = _showPlaceholders ? "showPlaceholder" : "hidePlaceholder";
 		_slb = 
-			'<span class="mwt-nonEditablePlaceHolder mwt-singleLinebreak mwt-slb' 
+			'<span class="mwt-nonEditable mwt-placeHolder mwt-singleLinebreak mwt-slb' 
 			+ (editor.getParam("directionality")) + ' ' + _placeholderClass 
 			+ '" title="'
 			+ mw.msg('tinymce-wikicode-non-rendering-single-linebreak' )
@@ -3457,15 +3501,6 @@ console.log( "down: " + _cursorOnDown);
 			args = {format: 'raw'};
 			setSelection( editor, outerHTML, args );
 			return false;
-		} else if ( evt.keyCode == 32 ) {
-			var html,
-				args,
-				element,
-				outerHTML;
-			if (( evt.ctrlKey == true ) && ( evt.shiftKey == true )) {
-				editor.execCommand('mceNonBreaking');
-			}
-			return true;
 		}
 	};
 
