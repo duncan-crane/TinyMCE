@@ -1,6 +1,4 @@
 /**
- * mw-wikitext plugin
- *
  * This pluging creates and displays a dialog for editing the wikitext
  * equivalent of the content of the editor
  *
@@ -8,6 +6,8 @@
  * Author: Duncan Crane, duncan.crane@aoxomoxoa.co.uk
  * Licensed under the LGPL or a commercial license.
  * For LGPL see License.txt in the project root for license information.
+ *
+ * mw-wikitext plugin
  *
  * Version: 1.0.0 (2020-05-30)
  */

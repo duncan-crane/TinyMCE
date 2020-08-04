@@ -183,8 +183,8 @@
 		 * @type String
 		 */
 		_nbs = 
-			'<span class="mwt-nonEditable mwt-placeHolder  mwt-nonBreakingSpace '  + _placeholderClass
-			+ '" dragable="true" contenteditable="false">' 
+			'<span class="mwt-placeHolder  mwt-nonBreakingSpace '  + _placeholderClass
+			+ '" dragable="true" contenteditable="false" title="&amp;nbsp;" >' 
 			+ '</span>',
 
 		/**
@@ -875,41 +875,42 @@
 				return _getPlaceHolder4Html(match, 'toParse', $1, 'nonEditable');
 			});
 
-			// treat <ref> here as we want to make them editable by TinyMCE
-			regex = '<(ref)[\\S\\s]*?>([\\S\\s]*?)<\\/\\1>';
-			matcher = new RegExp(regex, 'gmi');
-			text = text.replace(matcher, function(match, $1, $2, offset) {
-				// $1 = the tag
-				// $2 = contents of tag
-				var parserResult,
-					refHtml,
-					refNote;
-debugger;
-
-			  	refHtml = 
-				  '<span class="mwt-editable mwt-placeHolder mwt-reference '  + _placeholderClass
-				  + '" dragable="true" contenteditable="true">' 
-				  + $2
-				  + '</span>';
-
-				parserResult = _parseWiki4Html(match);
-				refNote = $.trim(parserResult.parsedHtml);
-				refNote = refNote.substr(0, refNote.search('<\/sup>') + 6);
-//				refNote = refNote.replace(/(^.*\<\/sup\>).*$/gmi, '$1');
-
-				// remove the extraneous new line if inserted at end!
-				return _getPlaceHolder4Html(parserResult.parsedWikiText, refNote + refHtml, $1, 'editable')
-			});
-
 			// treat any extension tag pairs in the wikicode 
 			// The list of extension tag codes is define in MW_tinymce.js in the extension root
 			regex = '<(' + _mwtExtensionTagsList + ')(\\s.*?>|>)([\\S\\s]*?)<\\/\\1>';
 			matcher = new RegExp(regex, 'gmi');
 
-			text = text.replace(matcher, function(match, $1) {
+			text = text.replace(matcher, function(match, $1, $2, $3) {
 				// $1 = the tag name
+				// $2 = attributes of the tag
+				// $3 = the content of the tag pair
+				
+			if ( $1 = 'ref' ) {
+				// this is a reference and the 'cite' extension is enabled
+				var parserResult,
+					refHtml,
+					refText,
+					refNote;
 
+				refHtml = _convertWiki2Html( $.trim( $3 ) );
+				refText = editor.dom.createFragment( refHtml ).textContent
+	
+			  	refHtml = 
+				  '<span class="mwt-editable mwt-placeHolder mwt-reference '  + _placeholderClass
+				  + '" dragable="true" contenteditable="true">' 
+				  + refHtml
+				  + '</span>';
+
+				parserResult = _parseWiki4Html(match);
+				refNote = $.trim(parserResult.parsedHtml);
+				refNote = refNote.substr(0, refNote.search('<\/sup>') + 6);
+				
+				refNote = refNote.replace(/^<sup /, '<sup title="' + refText + '" ');
+
+				return _getPlaceHolder4Html(parserResult.parsedWikiText, refNote + refHtml, $1, 'editable')				
+			}else {
 				return _getPlaceHolder4Html(match, 'toParse', $1, 'nonEditable');
+			}
 			});
 
 			// then treat extension tag singletons
@@ -2264,7 +2265,7 @@ debugger;
 				} else if (elm.hasClass( 'mwt-nonBreakingSpace' )) {
 					// process html entities
 					elm.replaceWith( function(a) {
-						return '&nbsp;';
+						return '&amp;nbsp;';
 					});
 				} else if (elm.hasClass( 'mwt-emptylineFirst' )) {
 					// process empty line first tags
@@ -2282,7 +2283,12 @@ debugger;
 						return '<@@snl@@>';
 					});
 				} else if (elm.hasClass( 'reference' )) {
-					// process non rendering new lines
+					// process reference numbers
+					elm.replaceWith( function(a) {
+						return '';
+					});
+				} else if (elm.hasClass( 'reference' )) {
+					// process reference numbers
 					elm.replaceWith( function(a) {
 						return '';
 					});
@@ -2308,8 +2314,16 @@ debugger;
 						elm.replaceWith( function(a) {
 							return html;
 						});
- 					} else if ( elm.hasClass( 'mwt-reference' )) {
-						// spans with class mwt-rference are coverted to mediawiki <rfe>
+					} else if ( elm.hasClass( 'mwt-dummyReference' )) {
+						// spans with class mwt-dummyRference are replaced with their innerHTML
+						var html;
+
+						html = elm[0].innerHTML;
+						elm.replaceWith( function(a) {
+							return $.trim( html );
+						});
+					} else if ( elm.hasClass( 'mwt-reference' )) {
+						// spans with class mwt-rference are coverted to mediawiki <ref>
 						var html;
 
 						html = '<ref>' + elm[0].innerHTML + '</ref>';

@@ -20,7 +20,7 @@
 	//DC TODO make sure TinyMCE set up to process all these tags itself otherwise you'll
 	//need to add them back into mw_htmlPairsStatic or mw_htmlSingle. below
 	  'abbr', 'b', 'bdi', 'bdo', 
-	  'caption', 'center', 'cite',// 'code',
+	  'caption', 'center', 'reference',// 'code',
 	  'data', 'del', 'dfn',  
 	  'ins', 'kbd', 'mark', 'p', 'q',
 	  'rb', 'rp', 'rt', 'rtc', 'ruby',
@@ -141,8 +141,6 @@
 		});
 		bm = editor.selection.getBookmark();
 
-//		editor.selection.setCursorLocation ();
-//		editor.nodeChanged ();
 		editor.selection.moveToBookmark( bm )
 	};
 
@@ -166,6 +164,10 @@
 		return Math.floor( ( Math.random() * 100000000 ) + Date.now());
 	};
 	
+	var translate = function( message ) {
+		return mw.msg( message )
+	};
+
 /*	var onDblClickLaunch = function ( editor, aTarget, aClass, aCommand) {	
 		var selectedNodeParents = editor.dom.getParents( aTarget, function ( aNode ) {
 			if ( aNode.className.indexOf( aClass ) > -1 ) {
@@ -216,7 +218,8 @@
 		htmlEncode: htmlEncode,
 		createUniqueNumber: createUniqueNumber,
 //		onDblClickLaunch: onDblClickLaunch,
-		toggleEnabledState: toggleEnabledState
+		toggleEnabledState: toggleEnabledState,
+		translate: translate
 	};
 
 var defaultSettings = function(selector) {
@@ -226,6 +229,8 @@ var defaultSettings = function(selector) {
 		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/silver/theme.min.js',
 		skin_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/skins/ui/oxide',
 		icons_url: mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiparser/icons/icons.js',
+//		mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikireference/icons/icons.js',
+//		icons_url: mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikireference/icons/icons.js',
 		icons: 'mwt',
 		language_url: tinyMCELangURL,
 		language: tinyMCELanguage,
@@ -261,11 +266,12 @@ var defaultSettings = function(selector) {
 			'template': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/template/plugin.js',
 //			'visualblocks': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualblocks/plugin.js',
 //			'visualchars': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualchars/plugin.js',
-			'wikipaste': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikipaste/plugin.js',
-			'wikitable': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikitable/plugin.js',
 			'wikilink': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikilink/plugin.js',
  			'wikinonbreaking': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikinonbreaking/plugin.js',
 			'wikiparser': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiparser/plugin.js',
+			'wikipaste': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikipaste/plugin.js',
+			'wikireference': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikireference/plugin.js',
+			'wikitable': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikitable/plugin.js',
 			'wikitext': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikitext/plugin.js',
 			'wikitoggle': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikitoggle/plugin.js',
 			'wikiupload': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiupload/plugin.js',
@@ -317,9 +323,7 @@ var defaultSettings = function(selector) {
 //		tinyMCETemplates: tinyMCETemplates,
 		automatic_uploads: true,
 		paste_data_images: true,
-//0525		paste_enable_default_filters: false,
 		paste_word_valid_elements: 'b,strong,i,em,h1,h2,h3,h4,h5,table,tr,th,td,ol,ul,li,a,sub,sup,strike,br,del,div,p',
-//0603		invalid_elements: 'tbody,thead,tfoot,colgroup,col',
 		paste_webkit_styles: "none",
 		browser_spellcheck: true,
 		allow_html_in_named_anchor: true,
@@ -398,7 +402,7 @@ var defaultSettings = function(selector) {
 //DC  TODO fix fontawesome for TinyMCE v5
 		toolbar_sticky: true,
 //		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap fontawesome singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect removeformat | searchreplace ',
-		toolbar: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist advlist outdent indent | wikilink wikiunlink table image media wikiupload wikimagic wikisourcecode wikitext| styleselect template removeformat| wikitoggle nonbreaking singlelinebreak visualchars visualblocks| searchreplace wslink',
+		toolbar: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist advlist outdent indent | wikilink wikiunlink table image media | styleselect removeformat| visualchars visualblocks| searchreplace |  wikimagic wikisourcecode wikitext wikiupload | wikitoggle nonbreaking singlelinebreak reference template',
 		style_formats_merge: true,
 		style_formats: [
 			{
@@ -470,12 +474,12 @@ var defaultSettings = function(selector) {
 	};
 };
 
-window.mwTinyMCEInit = function( tinyMCESelector, settings = {} ) {
-	var customSettings = updateSettings(tinyMCESelector, settings);
-	window.tinymce.init(customSettings);
+var mwTinyMCEInit = function( tinyMCESelector, settings ) {
+	var customSettings = updateSettings( tinyMCESelector, settings );
+	window.tinymce.init( customSettings );
 };
 
-var updateSettings = function(tinyMCESelector, settings) {
+var updateSettings = function( tinyMCESelector, settings ) {
 	var defaultSet = defaultSettings(tinyMCESelector);
 	$.each(settings, function (k, v) {
 		if ( k.endsWith( '+' ) ) {
@@ -544,6 +548,7 @@ var updateSettings = function(tinyMCESelector, settings) {
 
 $.each(tinyMCESettings, function (selector, settings) {
 	mwTinyMCEInit(selector, settings);
+	registerCommands( editor );
 });
 // mwTinyMCEInit( '.tinymce, #wpTextbox1' );
 

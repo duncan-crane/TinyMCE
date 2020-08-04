@@ -146,6 +146,7 @@
 	"tinymce-link-open-link": "Open link",
 	"tinymce-link-context-menu": "openlink | link unlink",
 	"tinymce-link": "Link",
-	"tinymce-toggle-button-toggle-wiki-placeholders": "Toggle wiki placeholders"
-
+	"tinymce-toggle-button-toggle-wiki-placeholders": "Toggle wiki placeholders",
+	"tinymce-nonbreaking-insertNonBreakingSpace": "Insert a non-breaking space",
+	"tinymce-reference-insertReference": "Insert a reference"
 }

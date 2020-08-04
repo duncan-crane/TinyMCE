@@ -130,7 +130,8 @@ p {
 }
 
 .hidePlaceholder.mwt-nonBreakingSpace:before {
-   content:  "\00A0";
+	padding: 2.5px;
+	content:  "\00A0";
 }
 
 .showPlaceholder.mwt-reference::before {
@@ -190,7 +191,7 @@ p {
 	 * of color #d9f7db on a 10x10 "canvas". */
 	border: #90c693 1px solid;
 	padding: 1px;
-/*	opacity: 0.7 !important;*/
+	opacity: 1.7 !important;
 	position: relative;
 }
 
