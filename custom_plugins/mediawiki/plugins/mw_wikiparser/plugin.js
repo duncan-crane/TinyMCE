@@ -2255,13 +2255,20 @@
 				if (elm.hasClass( 'mwt-wikiMagic' )) {
 					// process blocks containing parsed wiki text
 					elm.replaceWith( function(a) {
-						return this.id;
+//						return this.id;
+						// process stuff after table close on the same line
+						var wikiText = htmlDecode( this.attributes[ "data-mwt-wikitext" ].value ),
+							id = "<@@@" + elm[0].tagName.toUpperCase() + ":" + createUniqueNumber() + "@@@>";
+
+						_tags4Wiki[id] = wikiText;
+						return id;
 					});
-				} else if (elm.hasClass( 'mwt-htmlEntity' )) {
+/*				} else if (elm.hasClass( 'mwt-htmlEntity' )) {
 					// process html entities
 					elm.replaceWith( function(a) {
-						return this.id;
-					});
+//						return this.id;
+						return htmlDecode( this.attributes[ "data-mwt-wikitext" ].value );
+					});*/
 				} else if (elm.hasClass( 'mwt-nonBreakingSpace' )) {
 					// process html entities
 					elm.replaceWith( function(a) {

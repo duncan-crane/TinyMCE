@@ -19,17 +19,23 @@
 	var utility = editor.getParam("wiki_utility");
 
 	var setSelection = utility.setSelection;
+	
+	var createUniqueNumber = utility.createUniqueNumber;
 
 	var translate = utility.translate;
 
 	var insertReference = function (editor, times) {
 
 		var args = {format: 'wiki', load: 'true', convert2html: true},
-			reference;
+			reference,
+			id = 'R' + createUniqueNumber();
 
-		reference = '<ref>' + '<span class="mwt-dummyReference"> </span>' + '</ref>';
+		reference = '<ref>' + '<span class="mwt-dummyReference" id="' + id + '"> </span>' + '</ref>&nbsp;';
 
 		setSelection( editor, reference, args );
+		editor.selection.select( editor.dom.select('#' + id )[0]); //select the inserted element
+		editor.selection.collapse( 0 ); //collapses the selection to the end of the range, so the cursor is after the inserted element
+
     };
 
 	var registerCommands = function (editor) {
