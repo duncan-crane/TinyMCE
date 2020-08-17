@@ -28,6 +28,8 @@ var wikitext = function (editor) {
 
 	var getSelection = utility.getSelection;
 
+	var translate = utility.translate;
+
 	var htmlDecode = utility.htmlDecode;
 	
 	var open = function ( editor ) {
@@ -95,7 +97,7 @@ var wikitext = function (editor) {
 			}	
 			
 		editor.windowManager.open({
-			title: mw.msg("tinymce-wikisourcecode"),
+			title: translate("tinymce-wikisourcecode"),
 			size: 'large',
 			body: dialogBody,
 			buttons: dialogButtons,
@@ -104,17 +106,17 @@ var wikitext = function (editor) {
 		});
 	}
 
-	var registerCommand = function ( editor ) {
+	var registerCommands = function ( editor ) {
 		editor.addCommand('wikitextEditor', function () {
 			open( editor );
 		});
 	};
 
-	var registerKeys = function ( editor ) {
+	var registerButtons = function ( editor ) {
 		editor.ui.registry.addButton( 'wikitext', {
 			icon: 'wikitext',
 			stateSelector: '.wikimagic',
-			tooltip: mw.msg( 'tinymce-wikimagic' ),
+			tooltip: translate( 'tinymce-wikimagic' ),
 			onAction: function () {
 				return open( editor );
 			}
@@ -122,7 +124,7 @@ var wikitext = function (editor) {
 		editor.ui.registry.addMenuItem( 'wikitext', {
 			icon: 'wikitext',
 			text: mw.msg( 'tinymce-wikimagic' ),
-			tooltip: mw.msg( 'tinymce-wikimagic' ),
+			tooltip: translate( 'tinymce-wikimagic' ),
 			context: 'insert',
 			onAction: function () {
 				return open( editor );
@@ -131,8 +133,8 @@ var wikitext = function (editor) {
 	};
 
 	this.init = function(editor) {
-		registerCommand ( editor );
-		registerKeys ( editor );
+		registerCommands ( editor );
+		registerButtons ( editor );
 	}
 };
 

@@ -17,7 +17,11 @@ var wikitoggle = function (editor) {
 
 	var editor = tinymce.activeEditor;
 	
-    var translate = tinymce.util.I18n.translate;
+	var utility = editor.getParam("wiki_utility");
+
+	var setSelection = utility.setSelection;
+
+	var translate = utility.translate;
 	
 	var toggle = function ( editor ) {
 		var selectedNode = editor.selection.getNode(), 
@@ -25,19 +29,20 @@ var wikitoggle = function (editor) {
 
 		editor.settings.showPlaceholders = !showPlaceholders;
 
-		var test =	editor.dom.select('span.mwt-placeHolder').forEach( function(a) {
-				$(a).toggleClass( "showPlaceholder", !showPlaceholders );
-				$(a).toggleClass( "hidePlaceholder", showPlaceholders );
+//		var test =	editor.dom.select('span.mwt-placeHolder').forEach( function(a) {
+		var test =	editor.dom.select('.mwt-placeHolder').forEach( function(a) {
+				$(a).toggleClass( "mwt-showPlaceholder", !showPlaceholders );
+				$(a).toggleClass( "mwt-hidePlaceholder", showPlaceholders );
 			});
 	};
 
-	var registerCommand = function ( editor ) {
+	var registerCommands = function ( editor ) {
 		editor.addCommand('wikiPlacehodlerToggle', function () {
 			toggle( editor );
 		});
 	};
 
-	var registerKeys = function ( editor ) {
+	var registerButtons = function ( editor ) {
 		editor.ui.registry.addToggleButton('wikitoggle', {
 			tooltip: translate("wikitoggle.Show wiki placeholders"),
 			icon: 'visualchars',
@@ -55,11 +60,10 @@ var wikitoggle = function (editor) {
 	};
 
 	this.init = function(editor) {
-		registerCommand ( editor );
-		registerKeys ( editor );
+		registerCommands ( editor );
+		registerButtons ( editor );
 	}
 };
 
 tinymce.PluginManager.add('wikitoggle', wikitoggle);
-tinymce.PluginManager.requireLangPack('wikitoggle', 'en,nl');
 

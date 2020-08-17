@@ -30,6 +30,8 @@ var wikilink = function (editor) {
 	var getSelection = utility.getSelection;
 
 	var htmlDecode = utility.htmlDecode;
+
+	var translate = utility.translate;
 	
 	var toggleEnabledState = utility.toggleEnabledState;
 
@@ -63,7 +65,7 @@ var wikilink = function (editor) {
 			aTrail = '',
 			dialogItems,
 			initialData;
-debugger;
+
 		if (typeof(selectedNode.attributes["data-mwt-type"]) !== "undefined" ) {
 			aClass = selectedNode.attributes["class"].value;
 			dataType = selectedNode.attributes["data-mwt-type"].value;
@@ -130,10 +132,10 @@ debugger;
 			var classListCtrl = {
 				name: 'class',
 				type: 'selectbox',
-				label: mw.msg("tinymce-link-type-label"),
+				label: translate("tinymce-link-type-label"),
 				items: [
-					{text: mw.msg("tinymce-link-type-external"), value: 'mwt-nonEditable mwt-wikiMagic mwt-externallink'},
-					{text: mw.msg("tinymce-link-type-internal"), value: 'mwt-nonEditable mwt-wikiMagic mwt-internallink'},
+					{text: translate("tinymce-link-type-external"), value: 'mwt-nonEditable mwt-wikiMagic mwt-externallink'},
+					{text: translate("tinymce-link-type-internal"), value: 'mwt-nonEditable mwt-wikiMagic mwt-internallink'},
 				]
 			};
 	
@@ -141,7 +143,7 @@ debugger;
 			var linkCtrl = {
 				name: 'href',
 				type: 'input',
-				label: mw.msg("tinymce-link-url-page-label"),
+				label: translate("tinymce-link-url-page-label"),
 				inputMode: 'text',
 				maximized: true,
 			};
@@ -150,7 +152,7 @@ debugger;
 			var labelCtrl = {
 				name: 'text',
 				type: 'input',
-				label: mw.msg("tinymce-link-display-text-label"),
+				label: translate("tinymce-link-display-text-label"),
 				inputMode: 'text',
 				maximized: true,
 			};
@@ -159,7 +161,7 @@ debugger;
 			var trailCtrl = {
 				name: 'trail',
 				type: 'input',
-				label: mw.msg(	"tinymce-link-link-trail-label"),
+				label: translate(	"tinymce-link-link-trail-label"),
 				inputMode: 'text',
 				maximized: true,
 			};
@@ -300,7 +302,7 @@ debugger;
 			// Is email and not //user@domain.com
 			if (href.indexOf('@') > 0 && href.indexOf('//') == -1 && href.indexOf('mailto:') == -1) {
 				delayedConfirm(
-					mw.msg("tinymce-link-want-to-link-email"),
+					translate("tinymce-link-want-to-link-email"),
 					function(state) {
 						if (state) {
 							newData.href = 'mailto:' + newData.href;
@@ -322,7 +324,7 @@ debugger;
 			if ((newData["class"].indexOf("mwt-externallink") > -1) &&
 				(editor.settings.link_assume_external_targets && !hasUrl)) {
 				delayedConfirm(
-					mw.msg("tinymce-link-want-to-link-external"),
+					translate("tinymce-link-want-to-link-external"),
 					function(state) {
 						if (state) {
 							newData.href = '//' + encodeURI(newData.href);
@@ -340,7 +342,7 @@ debugger;
 		};
 		
 		editor.windowManager.open({
-			title: mw.msg('tinymce-link-title'),
+			title: translate('tinymce-link-title'),
 			size: 'normal',
 			body: dialogBody ( initialData ),
 			buttons: dialogButtons,
@@ -362,7 +364,7 @@ debugger;
 	var registerKeys = function ( editor ) {
 		editor.ui.registry.addButton( 'wikilink', {
 			icon: 'link',
-			tooltip: mw.msg("tinymce-link-link-button-tooltip"),
+			tooltip: translate("tinymce-link-link-button-tooltip"),
 			shortcut: 'Meta+K',
 			onAction: function () {
 				return open( editor );
@@ -370,8 +372,8 @@ debugger;
 		});
 		editor.ui.registry.addMenuItem( 'wikilink', {
 			icon: 'link',
-			text: mw.msg('tinymce-link'),
-			tooltip: mw.msg("tinymce-link-link-button-tooltip"),
+			text: translate('tinymce-link'),
+			tooltip: translate("tinymce-link-link-button-tooltip"),
 			context: 'insert',
 			onAction: function () {
 				return open( editor );

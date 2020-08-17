@@ -29,7 +29,7 @@
 
     };
 
-	var registerCommand = function (editor) {
+	var registerCommands = function (editor) {
 		editor.addCommand('mwt-nonBreaking', function () {
 			insertNbsp(editor, 1);
 		});
@@ -70,7 +70,7 @@
 
     function Plugin () {
 		pluginManager.add('wikinonbreaking', function (editor) {
-			registerCommand( editor );
+			registerCommands( editor );
 			registerButtons( editor );
 			setup( editor );
 		});

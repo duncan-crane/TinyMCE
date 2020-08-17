@@ -49,7 +49,7 @@
 	"tinymce-browsercontextmenu-title": "Browser context menu",
 	"tinymce-wikisourcecode": "View and edit wiki source code",
 	"tinymce-wikisourcecode-title": "Wiki source code",
-	"tinymce-insert-linebreak": "Insert single linebreak at current position",
+	"tinymce-insert-linebreak": "Insert non-displayed single linebreak at current position",
 	"tinymce-preference": "Use the TinyMCE editor to edit pages",
 	"tinymce-upload-title": "Upload and display file",
 	"tinymce-upload-title-general": "File details",

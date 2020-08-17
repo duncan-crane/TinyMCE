@@ -68,90 +68,101 @@ p {
     margin: 0.4em 0 0em 0;
 }
 
-.showPlaceholder.mwt-slbltr:before {
-   content:  "\21A9";
+.mwt-unknown {
+	display: inline-block;
 }
 
-.hidePlaceholder.mwt-slbltr {
-   display:  none;
+.mwt-inline {
+	display: inline-block;
 }
 
-.showPlaceholder.mwt-slbrtl:before {
-   content:  "\21AA";
+.mwt-showPlaceholder.mwt-singleLinebreak {
+	display: inline-block;
 }
 
-.hidePlaceholder.mwt-slbrtl {
-   display:  none;
+.mwt-hidePlaceholder.mwt-singleLinebreak {
+	display: none;
 }
 
-.showPlaceholder.mwt-comment:before {
-   content:  "\1F4AC";
+.mwt-showPlaceholder.mwt-slbltr:before {
+	content:  "\21A9";
 }
 
-.hidePlaceholder.mwt-comment {
-   display:  none;
+.mwt-hidePlaceholder.mwt-slbltr:before {
+	content:  "\00A0";
 }
 
-.showPlaceholder.mwt-switch:before {
-   content:  "\00A7";
+.mwt-showPlaceholder.mwt-slbrtl:before {
+	content:  "\21AA";
 }
 
-.hidePlaceholder.mwt-comment {
-   display:  none;
+.mwt-hidePlaceholder.mwt-slbrtl:before {
+	content:  "\00A0";
 }
 
-.showPlaceholder.mwt-image:before {
-   content:  "\1F4F7";
+.mwt-showPlaceholder.mwt-comment:before {
+	content:  "\1F4AC";
 }
 
-.hidePlaceholder.mwt-image {
-   display:  none;
+.mwt-hidePlaceholder.mwt-comment {
+ 	display:  none;
 }
 
-.showPlaceholder.mwt-nowikiesc:before {
-   content:  "\21CE";
+.mwt-showPlaceholder.mwt-switch:before {
+	content:  "\00A7";
 }
 
-.hidePlaceholder.mwt-nowikiesc {
-   display:  none;
+.mwt-hidePlaceholder.mwt-comment {
+	display:  none;
 }
 
-.showPlaceholder.mwt-emptyOutput:before {
-   content:  "\1F532";
+.mwt-showPlaceholder.mwt-image:before {
+	content:  "\1F4F7";
 }
 
-.hidePlaceholder.mwt-emptyOutput {
-   display:  none;
+.mwt-hidePlaceholder.mwt-image:before {
+	content:  "\00A0";
 }
 
-.showPlaceholder.mwt-nonBreakingSpace:before {
-   content:  "\25CF";
-   color: lightblue;
+.mwt-showPlaceholder.mwt-nowikiesc:before {
+	content:  "\21CE";
 }
 
-.hidePlaceholder.mwt-nonBreakingSpace:before {
+.mwt-hidePlaceholder.mwt-nowikiesc {
+	display:  none;
+}
+
+.mwt-showPlaceholder.mwt-emptyOutput:before {
+	content:  "\1F532";
+}
+
+.mwt-hidePlaceholder.mwt-emptyOutput {
+	display:  none;
+}
+
+.mwt-showPlaceholder.mwt-nonBreakingSpace:before {
+	content:  "\25CF";
+	color: lightblue;
+}
+
+.mwt-hidePlaceholder.mwt-nonBreakingSpace:before {
 	padding: 2.5px;
 	content:  "\00A0";
 }
 
-.showPlaceholder.mwt-reference::before {
-  content: "[\2020 ";
+.mwt-showPlaceholder.mwt-reference::before {
+  content: "[\2021\00A0";
   color: red;
 }
 
-.showPlaceholder.mwt-reference::after {
-  content: "]";
-  color: red;
+.mwt-showPlaceholder.mwt-reference::after {
+	content: "\00A0]";
+	color: red;
 }
 
-.hidePlaceholder.mwt-reference {
-   display:  none;
+.mwt-hidePlaceholder.mwt-reference {
+	display:  none;
 }
-
-/*.mwt-reference {
-    background-color: #f8f9fa !important;
-    border: 1px solid #eaecf0 !important;
-}*/
 
 .mwt-nonEditable {
 /*	display: inline-block;*/
@@ -160,11 +171,33 @@ p {
 	background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAASElEQVQoU2NkgIKb32//BzHVOVUZYWLINFiQkCKQGkZiFMEV4rIO2VlY3YPsNpiNeBUiOwunQnS3Y1WIzYMYCnGFAopCfEEFANTAK18PA4AuAAAAAElFTkSuQmCC");
 	border: #90c693 1px solid;
 	padding: 1px;
-	opacity: 0.7 !important;
+/*	opacity: 0.7 !important;*/
 	position: relative;
 }
 
-.showPlaceholder.mwt-nonEditable.mwt-placeHolder {
+.mwt-showPlaceholder.mwt-nonEditable:hover::after {
+/*    display: inline-block;
+    font: helvetica;
+    font-size: 14px;
+    text-rendering: auto;
+    content: "\26A0";
+    text-decoration: none;*/
+/*  content: attr(data-mwt-wikitext);
+  position: absolute;
+  left: 10px;
+  top: 45px;
+  min-width: 200px;
+  border: 1px #aaaaaa solid;
+  border-radius: 10px;
+  background-color: #ffffcc;
+  padding: 12px;
+  color: #000000;
+  font-size: inherit;
+  opacity: 1;
+  z-index: 1;*/
+}
+
+.mwt-showPlaceholder.mwt-nonEditable.mwt-placeHolder {
 	/*display: inline-block;*/
 	/* Image created at http://www.patternify.com, with a 2-pixel width
 	 * of color #d9f7db on a 10x10 "canvas". */
@@ -175,12 +208,12 @@ p {
 	position: relative;
 }
 
-.hidePlaceholder.mwt-nonEditable.mwt-placeHolder {
+.mwt-hidePlaceholder.mwt-nonEditable.mwt-placeHolder {
 	padding: 2px;
 	position: relative;
 }
 
-.showPlaceholder.mwt-editable.mwt-placeHolder {
+.mwt-showPlaceholder.mwt-editable.mwt-placeHolder {
     color: #000;
 /*    background-color: #f8f9fa;
     border: 1px solid #eaecf0;*/
@@ -195,7 +228,7 @@ p {
 	position: relative;
 }
 
-.hidePlaceholder.mwt-editable.mwt-placeHolder {
+.mwt-hidePlaceholder.mwt-editable.mwt-placeHolder {
 	padding: 2px;
 	position: relative;
 }

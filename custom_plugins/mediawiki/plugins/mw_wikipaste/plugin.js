@@ -1447,6 +1447,7 @@
     };
     var cut = function (editor) {
       return function (evt) {
+debugger;
         if (hasSelectedContent(editor)) {
           setClipboardData(evt, getData(editor), fallback(editor), function () {
             if (global$1.browser.isChrome()) {
@@ -1464,6 +1465,7 @@
     };
     var copy = function (editor) {
       return function (evt) {
+debugger;
         if (hasSelectedContent(editor)) {
           setClipboardData(evt, getData(editor), fallback(editor), function () {
           });

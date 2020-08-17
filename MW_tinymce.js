@@ -54,7 +54,7 @@
 		'dl','dd','dt',
 		'div',
 		'hr',
-		'source',
+//		'source',
 		'table', 
 	];
 	var mw_htmlSingle = [
@@ -153,11 +153,13 @@
 	};
 
 	var htmlDecode = function ( value ) {
-		return $("<textarea/>").html( value ).text();
+//		return $("<textarea/>").html( value ).text();
+		return tinymce.DOM.decode( value );
 	};
 	
 	var  htmlEncode = function (value) {
-		return $('<textarea/>').text(value).html();
+//		return $('<textarea/>').text(value).html();
+		return tinymce.DOM.encode( value );
 	};
 	
 	var  createUniqueNumber = function() {
@@ -268,6 +270,7 @@ var defaultSettings = function(selector) {
 //			'visualchars': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualchars/plugin.js',
 			'wikilink': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikilink/plugin.js',
  			'wikinonbreaking': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikinonbreaking/plugin.js',
+ 			'wikinonrenderinglinebreak': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikinonrenderinglinebreak/plugin.js',
 			'wikiparser': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiparser/plugin.js',
 			'wikipaste': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikipaste/plugin.js',
 			'wikireference': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikireference/plugin.js',
@@ -315,7 +318,8 @@ var defaultSettings = function(selector) {
 		// identified and edited in the TinyMCE editore window
 		//
 		// single new lines: set non_rendering_newline_character to false if you don't use non-rendering single new lines in wiki
-		showPlaceholders: true,
+		showPlaceholders: false,
+//		showPlaceholders: true,
 		branding: false,
 //		relative_urls: false,
 //		remove_script_host: false,
@@ -372,8 +376,8 @@ var defaultSettings = function(selector) {
 		// save plugin
 		save_enablewhendirty: true,
 		// Allow style tags in body and unordered lists in spans (inline)
-		valid_children: "+span[ul],+span[div]",
-//		extended_valid_elements: "nowiki",
+		valid_children: "+span[ul],+span[div],+em[div],+big[div],+small[div]",
+		extended_valid_elements: "big,small",
 //	    custom_elements: "~nowiki",
 //		closed: /^(br|hr|input|meta|img|link|param|area|nowiki)$/,
 //		valid_children: "+*[*]",
@@ -399,11 +403,10 @@ var defaultSettings = function(selector) {
 		noneditable_noneditable_class: 'fa',
 		extended_valid_elements: 'span[*]',
 		// tinymce configuration
-//DC  TODO fix fontawesome for TinyMCE v5
 		toolbar_sticky: true,
 //		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap fontawesome singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect removeformat | searchreplace ',
-		toolbar: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist advlist outdent indent | wikilink wikiunlink table image media | styleselect removeformat| visualchars visualblocks| searchreplace |  wikimagic wikisourcecode wikitext wikiupload | wikitoggle nonbreaking singlelinebreak reference template',
-		style_formats_merge: true,
+		toolbar: 'undo redo | cut copy paste insert selectall| bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist advlist outdent indent | wikilink wikiunlink table image media | styleselect removeformat| visualchars visualblocks| searchreplace |  wikimagic wikisourcecode wikitext wikiupload | wikitoggle nonbreaking singlelinebreak reference template',
+		//style_formats_merge: true,
 		style_formats: [
 			{
 				title: "Table", items: [

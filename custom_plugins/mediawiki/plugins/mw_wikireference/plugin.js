@@ -26,7 +26,7 @@
 
 	var insertReference = function (editor, times) {
 
-		var args = {format: 'wiki', load: 'true', convert2html: true},
+		var args = {format: 'wiki', /*load: 'true',*/ convert2html: true, newRef: true},
 			reference,
 			id = 'R' + createUniqueNumber();
 
@@ -46,14 +46,14 @@
 
 	var registerButtons = function (editor) {
 		editor.ui.registry.addButton('reference', {
-			icon: 'dagger',
+			icon: 'footnote',
 			tooltip: translate( 'tinymce-reference-insertReference' ),
 			onAction: function () {
 				return editor.execCommand('mwt-insertReference');
 			}
 		});
 		editor.ui.registry.addMenuItem('reference', {
-			icon: 'dagger',
+			icon: 'footnote',
 			text: translate( 'tinymce-reference-insertReference' ),
 			onAction: function () {
 				return editor.execCommand('mwt-insertReference');
