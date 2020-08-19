@@ -1,6 +1,7 @@
 	var editor = tinymce.activeEditor
 	var mw_server = 'https://' + mw.config.get( 'wgServer' ) + '/';
 	var mw_scriptPath = mw.config.get( 'wgScriptPath' );
+	var	mw_api = mw_scriptPath + '/api.php';
 	var mw_extensionAssetsPath = mw.config.get( 'wgExtensionAssetsPath' );
 	var mw_namespaces = mw.config.get( 'wgNamespaceIds' );
 	var mw_url_protocols = mw.config.get( 'wgUrlProtocols' );
@@ -211,6 +212,91 @@
 		};
 	};
 
+	var doUpload = function(fileType, fileToUpload, fileName, fileSummary, ignoreWarnings){
+		var uploadData = new FormData(),
+			uploadDetails;
+
+		uploadData.append("action", "upload");
+		uploadData.append("filename", fileName);
+		uploadData.append("text", fileSummary);
+		uploadData.append("token", mw.user.tokens.get( 'csrfToken' ) );
+		uploadData.append("ignorewarnings", ignoreWarnings );
+		if (fileType == 'File') uploadData.append("file", fileToUpload);
+		if (fileType == 'URL') uploadData.append("url", fileToUpload);
+		uploadData.append("format", 'json');
+		
+		//as we now have created the data to send, we send it...
+		$.ajax( { //http://stackoverflow.com/questions/6974684/how-to-send-formdata-objects-with-ajax-requests-in-jquery
+			url: mw_api,
+			contentType: false,
+			processData: false,
+			type: 'POST',
+			async: false,
+			data: uploadData,//the formdata object we created above
+			success: function(data){
+					uploadDetails = data;
+			},
+			error:function(xhr,status, error){
+				uploadDetails['responseText'] = xhr.responseText;
+				console.log(error);
+			}
+		});
+
+		return uploadDetails;
+	}
+
+	var checkUploadDetail = function (uploadDetails, ignoreWarnings, uploadName) {
+		var message,
+			result = [];
+debugger;
+		if (typeof uploadDetails == "undefined") {
+			message = mw.msg("tinymce-upload-alert-unknown-error-uploading",
+				uploadName );
+			result = false;
+		} else if (typeof uploadDetails.responseText != "undefined") {
+			message = mw.msg("tinymce-upload-alert-error-uploading",uploadDetails.responseText);
+			editor.windowManager.alert(message);
+			result = false;
+		} else if (typeof uploadDetails.error != "undefined") {
+			message = mw.msg("tinymce-upload-alert-error-uploading",uploadDetails.error.info);
+			// if the error is because the file exists then we can ignore and
+			// use the existing file
+			if (uploadDetails.error.code == "fileexists-no-change") {
+				result = 'exists';
+			} else {
+				result = false;
+				editor.windowManager.alert(message);
+			}
+		} else if (typeof uploadDetails.warnings != "undefined" && (!ignoreWarnings)) {
+			message = mw.msg("tinymce-upload-alert-warnings-encountered",
+				' ' + uploadName) + "\n\n" ;
+			result = 'warning';
+			for (warning in uploadDetails.warnings) {
+				warningDetails = uploadDetails.warnings[warning];
+				if (warning == 'badfilename') {
+					message = message + "	" + mw.msg("tinymce-upload-alert-destination-filename-not-allowed") + "\n";
+					result = false;
+				} else if (warning == 'exists') {
+					message = message + "	" + mw.msg("tinymce-upload-alert-destination-filename-already-exists") + "\n";
+					result = 'exists';
+				} else if (warning == 'duplicate') {
+					duplicate = warningDetails[0];
+					message = message + "	" + mw.msg("tinymce-upload-alert-duplicate-file",uploadName) + "\n"
+					result = 'duplicate';
+				} else {
+					message = message + "	" + mw.msg("tinymce-upload-alert-other-warning",warning) + "\n"
+					result = false;
+				}
+			}
+			editor.windowManager.alert(message);
+		} else if (typeof uploadDetails.upload.imageinfo != "undefined") {
+//			result = uploadDetails.upload.imageinfo.url;
+			result["url"] = uploadDetails.upload.imageinfo.url;
+			result["page"] = uploadDetails.upload.imageinfo.canonicaltitle;
+		}
+		return result;
+	}
+
 	var utility = {
 		setContent: setContent,
 		setSelection: setSelection,
@@ -221,7 +307,9 @@
 		createUniqueNumber: createUniqueNumber,
 //		onDblClickLaunch: onDblClickLaunch,
 		toggleEnabledState: toggleEnabledState,
-		translate: translate
+		translate: translate,
+		doUpload: doUpload,
+		checkUploadDetail: checkUploadDetail
 	};
 
 var defaultSettings = function(selector) {
@@ -290,7 +378,7 @@ var defaultSettings = function(selector) {
 		// set the page title
 		wiki_page_mwtPageTitle: mw_canonical_namespace + ':' + mw_title,
 		// set the path to the wiki api
-		wiki_api_path: mw_scriptPath + '/api.php',
+		wiki_api_path: mw_api,
 		// set the valid wiki namespaces
 		wiki_namespaces: mw_namespaces,
 		// set the local name of the 'file' namespace

@@ -16,6 +16,10 @@ tinymce.PluginManager.add('wikiupload', function(editor) {
 	
 	var setSelection = utility.setSelection;
 	
+	var doUpload = utility.doUpload;
+
+	var checkUploadDetail = utility.checkUploadDetail;
+
 	var me = this,
 		_srccontent,
 		_userThumbsize = 3,
@@ -88,7 +92,7 @@ tinymce.PluginManager.add('wikiupload', function(editor) {
 			imageDimensions = editor.settings.image_dimensions !== false,
 			uploadPersmissions = [];
 
-
+debugger;
 		/**
 		 * display upload dialog
 		 *
@@ -938,7 +942,7 @@ tinymce.PluginManager.add('wikiupload', function(editor) {
 					wikitext = '';
 
 				// attempt upload of file to wiki
-				function doUpload(fileType, fileToUpload, fileName, fileSummary, ignoreWarnings){
+/*				function doUpload(fileType, fileToUpload, fileName, fileSummary, ignoreWarnings){
 					var uploadData = new FormData(),
 						uploadDetails;
 
@@ -973,14 +977,13 @@ tinymce.PluginManager.add('wikiupload', function(editor) {
 					api.unblock();
 
 					return uploadDetails;
-				}
+				}*/
 	
 				// check upload succesful or report errors and warnings
-				function checkUploadDetail(uploadDetails, ignoreWarnings) {
+/*				function checkUploadDetail(uploadDetails, ignoreWarnings) {
 					var message,
 						result = [];
-debugger;
-					
+debugger;	
 					if ( typeof uploadDetails == "undefined") {
 						editor.windowManager.alert(mw.msg("tinymce-upload-alert-unknown-error-uploading"));
 						result = false;
@@ -1045,7 +1048,7 @@ debugger;
 						result["page"] = uploadDetails.upload.imageinfo.canonicaltitle;
 					}
 					return result;
-				}
+				}*/
 	
 				// first check source and destination details are valid
 				if (!uploadCheck( api )) return;
@@ -1078,7 +1081,7 @@ debugger;
 						if ((fileContent) && (fileName)) {
 							do {
 								uploadDetails = doUpload(fileType, fileContent, fileName, fileSummary, ignoreWarnings);
-								result = checkUploadDetail(uploadDetails, ignoreWarnings);
+								result = checkUploadDetail(uploadDetails, ignoreWarnings, fileName);
 								if (result) {
 									if ( Array.isArray( result ) ) {
 										uploadResult = result["url"];

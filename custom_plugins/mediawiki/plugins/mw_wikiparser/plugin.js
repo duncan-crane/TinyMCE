@@ -209,7 +209,7 @@
 		_tags4Wiki = new Array(),
 		/**
 		 *
-		 * following use to holde the cursor position before and 
+		 * following use to hold the cursor position before and 
 		 * after up or down arrow kepress
 		 */
 		_cursorOnDown,
@@ -244,7 +244,11 @@
 
 	var onDblClickLaunch = utility.onDblClickLaunch;
 
-    var pluginManager = tinymce.util.Tools.resolve('tinymce.PluginManager');
+	var doUpload = utility.doUpload;
+
+	var checkUploadDetail = utility.checkUploadDetail;
+
+	var pluginManager = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
 	/**
 	 * find the offset of the cursor within the displayed text
@@ -417,6 +421,381 @@
 	}
 
 	/**
+	 * creates a wiki link for an image and returns a place
+	 * holder for the html text, which is substituted later
+	 *
+	 * @param {String} text
+	 * @returns {String}
+	 */
+	function _getWikiImageLink(imageElm, imageLink) {
+debugger;
+		var aLink,
+			file,
+			fileType,
+			fileName,
+			mimeType,
+			extension,
+			uploadDetails,
+			uploadResult,
+			ignoreWarnings = true,
+			fileSummary = '',
+			wikiImageObject = [],
+			htmlImageObject = imageElm,
+			attribute,
+			attributes = imageElm.attributes,
+			sourceURI = attributes['src'].value.split('#')[0].split('?')[0],
+			protocol = sourceURI.split('/')[0].toLowerCase(),
+			dstName = sourceURI.split('/').pop().split('#')[0].split('?')[0],
+			wikiText,
+			stylestring,
+			properties,
+			style,
+			stylearray = {},
+			property,
+			value,
+			imageCaption,
+			size;
+
+		//return a promise that resolves with a File instance
+		function urltoFile(url, filename, mimeType){
+			return (fetch(url)
+/*					.then(function(res){return res.arrayBuffer();})
+				.then(function(buf){return new File([buf], filename,{type:mimeType});})*/
+				.await (function(res){return res.arrayBuffer();})
+				.await (function(buf){return new File([buf], filename,{type:mimeType});})
+			);
+		}
+
+		// return a file from the datat image
+		function dataURLtoFile(dataurl, filename) {
+			var arr = dataurl.split(','),
+			mime = arr[0].match(/:(.*?);/)[1],
+			bstr = atob(arr[1]), 
+			n = bstr.length, 
+			u8arr = new Uint8Array(n);
+
+
+			while(n--){
+				u8arr[n] = bstr.charCodeAt(n);
+			}
+				return new File([u8arr], filename, {type:mime});
+		}
+
+		/**
+		 * uploads an image to the wiki
+		 *
+		 * @param {String} text
+		 * @returns {String}
+		 */
+/*		function doUpload(fileType, fileToUpload, fileName, fileSummary, ignoreWarnings){
+			var uploadData = new FormData();
+			
+			uploadData.append("action", "upload");
+			uploadData.append("filename", fileName);
+			uploadData.append("text", fileSummary);
+			uploadData.append("token", mw.user.tokens.get( 'csrfToken' ) );
+			uploadData.append("ignorewarnings", ignoreWarnings );
+			if (fileType == 'File') uploadData.append("file", fileToUpload);
+			if (fileType == 'URL') uploadData.append("url", fileToUpload);
+			uploadData.append("format", 'json');
+			var uploadDetails;
+			//as we now have created the data to send, we send it...
+			$.ajax( { //http://stackoverflow.com/questions/6974684/how-to-send-formdata-objects-with-ajax-requests-in-jquery
+				url: _mwtWikiApi,
+				contentType: false,
+				processData: false,
+				type: 'POST',
+				async: false,
+				data: uploadData,//the formdata object we created above
+				success: function(data){
+						uploadDetails = data;
+				},
+				error:function(xhr,status, error){
+					uploadDetails['responseText'] = xhr.responseText;
+					console.log(error);
+				}
+			});
+
+			return uploadDetails;
+		}*/
+
+		/**
+		 * check upload succesful or report errors and warnings
+		 *
+		 * @param {String} text
+		 * @returns {String}
+		 */
+/*		function checkUploadDetail(uploadDetails, ignoreWarnings, uploadName) {
+			var message,
+				result;
+debugger;
+			if (typeof uploadDetails == "undefined") {
+				message = mw.msg("tinymce-upload-alert-unknown-error-uploading",
+					uploadName );
+				result = false;
+			} else if (typeof uploadDetails.responseText != "undefined") {
+				message = mw.msg("tinymce-upload-alert-error-uploading",uploadDetails.responseText);
+				editor.windowManager.alert(message);
+				result = false;
+			} else if (typeof uploadDetails.error != "undefined") {
+				message = mw.msg("tinymce-upload-alert-error-uploading",uploadDetails.error.info);
+				// if the error is because the file exists then we can ignore and
+				// use the existing file
+				if (uploadDetails.error.code == "fileexists-no-change") {
+					result = 'exists';
+				} else {
+					result = false;
+					editor.windowManager.alert(message);
+				}
+			} else if (typeof uploadDetails.warnings != "undefined" && (!ignoreWarnings)) {
+				message = mw.msg("tinymce-upload-alert-warnings-encountered",
+					' ' + uploadName) + "\n\n" ;
+				result = 'warning';
+				for (warning in uploadDetails.warnings) {
+					warningDetails = uploadDetails.warnings[warning];
+					if (warning == 'badfilename') {
+						message = message + "	" + mw.msg("tinymce-upload-alert-destination-filename-not-allowed") + "\n";
+						result = false;
+					} else if (warning == 'exists') {
+						message = message + "	" + mw.msg("tinymce-upload-alert-destination-filename-already-exists") + "\n";
+						result = 'exists';
+					} else if (warning == 'duplicate') {
+						duplicate = warningDetails[0];
+						message = message + "	" + mw.msg("tinymce-upload-alert-duplicate-file",uploadName) + "\n"
+						result = 'duplicate';
+					} else {
+						message = message + "	" + mw.msg("tinymce-upload-alert-other-warning",warning) + "\n"
+						result = false;
+					}
+				}
+				editor.windowManager.alert(message);
+			} else if (typeof uploadDetails.upload.imageinfo != "undefined") {
+				result = uploadDetails.upload.imageinfo.url;
+			}
+			return result;
+		}*/
+
+		// determine if this is a local image or external
+		if ((protocol == 'https:') || (protocol == 'http:')) {
+			fileType = 'URL';
+			uploadDetails = doUpload(fileType, sourceURI, dstName, fileSummary, ignoreWarnings);
+			uploadResult = checkUploadDetail(uploadDetails, ignoreWarnings, dstName);
+		} else if (protocol == 'data:image') {
+			fileType = 'File';
+			mimeType = attributes[ 'src' ].value.split( ':' )[1].split( ';' )[0];
+			extension = mimeType.split( '/' )[1];
+			fileName = 'img' + createUniqueNumber() + '.' + extension;
+			dstName = fileName;
+			file = dataURLtoFile( attributes['src'].value, fileName )
+			uploadDetails = doUpload( fileType, file, file.name, fileSummary, ignoreWarnings );
+			uploadResult = checkUploadDetail( uploadDetails, ignoreWarnings, file.name );
+/*				urltoFile( attributes['src'].value, dstName, mimeType )
+			.then ( function ( file ) {
+				uploadDetails = doUpload( fileType, file, file.name, fileSummary, ignoreWarnings );
+				uploadResult = checkUploadDetail( uploadDetails, ignoreWarnings, file.name );
+			});*/
+/*			} else if (protocol.split(':')[0].toLowerCase() == 'blob') {
+//				var reader = new FileReader;
+//reader.onload = function(e) {
+// browser completed reading file - display it
+//	alert(e.target.result);
+//};
+//				file = urltoFile( sourceURI );
+			fileType = 'File';
+			mimeType = 'image/jpeg';
+			extension = 'jpg';
+			fileName = 'img' + createUniqueNumber() + '.' + extension;
+			dstName = fileName;
+			file = urltoFile( sourceURI, fileName, mimeType )
+			uploadDetails = doUpload( fileType, file, file.name, fileSummary, ignoreWarnings );
+			uploadResult = checkUploadDetail( uploadDetails, ignoreWarnings, file.name );*/
+
+/*  let file = input.files[0];
+
+let reader = new FileReader();
+
+reader.readAsText(file);*/
+
+		} else {
+			// the image is base64 data so create a link as a placeholder with details
+			fileType = 'File';
+			dstName = 'data_image';
+		}
+		// upload the image (or use existing image on wiki if already uploaded
+		// checking the response and process any errors or warning appropriately
+		// build the wiki code for the image link
+		for (var j = 0; j < attributes.length; j++) {
+			attribute = attributes[j].name;
+			if ( !( attribute == 'width' || !attribute == 'height' )) {
+				wikiImageObject[attribute] = attributes[j].value;
+			}
+		}
+		// check if wikiImageObject.style is set
+		// and then process the style attributes
+		if (wikiImageObject.style) {
+			stylestring = wikiImageObject.style;
+			stylestring = stylestring.replace(/\s/g, "");
+			properties = stylestring.split(';');
+			stylearray = {};
+			properties.forEach(function(property) {
+				var option = property.split(':');
+				stylearray[option[0]] = option [1];
+			});
+			stylestring = JSON.stringify(stylearray);
+			style = JSON.parse(stylestring);
+			if (style['display'] === 'block' &&
+				style['margin-left'] === 'auto' &&
+				style['margin-right'] === 'auto') {
+				wikiImageObject.align = 'center';
+			}
+			if (style['width']) {
+				var stylewidth = style['width'].replace('px', '');
+				if ( stylewidth !== "0" ) {
+					wikiImageObject.sizewidth = stylewidth ;
+				}
+			}
+			if (style['height']) {
+				var styleheight = style['height'].replace('px', '');
+				if ( styleheight !== "0" ) {
+					wikiImageObject.sizeheight = styleheight ;
+				}
+			}
+			if (style['float']) {
+				if (style['float'] === 'left') {
+					wikiImageObject.left = true;
+					wikiImageObject.align = 'left';
+				} else if (style['float'] === 'right') {
+					wikiImageObject.right = true;
+					wikiImageObject.align = 'right';
+				}
+			}
+			if (style['vertical-align']) {
+				wikiImageObject.verticalalign = style['vertical-align'];
+			}
+		}
+		// now process the image class if it has wiki formats
+		if (wikiImageObject.class) {
+			if (wikiImageObject.class.indexOf("thumbborder") >= 0) {
+				wikiImageObject.border = "true";
+			}
+			if (wikiImageObject.class.indexOf("thumbimage") >= 0) {
+				wikiImageObject.frame = "true";
+			}
+			if (wikiImageObject.class.indexOf("thumbthumb") >= 0) {
+				wikiImageObject.thumb = "true";
+			}
+		}
+		// now process the image size, width, caption and link if any set
+		if (htmlImageObject['width']
+			&& htmlImageObject['width'] !== wikiImageObject.sizewidth) {
+			wikiImageObject.sizewidth = htmlImageObject['width'];
+		}
+		if (htmlImageObject['height']
+			&& htmlImageObject['height'] !== wikiImageObject.sizeheight) {
+			wikiImageObject.sizeheight = htmlImageObject['height'];
+		}
+		if (htmlImageObject['caption']) {
+			wikiImageObject.caption = htmlImageObject['caption'];
+		}
+		if (htmlImageObject['link']) {
+			wikiImageObject.caption = htmlImageObject['link'];
+		}
+
+		// Build wikitext
+		wikiText = [];
+		wikiText.push(wikiImageObject.imagename);
+
+		// process attributes of image
+		for (property in wikiImageObject) {
+			if ($.inArray(property, ['imagename', 'thumbsize']) !== -1) {
+				continue; //Filter non-wiki data
+			}
+			if ($.inArray(property, ['left', 'right', 'center', 'nolink']) !== -1) {
+				continue; //Not used stuff
+			}
+			value = wikiImageObject[property];
+			//"link" may be intentionally empty. Therefore we have to
+			//check it _before_ "value is empty?"
+			if ( property === 'link' ) {
+				//If the 'nolink' flag is set, we need to discard a
+				//maybe set value of 'link'
+				if( wikiImageObject.nolink === 'true' ) {
+					wikiText.push( property + '=' );
+					continue;
+				}
+				if ( value === 'false' || value === false ) {
+					continue;
+				}
+				wikiText.push( property + '=' + value );
+				continue;
+			}
+			if ( !value ) continue;
+			if (property === 'sizewidth' ) {
+				size = '';
+				if (wikiImageObject.sizewidth && wikiImageObject.sizewidth !== "false") {
+					size = wikiImageObject.sizewidth;
+				}
+				if (wikiImageObject.sizeheight && wikiImageObject.sizeheight !== "false") {
+					size += 'x' + wikiImageObject.sizeheight;
+				}
+				if (size.length == 0 || size == "auto") continue;
+				size += 'px';
+				wikiText.push(size);
+				continue;
+			}
+			if (property == 'alt') {
+				wikiText.push(property + '=' + value);
+				continue;
+			}
+			if ( property == 'align' ) {
+				wikiText.push(value);
+				continue;
+			}
+			if ( property == 'verticalalign' ) {
+				wikiText.push(value);
+				continue;
+			}
+			if ( property == 'title' ) {
+				imageCaption = value;
+				continue;
+			}
+			if ( property == 'caption' ) {
+				imageCaption = value;
+				continue;
+			}
+			if ( property == 'thumb' && value === "true" ) {
+				wikiText.push( 'thumb' );
+				continue;
+			}
+			if ( property == 'frame' && value === "true") {
+				wikiText.push( 'frame' );
+				continue;
+			}
+			if ( property == 'border' && value === "true" ) {
+				wikiText.push( 'border' );
+				continue;
+			}
+			if ( property == 'src' && !imageLink ) {
+				imageLink = value;
+				continue;
+			}
+		}
+
+		// make sure image caption comes in the end
+		if ( imageCaption ) {
+			wikiText.push( imageCaption );
+		}
+		if (imageLink) {
+			dstName = dstName + "|link=" + imageLink;
+			aLink = '[[' + _mwtFileNamespace + ':' + dstName + wikiText.join('|') + ']]';
+		} else {
+			aLink = '[[' + _mwtFileNamespace + ':' + dstName + wikiText.join('|') + ']]';
+		}
+//		return _preserveLinks4Html(aLink);
+		return aLink;
+	};
+
+	/**
 	 * parses wiki code before calling function for
 	 * creating the DOM element and storing this
 	 * and and original wikicode for later recovery
@@ -525,8 +904,11 @@
 			pos = 0,
 			urlProtocolMatch = "/^" + _mwtUrlProtocols + "/i";
 
+
 		// save some effort if there are no links
 		if ( !text.match(/\[/) ) return text;
+
+		urlProtocolMatch = urlProtocolMatch.replace(/\|/g,"|^");
 
 		// now walk through the text processing all the
 		// links storing external links and internal links
@@ -611,19 +993,25 @@
 								squareBraceDepth++;
 							} else if (text[pos] === ']') {
 								if (squareBraceDepth == 1) {
-
 									// checking for closure of external link eg ']'
 									pos ++;
 									squareBraceDepth = 0;
 									tempLink = text.substring(linkStart,pos)
-									linkPlaceholder = _getPlaceHolder4Html(tempLink, 'toParse', linkType, 'nonEditable');
-									regex = tempLink.replace(/[^A-Za-z0-9_]/g, '\\$&');
-									matcher = new RegExp(regex, '');
-									text = text.replace(matcher, linkPlaceholder);
-
-									// reset the textlength and
-									// set the pos to the end of the placeholder
-									pos = linkStart + linkPlaceholder.length - 1;
+debugger;									
+									// if this is a valid url and doesn't start witha space
+									// then process as an external link, else ignore
+									if (tempLink.substr(1,tempLink.length - 2).match(urlProtocolMatch)
+										|| tempLink.substr(1,2) === "//" ) {
+									
+										linkPlaceholder = _getPlaceHolder4Html(tempLink, 'toParse', linkType, 'nonEditable');
+										regex = tempLink.replace(/[^A-Za-z0-9_]/g, '\\$&');
+										matcher = new RegExp(regex, '');
+										text = text.replace(matcher, linkPlaceholder);
+	
+										// reset the textlength and
+										// set the pos to the end of the placeholder
+										pos = linkStart + linkPlaceholder.length - 1;
+									}
 									tempLink = '';
 									break;
 								} else {
@@ -2063,7 +2451,7 @@ debugger;
 				return listTags;
 			}
 
-			// make a regular expresion matcher to see if a line contains a block element
+			// make a regular expresion matcher to see if a line ends wtth a block element
 			// this is used when walking through the editor content line by line.  We add
 			// back PRE because it isn't in the block tag list as mediawiki treats them 
 			// differently to how browsers do!
@@ -2074,7 +2462,8 @@ debugger;
 					+ '|<' 
 					+ _mwtBlockTagsList.split("|").join("[^>]*>|<") 
 					+ '|<\\/' + _mwtBlockTagsList.split("|").join(">|<\\/") 
-					+ '|<br[^>]*>|<@@slb@@>)' ;
+//					+ '|<br[^>]*>|<@@slb@@>)' ;
+					+ '|<br[^>]*>|<@@slb@@>)$' ;
 			matcher = new RegExp(regex, 'i');
 
 			//Walk through text line by line
@@ -2400,6 +2789,43 @@ debugger;
 						elm.replaceWith( function(a) {
 //							return id;
 						return tagNewline + tagSpaces + id + newLineAfter;
+						});
+					} else if ( elm[0].tagName == 'IMG' ) {
+debugger;
+						if (elm[0].parentNode.tagName != "A") {
+							elm.replaceWith( function(a) {
+//1908								return _recoverTags2html( _getWikiImageLink( elm[0] ) );
+								return _getWikiImageLink( elm[0] );
+							});
+						}
+					} else if ( elm[0].tagName == 'A' ) {
+debugger;
+						var aLink,
+							protocol = elm[0].protocol,
+							dstName = elm[0].href,
+							title = elm[0].text;
+						if (elm[0].firstElementChild && elm[0].firstElementChild.tagName == "IMG") {
+							// process links to images
+							aLink = _getWikiImageLink(elm[0].firstElementChild, dstName);
+						} else if (protocol) {
+							// process external links
+							if (title) {
+								dstName = dstName + ' ' + title;
+							}
+							aLink = '[' + dstName + ']'
+//1908							linkPlaceholder = _preserveLinks4Html(aLink);
+						} else {
+							// process internal links
+							if (title) {
+								dstName = dstName + '|' + title;
+							}
+							aLink = '[[' + dstName + ']]'
+//1908							linkPlaceholder = _preserveLinks4Html(aLink);
+						}
+						elm.replaceWith( function(a) {
+//1908							return _recoverTags2html( linkPlaceholder );
+//1908							return _recoverTags2html( alink );
+							return aLink;
 						});
 					} else if ( elm[0].tagName == 'BR' ) {
 						// remove 'bogus' br tags inserted by the editor
@@ -2961,386 +3387,10 @@ debugger;
 	 */
 	function _uploadImages( editor, $dom) {
 		var text;
-		/**
-		 * uploads an image to the wiki
-		 *
-		 * @param {String} text
-		 * @returns {String}
-		 */
-		function doUpload(fileType, fileToUpload, fileName, fileSummary, ignoreWarnings){
-			var uploadData = new FormData();
-			uploadData.append("action", "upload");
-			uploadData.append("filename", fileName);
-			uploadData.append("text", fileSummary);
-			uploadData.append("token", mw.user.tokens.get( 'csrfToken' ) );
-			uploadData.append("ignorewarnings", ignoreWarnings );
-			if (fileType == 'File') uploadData.append("file", fileToUpload);
-			if (fileType == 'URL') uploadData.append("url", fileToUpload);
-			uploadData.append("format", 'json');
-			var uploadDetails;
-			//as we now have created the data to send, we send it...
-			$.ajax( { //http://stackoverflow.com/questions/6974684/how-to-send-formdata-objects-with-ajax-requests-in-jquery
-				url: _mwtWikiApi,
-				contentType: false,
-				processData: false,
-				type: 'POST',
-				async: false,
-				data: uploadData,//the formdata object we created above
-				success: function(data){
-						uploadDetails = data;
-				},
-				error:function(xhr,status, error){
-					uploadDetails['responseText'] = xhr.responseText;
-					console.log(error);
-				}
-			});
 
-			return uploadDetails;
-		}
-		/**
-		 * check upload succesful or report errors and warnings
-		 *
-		 * @param {String} text
-		 * @returns {String}
-		 */
-		function checkUploadDetail(uploadDetails, ignoreWarnings, destinationName) {
-			var message,
-				result;
-			if (typeof uploadDetails == "undefined") {
-				message = mw.msg("tinymce-upload-alert-unknown-error-uploading",
-					destinationName );
-				result = false;
-			} else if (typeof uploadDetails.error != "undefined") {
-				if (typeof uploadDetails.error.info != "undefined") {
-					message = mw.msg("tinymce-upload-alert-error-uploading",uploadDetails.error.info);
-				} else {
-					message = mw.msg("tinymce-upload-alert-error-uploading");		
-				}
-				editor.windowManager.alert(message);
-				result = false;
-			} else if (typeof uploadDetails.responseText != "undefined") {
-				message = mw.msg("tinymce-upload-alert-error-uploading",uploadDetails.responseText);
-				editor.windowManager.alert(message);
-				result = false;
-			} else if (typeof uploadDetails.error != "undefined") {
-				message = mw.msg("tinymce-upload-alert-error-uploading",uploadDetails.error.info);
-				// if the error is because the file exists then we can ignore and
-				// use the existing file
-				if (uploadDetails.error.code == "fileexists-no-change") {
-					result = 'exists';
-				} else {
-					result = false;
-					editor.windowManager.alert(message);
-				}
-			} else if (typeof uploadDetails.warnings != "undefined" && (!ignoreWarnings)) {
-				message = mw.msg("tinymce-upload-alert-warnings-encountered",
-					' ' + destinationName) + "\n\n" ;
-				result = 'warning';
-				for (warning in uploadDetails.warnings) {
-					warningDetails = uploadDetails.warnings[warning];
-					if (warning == 'badfilename') {
-						message = message + "	" + mw.msg("tinymce-upload-alert-destination-filename-not-allowed") + "\n";
-						result = false;
-					} else if (warning == 'exists') {
-						message = message + "	" + mw.msg("tinymce-upload-alert-destination-filename-already-exists") + "\n";
-						result = 'exists';
-					} else if (warning == 'duplicate') {
-						duplicate = warningDetails[0];
-						message = message + "	" + mw.msg("tinymce-upload-alert-duplicate-file",destinationName) + "\n"
-						result = 'duplicate';
-					} else {
-						message = message + "	" + mw.msg("tinymce-upload-alert-other-warning",warning) + "\n"
-						result = false;
-					}
-				}
-				editor.windowManager.alert(message);
-			} else if (typeof uploadDetails.upload.imageinfo != "undefined") {
-				result = uploadDetails.upload.imageinfo.url;
-			}
-			return result;
-		}
-
-		/**
-		 * creates a wiki link for an image and returns a place
-		 * holder for the html text, which is substituted later
-		 *
-		 * @param {String} text
-		 * @returns {String}
-		 */
-		function getWikiImagePlaceHolder(imageElm, imageLink) {
-			var aLink,
-				file,
-				fileType,
-				fileName,
-				mimeType,
-				extension,
-				uploadDetails,
-				uploadResult,
-				ignoreWarnings = true,
-				fileSummary = '',
-				wikiImageObject = [],
-				htmlImageObject = imageElm,
-				attribute,
-				attributes = imageElm.attributes,
-				sourceURI = attributes['src'].value.split('#')[0].split('?')[0],
-				protocol = sourceURI.split('/')[0].toLowerCase(),
-				dstName = sourceURI.split('/').pop().split('#')[0].split('?')[0],
-				wikiText,
-				stylestring,
-				properties,
-				style,
-				stylearray = {},
-				property,
-				value,
-				imageCaption,
-				size;
-
-			//return a promise that resolves with a File instance
-			function urltoFile(url, filename, mimeType){
-				return (fetch(url)
-/*					.then(function(res){return res.arrayBuffer();})
-					.then(function(buf){return new File([buf], filename,{type:mimeType});})*/
-					.await (function(res){return res.arrayBuffer();})
-					.await (function(buf){return new File([buf], filename,{type:mimeType});})
-				);
-			}
-
-			// return a file from the datat image
-			function dataURLtoFile(dataurl, filename) {
-				var arr = dataurl.split(','),
-				mime = arr[0].match(/:(.*?);/)[1],
-				bstr = atob(arr[1]), 
-				n = bstr.length, 
-				u8arr = new Uint8Array(n);
-
-
-				while(n--){
-					u8arr[n] = bstr.charCodeAt(n);
-				}
-					return new File([u8arr], filename, {type:mime});
-			}
-
-			// determine if this is a local image or external
-			if ((protocol == 'https:') || (protocol == 'http:')) {
-				fileType = 'URL';
-				uploadDetails = doUpload(fileType, sourceURI, dstName, fileSummary, ignoreWarnings);
-				uploadResult = checkUploadDetail(uploadDetails, ignoreWarnings, dstName);
-			} else if (protocol == 'data:image') {
-				fileType = 'File';
-				mimeType = attributes[ 'src' ].value.split( ':' )[1].split( ';' )[0];
-				extension = mimeType.split( '/' )[1];
-				fileName = 'img' + createUniqueNumber() + '.' + extension;
-				dstName = fileName;
-				file = dataURLtoFile( attributes['src'].value, fileName )
-				uploadDetails = doUpload( fileType, file, file.name, fileSummary, ignoreWarnings );
-				uploadResult = checkUploadDetail( uploadDetails, ignoreWarnings, file.name );
-/*				urltoFile( attributes['src'].value, dstName, mimeType )
-				.then ( function ( file ) {
-					uploadDetails = doUpload( fileType, file, file.name, fileSummary, ignoreWarnings );
-					uploadResult = checkUploadDetail( uploadDetails, ignoreWarnings, file.name );
-				});*/
-/*			} else if (protocol.split(':')[0].toLowerCase() == 'blob') {
-//				var reader = new FileReader;
-//reader.onload = function(e) {
-	// browser completed reading file - display it
-//	alert(e.target.result);
-//};
-//				file = urltoFile( sourceURI );
-				fileType = 'File';
-				mimeType = 'image/jpeg';
-				extension = 'jpg';
-				fileName = 'img' + createUniqueNumber() + '.' + extension;
-				dstName = fileName;
-				file = urltoFile( sourceURI, fileName, mimeType )
-				uploadDetails = doUpload( fileType, file, file.name, fileSummary, ignoreWarnings );
-				uploadResult = checkUploadDetail( uploadDetails, ignoreWarnings, file.name );*/
-
-/*  let file = input.files[0];
-
-  let reader = new FileReader();
-
-  reader.readAsText(file);*/
-
-			} else {
-				// the image is base64 data so create a link as a placeholder with details
-				fileType = 'File';
-				dstName = 'data_image';
-			}
-			// upload the image (or use existing image on wiki if already uploaded
-			// checking the response and process any errors or warning appropriately
-			// build the wiki code for the image link
-			for (var j = 0; j < attributes.length; j++) {
-				attribute = attributes[j].name;
-				if ( !( attribute == 'width' || !attribute == 'height' )) {
-					wikiImageObject[attribute] = attributes[j].value;
-				}
-			}
-			// check if wikiImageObject.style is set
-			// and then process the style attributes
-			if (wikiImageObject.style) {
-				stylestring = wikiImageObject.style;
-				stylestring = stylestring.replace(/\s/g, "");
-				properties = stylestring.split(';');
-				stylearray = {};
-				properties.forEach(function(property) {
-					var option = property.split(':');
-					stylearray[option[0]] = option [1];
-				});
-				stylestring = JSON.stringify(stylearray);
-				style = JSON.parse(stylestring);
-				if (style['display'] === 'block' &&
-					style['margin-left'] === 'auto' &&
-					style['margin-right'] === 'auto') {
-					wikiImageObject.align = 'center';
-				}
-				if (style['width']) {
-					var stylewidth = style['width'].replace('px', '');
-					if ( stylewidth !== "0" ) {
-						wikiImageObject.sizewidth = stylewidth ;
-					}
-				}
-				if (style['height']) {
-					var styleheight = style['height'].replace('px', '');
-					if ( styleheight !== "0" ) {
-						wikiImageObject.sizeheight = styleheight ;
-					}
-				}
-				if (style['float']) {
-					if (style['float'] === 'left') {
-						wikiImageObject.left = true;
-						wikiImageObject.align = 'left';
-					} else if (style['float'] === 'right') {
-						wikiImageObject.right = true;
-						wikiImageObject.align = 'right';
-					}
-				}
-				if (style['vertical-align']) {
-					wikiImageObject.verticalalign = style['vertical-align'];
-				}
-			}
-			// now process the image class if it has wiki formats
-			if (wikiImageObject.class) {
-				if (wikiImageObject.class.indexOf("thumbborder") >= 0) {
-					wikiImageObject.border = "true";
-				}
-				if (wikiImageObject.class.indexOf("thumbimage") >= 0) {
-					wikiImageObject.frame = "true";
-				}
-				if (wikiImageObject.class.indexOf("thumbthumb") >= 0) {
-					wikiImageObject.thumb = "true";
-				}
-			}
-			// now process the image size, width, caption and link if any set
-			if (htmlImageObject['width']
-				&& htmlImageObject['width'] !== wikiImageObject.sizewidth) {
-				wikiImageObject.sizewidth = htmlImageObject['width'];
-			}
-			if (htmlImageObject['height']
-				&& htmlImageObject['height'] !== wikiImageObject.sizeheight) {
-				wikiImageObject.sizeheight = htmlImageObject['height'];
-			}
-			if (htmlImageObject['caption']) {
-				wikiImageObject.caption = htmlImageObject['caption'];
-			}
-			if (htmlImageObject['link']) {
-				wikiImageObject.caption = htmlImageObject['link'];
-			}
-
-			// Build wikitext
-			wikiText = [];
-			wikiText.push(wikiImageObject.imagename);
-
-			// process attributes of image
-			for (property in wikiImageObject) {
-				if ($.inArray(property, ['imagename', 'thumbsize']) !== -1) {
-					continue; //Filter non-wiki data
-				}
-				if ($.inArray(property, ['left', 'right', 'center', 'nolink']) !== -1) {
-					continue; //Not used stuff
-				}
-				value = wikiImageObject[property];
-				//"link" may be intentionally empty. Therefore we have to
-				//check it _before_ "value is empty?"
-				if ( property === 'link' ) {
-					//If the 'nolink' flag is set, we need to discard a
-					//maybe set value of 'link'
-					if( wikiImageObject.nolink === 'true' ) {
-						wikiText.push( property + '=' );
-						continue;
-					}
-					if ( value === 'false' || value === false ) {
-						continue;
-					}
-					wikiText.push( property + '=' + value );
-					continue;
-				}
-				if ( !value ) continue;
-				if (property === 'sizewidth' ) {
-					size = '';
-					if (wikiImageObject.sizewidth && wikiImageObject.sizewidth !== "false") {
-						size = wikiImageObject.sizewidth;
-					}
-					if (wikiImageObject.sizeheight && wikiImageObject.sizeheight !== "false") {
-						size += 'x' + wikiImageObject.sizeheight;
-					}
-					if (size.length == 0 || size == "auto") continue;
-					size += 'px';
-					wikiText.push(size);
-					continue;
-				}
-				if (property == 'alt') {
-					wikiText.push(property + '=' + value);
-					continue;
-				}
-				if ( property == 'align' ) {
-					wikiText.push(value);
-					continue;
-				}
-				if ( property == 'verticalalign' ) {
-					wikiText.push(value);
-					continue;
-				}
-				if ( property == 'title' ) {
-					imageCaption = value;
-					continue;
-				}
-				if ( property == 'caption' ) {
-					imageCaption = value;
-					continue;
-				}
-				if ( property == 'thumb' && value === "true" ) {
-					wikiText.push( 'thumb' );
-					continue;
-				}
-				if ( property == 'frame' && value === "true") {
-					wikiText.push( 'frame' );
-					continue;
-				}
-				if ( property == 'border' && value === "true" ) {
-					wikiText.push( 'border' );
-					continue;
-				}
-				if ( property == 'src' && !imageLink ) {
-					imageLink = value;
-					continue;
-				}
-			}
-
-			// make sure image caption comes in the end
-			if ( imageCaption ) {
-				wikiText.push( imageCaption );
-			}
-			if (imageLink) {
-				dstName = dstName + "|link=" + imageLink;
-				aLink = '[[' + _mwtFileNamespace + ':' + dstName + wikiText.join('|') + ']]';
-			} else {
-				aLink = '[[' + _mwtFileNamespace + ':' + dstName + wikiText.join('|') + ']]';
-			}
-			return _preserveLinks4Html(aLink);
-		};
 		// convert to <a> wiki links then replace these
 		// with a placeholder for the html
-		$dom.find( "a" ).replaceWith( function() {
+/*		$dom.find( "a" ).replaceWith( function() {
 			var aLink,
 				linkPlaceholder,
 				protocol = this.protocol,
@@ -3365,16 +3415,17 @@ debugger;
 				linkPlaceholder = _preserveLinks4Html(aLink);
 			}
 			return _recoverTags2html( linkPlaceholder );
-		});
+		});*/
 
 		// then process any remaining images in the text
-		$dom.find( "img" ).replaceWith( function() {
+/*		$dom.find( "img" ).replaceWith( function() {
 			if (this.parentNode.tagName != "A") {
 				return _recoverTags2html( getWikiImagePlaceHolder( this ) );
 			} else {
 				return this;
 			}
-		});
+		});*/
+
 		// convert DOM back to html text
 		text = $dom.html();
 		//remove &; encoding
