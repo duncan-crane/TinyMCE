@@ -68,6 +68,11 @@ p {
     margin: 0.4em 0 0em 0;
 }
 
+div.mwt-paragraph {
+	display: inline-block;
+}
+
+
 .mwt-unknown {
 	display: inline-block;
 }

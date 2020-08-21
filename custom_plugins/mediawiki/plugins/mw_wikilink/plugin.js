@@ -103,7 +103,7 @@ var wikilink = function (editor) {
 					linkParts = $1.split(" ");
 					aLink = linkParts[0];
 					if (linkParts.length > 1) {
-						aLabel = linkParts[1];
+						aLabel = linkParts.slice( 1 ).join(" ");
 					} else {
 						aLabel = '';
 					}
@@ -384,7 +384,7 @@ var wikilink = function (editor) {
 			onAction: function () {
 				return unlink( editor );
 			},
-			onSetup: toggleEnabledState(editor, ["mwt-internallink", "mwt-externallink"])
+			onSetup: toggleEnabledState(editor, ["mwt-internallink", "mwt-externallink"], true)
 		});
 		editor.shortcuts.add('Meta+' + 219, 'open link dialog', function () {
 			open( editor );

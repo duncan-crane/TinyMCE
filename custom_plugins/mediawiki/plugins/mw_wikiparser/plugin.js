@@ -579,7 +579,8 @@ debugger;
 		if ((protocol == 'https:') || (protocol == 'http:')) {
 			fileType = 'URL';
 			uploadDetails = doUpload(fileType, sourceURI, dstName, fileSummary, ignoreWarnings);
-			uploadResult = checkUploadDetail(uploadDetails, ignoreWarnings, dstName);
+			uploadResult = checkUploadDetail( editor, uploadDetails, ignoreWarnings, dstName);
+debugger;
 		} else if (protocol == 'data:image') {
 			fileType = 'File';
 			mimeType = attributes[ 'src' ].value.split( ':' )[1].split( ';' )[0];
@@ -588,7 +589,7 @@ debugger;
 			dstName = fileName;
 			file = dataURLtoFile( attributes['src'].value, fileName )
 			uploadDetails = doUpload( fileType, file, file.name, fileSummary, ignoreWarnings );
-			uploadResult = checkUploadDetail( uploadDetails, ignoreWarnings, file.name );
+			uploadResult = checkUploadDetail( editor, uploadDetails, ignoreWarnings, file.name );
 /*				urltoFile( attributes['src'].value, dstName, mimeType )
 			.then ( function ( file ) {
 				uploadDetails = doUpload( fileType, file, file.name, fileSummary, ignoreWarnings );
@@ -3365,7 +3366,8 @@ debugger;
 //		text = text.replace(/{@@nl@@}/gi, "\n");
 
 		// clean up empty space at end of text
-		text = text.trimRight() + '\n';
+//2008		text = text.trimRight() + '\n';
+		text = text.trimRight();
 
 		// wrap the text in an object to send it to event listeners
 		textObject = {text: text};
@@ -3582,12 +3584,12 @@ debugger;
 debugger;
 
 		text = e.content;
-console.log(text);
+//console.log(text);
 //1008		text = text.replace(/\[/gmi, '&amp;#91;' )
 //1008		text = text.replace(/\{/gmi, '&amp;#123;' )
 		text = _convertHtml2Wiki( text );
 		text = _convertWiki2Html( text );
-console.log(text);
+//console.log(text);
 		e.content = text;
 	}
 
@@ -3628,7 +3630,59 @@ text = htmlDecode ($dom[0].innerHTML);
 		var ed = editor,
 		selectedNode,
 		targetFound = false;
-debugger;
+
+/*		function fix_selection(range) {
+//			var selection = window.getSelection();
+			var selection = range;
+			var selected = range.toString();
+			range = selection.getRangeAt(0);
+			let start = selection.anchorOffset;
+			let end = selection.focusOffset;
+			if (!selection.isCollapsed) {
+				if (/\s+$/.test(selected)) { // Removes leading spaces
+					if (start > end) {
+						range.setEnd(selection.focusNode, --start);
+					} else {
+						range.setEnd(selection.anchorNode, --end);
+					}
+				}
+				if (/^\s+/.test(selected)) { // Removes trailing spaces
+					if (start > end) {
+						range.setStart(selection.anchorNode, ++end);
+					} else {
+						range.setStart(selection.focusNode, ++start);
+					}
+				}
+			}
+			return range
+		}*/
+
+		function fix_selection(range) {
+			var selection = editor.selection.getSel(editor.selection.setRng( range ));
+//			var selection = range;
+			var selected = range.toString();
+//			range = selection.getRangeAt(0);
+			var start = range.startOffset;
+			var end = range.endOffset;
+			if ( start != end ) {
+				if (/\s+$/.test(selected)) { // Removes leading spaces
+					if (start > end) {
+						range.setEnd(selection.focusNode, --start);
+					} else {
+						range.setEnd(selection.anchorNode, --end);
+					}
+				}
+				if (/^\s+/.test(selected)) { // Removes trailing spaces
+					if (start > end) {
+						range.setStart(selection.anchorNode, ++end);
+					} else {
+						range.setStart(selection.focusNode, ++start);
+					}
+				}
+			}
+			return range
+		}
+
 		var onDblClickLaunch = function ( editor, aTarget, aClass, aCommand) {
 			var selectedNodeParents = editor.dom.getParents( aTarget, function ( aNode ) {
 				if ( aNode.className.indexOf( aClass ) > -1 ) {
@@ -3644,6 +3698,8 @@ debugger;
 			}
 			return false;
 		}
+debugger;
+
 		if ( onDblClickLaunch ( editor, evt.target, "mwt-image", "wikiupload" )) {
 			return;
 		} else if ( onDblClickLaunch ( editor, evt.target, "mwt-internallink", "wikilink" )) {
@@ -3653,6 +3709,9 @@ debugger;
 		} else if ( onDblClickLaunch ( editor, evt.target, "mwt-wikiMagic", "wikitextEditor" )) {
 			return;
 		}
+		
+		editor.selection.setRng( fix_selection( editor.selection.getRng() ));
+
 		return;
 	}
 
@@ -3673,7 +3732,7 @@ debugger;
 			_cursorOnDownPreviousNode = cursorLocation.previousNode;
 			_cursorOnDownNextNode = cursorLocation.nextNode;
 console.log( "down: " + _cursorOnDown);
-		} else if ( evt.keyCode == 219 ) {
+/*		} else if ( evt.keyCode == 219 ) {
 			var html,
 				args,
 				element,
@@ -3694,7 +3753,7 @@ console.log( "down: " + _cursorOnDown);
 
 			args = {format: 'raw'};
 			setSelection( editor, outerHTML, args );
-			return false;
+			return false;*/
 		}
 	};
 

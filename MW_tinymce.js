@@ -140,6 +140,9 @@
 		editor.undoManager.transact ( function () {
 			editor.selection.setContent ( content, args );
 		});
+
+		editor.nodeChanged();
+
 		bm = editor.selection.getBookmark();
 
 		editor.selection.moveToBookmark( bm )
@@ -188,25 +191,46 @@
 		return false;	
 	}*/
 
-	var toggleEnabledState = function( editor, selectors ) {
+	var toggleEnabledState = function( editor, selectors, on ) {
 		// function to toggle a button's enabled state dependend
 		// on which nodes are selected in the editor
+		// if 'on' = true then the button is toggled on when the
+		// given selectors are true otherwise it's toggled off
 		return function (api) {
 			editor.on('NodeChange', function (e) {
-				var selectedNode = e.element;
-				api.setDisabled(true);
-				while (selectedNode.parentNode != null) {
+				var selectedNode = e.element,
+					parents;
+//debugger;
+//				api.setDisabled(true);
+				api.setDisabled( on );
+				
+				for (var selector in selectors) {
+					if (selectedNode.className.indexOf( selectors[ selector ]) > -1) {
+//						editor.selection.select(selectedNode);
+						editor.off('NodeChange', true);
+						return api.setDisabled( !on );						
+					}
+				}
+
+				parents = $( selectedNode ).parents( selectors.join(",") );
+
+				if (parents.length > 0 ) {
+					editor.off('NodeChange', !on );
+					return api.setDisabled(false);						
+				}
+				
+/*				while (selectedNode.parentNode != null) {
 					if (typeof selectedNode.className != "undefined") {
 						for (var selector in selectors) {
 							if (selectedNode.className.indexOf( selectors[ selector ]) > -1) {
 								editor.selection.select(selectedNode);
 								editor.off('NodeChange', true);
-								return api.setDisabled(false)
+								return api.setDisabled(false);						
 							}
 						}
 					}
 					selectedNode = selectedNode.parentNode;
-				}
+				}*/
 			});
 //			return editor.off('NodeChange', true);
 		};
@@ -245,7 +269,7 @@
 		return uploadDetails;
 	}
 
-	var checkUploadDetail = function (uploadDetails, ignoreWarnings, uploadName) {
+	var checkUploadDetail = function (editor, uploadDetails, ignoreWarnings, uploadName) {
 		var message,
 			result = [];
 debugger;
@@ -267,28 +291,44 @@ debugger;
 				result = false;
 				editor.windowManager.alert(message);
 			}
-		} else if (typeof uploadDetails.warnings != "undefined" && (!ignoreWarnings)) {
-			message = mw.msg("tinymce-upload-alert-warnings-encountered",
-				' ' + uploadName) + "\n\n" ;
+		} else if (typeof uploadDetails.upload.warnings != "undefined" && (!ignoreWarnings)) {
+			message = mw.msg("tinymce-upload-alert-warnings-encountered", uploadName) + "\n\n" ;
 			result = 'warning';
-			for (warning in uploadDetails.warnings) {
-				warningDetails = uploadDetails.warnings[warning];
+			for (warning in uploadDetails.upload.warnings) {
+				warningDetails = uploadDetails.upload.warnings[warning];
 				if (warning == 'badfilename') {
 					message = message + "	" + mw.msg("tinymce-upload-alert-destination-filename-not-allowed") + "\n";
+					editor.windowManager.alert(message);
 					result = false;
 				} else if (warning == 'exists') {
-					message = message + "	" + mw.msg("tinymce-upload-alert-destination-filename-already-exists") + "\n";
-					result = 'exists';
+//					message = message + "	" + mw.msg("tinymce-upload-alert-destination-filename-already-exists") + "\n";
+					editor.windowManager.confirm(mw.msg("tinymce-upload-confirm-file-already-exists", uploadName),
+						function(ok) {
+							if (ok) {
+								result = 'exists';
+							} else {
+								result = false;
+							}
+						});
 				} else if (warning == 'duplicate') {
-					duplicate = warningDetails[0];
-					message = message + "	" + mw.msg("tinymce-upload-alert-duplicate-file",uploadName) + "\n"
-					result = 'duplicate';
+//					duplicate = warningDetails[ 0 ];
+					editor.windowManager.confirm(mw.msg("tinymce-upload-confirm-file-is-duplicate", uploadName, warningDetails[ 0 ]),
+						function(ok) {
+							if (ok) {
+								result = warningDetails[ 0 ];
+							} else {
+								result = false;
+							}
+						});
+/*					message = message + "	" + mw.msg("tinymce-upload-alert-duplicate-file",warningDetails[ 0 ]) + "\n"
+					result = 'duplicate';*/
 				} else {
 					message = message + "	" + mw.msg("tinymce-upload-alert-other-warning",warning) + "\n"
+					editor.windowManager.alert(message);
 					result = false;
 				}
 			}
-			editor.windowManager.alert(message);
+//			editor.windowManager.alert(message);
 		} else if (typeof uploadDetails.upload.imageinfo != "undefined") {
 //			result = uploadDetails.upload.imageinfo.url;
 			result["url"] = uploadDetails.upload.imageinfo.url;
@@ -493,7 +533,7 @@ var defaultSettings = function(selector) {
 		// tinymce configuration
 		toolbar_sticky: true,
 //		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap fontawesome singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect removeformat | searchreplace ',
-		toolbar: 'undo redo | cut copy paste insert selectall| bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist advlist outdent indent | wikilink wikiunlink table image media | styleselect removeformat| visualchars visualblocks| searchreplace |  wikimagic wikisourcecode wikitext wikiupload | wikitoggle nonbreaking singlelinebreak reference template',
+		toolbar: 'undo redo | cut copy paste insert selectall| bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist advlist outdent indent | wikilink wikiunlink table image media | formatselect removeformat| visualchars visualblocks| searchreplace |  wikimagic wikisourcecode wikitext wikiupload | wikitoggle nonbreaking singlelinebreak reference template',
 		//style_formats_merge: true,
 		style_formats: [
 			{
@@ -518,12 +558,12 @@ var defaultSettings = function(selector) {
 		],
 		formats: {
 			// Changes the default format for h1 to have a class of mwt-heading
-			h1: { block: 'h1', classes: 'mwt-heading' },
-			h2: { block: 'h2', classes: 'mwt-heading' },
-			h3: { block: 'h3', classes: 'mwt-heading' },
-			h4: { block: 'h4', classes: 'mwt-heading' },
-			h5: { block: 'h5', classes: 'mwt-heading' },
-			h6: { block: 'h6', classes: 'mwt-heading' }
+			h1: { block: 'h1', classes: 'mwt-heading', attributes: { 'data-mwt-headingSpacesBefore': ' ' , 'data-mwt-headingSpacesAfter': ' ' } },
+			h2: { block: 'h2', classes: 'mwt-heading', attributes: { 'data-mwt-headingSpacesBefore': ' ' , 'data-mwt-headingSpacesAfter': ' ' } },
+			h3: { block: 'h3', classes: 'mwt-heading', attributes: { 'data-mwt-headingSpacesBefore': ' ' , 'data-mwt-headingSpacesAfter': ' ' } },
+			h4: { block: 'h4', classes: 'mwt-heading', attributes: { 'data-mwt-headingSpacesBefore': ' ' , 'data-mwt-headingSpacesAfter': ' ' } },
+			h5: { block: 'h5', classes: 'mwt-heading', attributes: { 'data-mwt-headingSpacesBefore': ' ' , 'data-mwt-headingSpacesAfter': ' ' } },
+			h6: { block: 'h6', classes: 'mwt-heading', attributes: { 'data-mwt-headingSpacesBefore': ' ' , 'data-mwt-headingSpacesAfter': ' ' } }
 		},
 		block_formats: 'Paragraph=p;Heading 1=h1;Heading 2=h2;Heading 3=h3;Heading 4=h4;Heading 5=h5;Heading 6=h6;Preformatted=pre;Code=code',
 		images_upload_credentials: true,

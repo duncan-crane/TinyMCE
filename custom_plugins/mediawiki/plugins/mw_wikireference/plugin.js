@@ -18,23 +18,61 @@
 	
 	var utility = editor.getParam("wiki_utility");
 
+	var getSelection = utility.getSelection;
+
 	var setSelection = utility.setSelection;
 	
 	var createUniqueNumber = utility.createUniqueNumber;
+
+	var toggleEnabledState = utility.toggleEnabledState;
 
 	var translate = utility.translate;
 
 	var insertReference = function (editor, times) {
 
+		var selectionFix = function (range) {
+			var selection = window.getSelection();
+			var selected = range.toString();
+			range = selection.getRangeAt(0);
+			let start = selection.anchorOffset;
+			let end = selection.focusOffset;
+			if (!selection.isCollapsed) {
+				if (/\s+$/.test(selected)) { // Removes leading spaces
+					if (start > end) {
+						range.setEnd(selection.focusNode, --start);
+					} else {
+						range.setEnd(selection.anchorNode, --end);
+					}
+				}
+				if (/^\s+/.test(selected)) { // Removes trailing spaces
+					if (start > end) {
+						range.setStart(selection.anchorNode, ++end);
+					} else {
+						range.setStart(selection.focusNode, ++start);
+					}
+				}
+			}
+			return range
+		}
+
 		var args = {format: 'wiki', /*load: 'true',*/ convert2html: true, newRef: true},
 			reference,
+			refHtml = ' ',
+			bm,
 			id = 'R' + createUniqueNumber();
+debugger;
+		bm = tinymce.activeEditor.selection.getBookmark();
 
-		reference = '<ref>' + '<span class="mwt-dummyReference" id="' + id + '"> </span>' + '</ref>&nbsp;';
+		refHtml = getSelection( editor, {format : 'html', convert2wiki : false});
+		if ( refHtml == '') refHtml = ' ';
+		reference = '<ref>' + '<span class="mwt-dummyReference" id="' + id + '">' + refHtml + '</span></ref>&nbsp;';
+//		reference = '<ref>' + '<span class="mwt-dummyReference" id="' + id + '">' + refHtml + '</span></ref>';
+//		reference = '<ref>' + '<span class="mwt-dummyReference" id="' + id + '"></span>' + '</ref>&nbsp;';
 
 		setSelection( editor, reference, args );
 		editor.selection.select( editor.dom.select('#' + id )[0]); //select the inserted element
-		editor.selection.collapse( 0 ); //collapses the selection to the end of the range, so the cursor is after the inserted element
+//		editor.selection.collapse( 0 ); //collapses the selection to the end of the range, so the cursor is after the inserted element
+		editor.nodeChanged();
 
     };
 
@@ -45,12 +83,15 @@
 	};
 
 	var registerButtons = function (editor) {
-		editor.ui.registry.addButton('reference', {
+		var selectors = ["mwt-dummyReference", "mwt-reference"];
+
+		editor.ui.registry.addToggleButton('reference', {
 			icon: 'footnote',
 			tooltip: translate( 'tinymce-reference-insertReference' ),
 			onAction: function () {
 				return editor.execCommand('mwt-insertReference');
-			}
+			},
+			onSetup: toggleEnabledState(editor, selectors, false )
 		});
 		editor.ui.registry.addMenuItem('reference', {
 			icon: 'footnote',

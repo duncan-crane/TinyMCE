@@ -1081,7 +1081,7 @@ debugger;
 						if ((fileContent) && (fileName)) {
 							do {
 								uploadDetails = doUpload(fileType, fileContent, fileName, fileSummary, ignoreWarnings);
-								result = checkUploadDetail(uploadDetails, ignoreWarnings, fileName);
+								result = checkUploadDetail( editor, uploadDetails, ignoreWarnings, fileName );
 								if (result) {
 									if ( Array.isArray( result ) ) {
 										uploadResult = result["url"];
