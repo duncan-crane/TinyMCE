@@ -30,13 +30,13 @@
 
 	var insertReference = function (editor, times) {
 
-		var selectionFix = function (range) {
-			var selection = window.getSelection();
-			var selected = range.toString();
-			range = selection.getRangeAt(0);
-			let start = selection.anchorOffset;
-			let end = selection.focusOffset;
-			if (!selection.isCollapsed) {
+		function fix_selection(range) {
+			var selection = editor.selection.getSel(editor.selection.setRng( range )),
+				selected = range.toString(),
+				start = range.startOffset,
+				end = range.endOffset;
+
+			if ( start != end ) {
 				if (/\s+$/.test(selected)) { // Removes leading spaces
 					if (start > end) {
 						range.setEnd(selection.focusNode, --start);
@@ -60,18 +60,15 @@
 			refHtml = ' ',
 			bm,
 			id = 'R' + createUniqueNumber();
-debugger;
-		bm = tinymce.activeEditor.selection.getBookmark();
+
+		editor.selection.setRng( fix_selection( editor.selection.getRng() ));
 
 		refHtml = getSelection( editor, {format : 'html', convert2wiki : false});
 		if ( refHtml == '') refHtml = ' ';
 		reference = '<ref>' + '<span class="mwt-dummyReference" id="' + id + '">' + refHtml + '</span></ref>&nbsp;';
-//		reference = '<ref>' + '<span class="mwt-dummyReference" id="' + id + '">' + refHtml + '</span></ref>';
-//		reference = '<ref>' + '<span class="mwt-dummyReference" id="' + id + '"></span>' + '</ref>&nbsp;';
 
 		setSelection( editor, reference, args );
 		editor.selection.select( editor.dom.select('#' + id )[0]); //select the inserted element
-//		editor.selection.collapse( 0 ); //collapses the selection to the end of the range, so the cursor is after the inserted element
 		editor.nodeChanged();
 
     };

@@ -17,7 +17,7 @@ th {
     display: table-cell;
     vertical-align: inherit;
     font-weight: bold;
-/*    text-align: center;*/
+    text-align: center;
 }
 
 thead{
@@ -69,11 +69,11 @@ p {
 }
 
 div.mwt-paragraph {
-	display: inline-block;
+/*	display: inline-block;*/
 }
 
 
-.mwt-unknown {
+div.mwt-unknown {
 	display: inline-block;
 }
 
