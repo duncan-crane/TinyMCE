@@ -534,7 +534,7 @@ var defaultSettings = function(selector) {
 		// tinymce configuration
 		toolbar_sticky: true,
 //		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap fontawesome singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect removeformat | searchreplace ',
-		toolbar: 'undo redo | cut copy paste insert selectall| bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist advlist outdent indent | wikilink wikiunlink table image media | formatselect removeformat| visualchars visualblocks| searchreplace |  wikimagic wikisourcecode wikitext wikiupload | wikitoggle nonbreaking singlelinebreak reference template',
+		toolbar: 'undo redo | cut copy paste insert selectall| bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist advlist outdent indent | wikilink wikiunlink table image media | formatselect removeformat| visualchars visualblocks| searchreplace | wikimagic wikisourcecode wikitext wikiupload | wikitoggle nonbreaking singlelinebreak reference template',
 		//style_formats_merge: true,
 		style_formats: [
 			{
@@ -565,10 +565,6 @@ var defaultSettings = function(selector) {
 			h4: { block: 'h4', classes: 'mwt-heading', attributes: { 'data-mwt-headingSpacesBefore': ' ' , 'data-mwt-headingSpacesAfter': ' ' } },
 			h5: { block: 'h5', classes: 'mwt-heading', attributes: { 'data-mwt-headingSpacesBefore': ' ' , 'data-mwt-headingSpacesAfter': ' ' } },
 			h6: { block: 'h6', classes: 'mwt-heading', attributes: { 'data-mwt-headingSpacesBefore': ' ' , 'data-mwt-headingSpacesAfter': ' ' } },
-			'ul': { inline: 'ul', classes: 'mwt-listItem', wrapper: true }
-//			ul: { block: 'ul', classes: 'mwt-listItem' },
-//			ol: { block: 'ol', classes: 'mwt-listItem' },
-//			li: { block: 'li', classes: 'mwt-listItem' }
 		},
 		block_formats: 'Paragraph=p;Heading 1=h1;Heading 2=h2;Heading 3=h3;Heading 4=h4;Heading 5=h5;Heading 6=h6;Preformatted=pre;Code=code',
 		images_upload_credentials: true,
@@ -619,9 +615,12 @@ var updateSettings = function( tinyMCESelector, settings ) {
 	var defaultSet = defaultSettings(tinyMCESelector);
 	$.each(settings, function (k, v) {
 		if ( k.endsWith( '+' ) ) {
+
 			// adding to default parameter
 			k = k.slice( 0, - 1 );
-			if ($.type( defaultSet[k] ) === "string") {
+			if ( defaultSet[k] === undefined ) {
+				defaultSet[k] = v;
+			} else if ($.type( defaultSet[k] ) === "string") {
 				defaultSet[k] = defaultSet[k] + v;
 			} else if (Array.isArray ( defaultSet[k] ) ) {
 				defaultSet[k] = defaultSet[k].concat( v );
@@ -631,7 +630,9 @@ var updateSettings = function( tinyMCESelector, settings ) {
 		} else if ( k.endsWith( '-' ) ) {
 			// removing from default parameter
 			k = k.slice( 0, - 1 );
-			if ($.type( defaultSet[k] ) === "string") {
+			if ( defaultSet[k] === undefined ) {
+				// do nothing
+			} else if ($.type( defaultSet[k] ) === "string") {
 				// if default value is a string remove the value from it
 				var str = defaultSet[k],
 					regex,
@@ -684,8 +685,9 @@ var updateSettings = function( tinyMCESelector, settings ) {
 
 $.each(tinyMCESettings, function (selector, settings) {
 	mwTinyMCEInit(selector, settings);
-	registerCommands( editor );
 });
+
+
 // mwTinyMCEInit( '.tinymce, #wpTextbox1' );
 
 // Let others know we're done here

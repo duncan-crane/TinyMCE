@@ -3485,16 +3485,24 @@ debugger;
 	 */
 	function _onPastePreProcess(e) {
 		// if this is html then covert to wiki and back so it displays correctly
-		var text;
+		var text,
+			textObject;
 debugger;
-
 		text = e.content;
-//console.log(text);
-//1008		text = text.replace(/\[/gmi, '&amp;#91;' )
-//1008		text = text.replace(/\{/gmi, '&amp;#123;' )
+
+		// wrap the text in an object and send it to event listeners
+		textObject = {text: text};
+		$(document).trigger('TinyMCEBeforePastePreProcess', [textObject]);
+		text = textObject.text;
+
 		text = _convertHtml2Wiki( text );
 		text = _convertWiki2Html( text );
-//console.log(text);
+
+		// wrap the text in an object and send it to event listeners
+		textObject = {text: text};
+		$(document).trigger('TinyMCEAfterPastePreProcess', [textObject]);
+		text = textObject.text;
+
 		e.content = text;
 	}
 
