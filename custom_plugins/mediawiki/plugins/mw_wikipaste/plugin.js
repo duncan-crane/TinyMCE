@@ -1434,9 +1434,17 @@
       };
     };
     var getData = function (editor) {
+// DC did this 2708
+		var html,
+			text;
+			
+//		html = "<div class='mwt-tiny-copy'>" + editor.selection.getContent({ contextual: true }) + "</div>";
+//		text = 	editor.selection.getContent({ format: 'text' });
       return {
         html: editor.selection.getContent({ contextual: true }),
         text: editor.selection.getContent({ format: 'text' })
+//        html: html,
+//        text: text,
       };
     };
     var isTableSelection = function (editor) {

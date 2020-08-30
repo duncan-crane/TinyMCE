@@ -68,6 +68,11 @@ p {
     margin: 0.4em 0 0em 0;
 }
 
+ul {
+    list-style: outside disc url(data:image/svg+xml;charset=UTF-8,<svg width='8' height='16' version='1.1' xmlns='http://www.w3.org/2000/svg'><circle cx='4' cy='10.4' r='4' fill='#dee2e6'/></svg>);
+    list-style-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAJCAYAAAARml2dAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAABUSURBVAiZdY4xDsAgFELB2J0DdnbwQI5OHvDfgC62SY0yvhAetI1dWEq5JN0kKwDYbhEx8oT9a5JdEtLb/M2QNW0FAJLttkLbLUfEkIRVztPdo+MBm8UkW9Zxc20AAAAASUVORK5CYII=)\9;
+}
+
 div.mwt-paragraph {
 /*	display: inline-block;*/
 }

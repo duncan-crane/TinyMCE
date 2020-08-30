@@ -32,18 +32,19 @@
 	var	mw_htmlPairsStatic = [ //now just non-nestable
 		'a',
 	//	'abbr',
-	  'b',
+		'b',
 	//	'bdi', 
 	//	'caption', 'center', 'cite',
-	  'code', // although code is a wiki invariant html tag treat as static pair so contained wiki code correctly parsed
+		'code', // although code is a wiki invariant html tag treat as static pair so contained wiki code correctly parsed
 	//	'data', 'del',  'dfn',  
 		'img', 
-	  'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
-	  'i',
+		'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
+		'i',
 	//  'ins', 'mark',
-	  'p', // 'pre',
+		'p', // 'pre',
 	//	'rb', 'rp', 'rt', 'rtc',
 	//	's', 'strike', 
+		'svg',
 	//	'time', 'tt', 'u', 
 	];
 	var	mw_htmlBlockPairsStatic = [
@@ -453,11 +454,15 @@ var defaultSettings = function(selector) {
 //		remove_script_host: false,
 //		document_base_url: server,
 //		tinyMCETemplates: tinyMCETemplates,
-//		entity_encoding: 'raw',
+		entity_encoding: 'raw',
 		automatic_uploads: true,
 		paste_data_images: true,
 		paste_word_valid_elements: 'b,strong,i,em,h1,h2,h3,h4,h5,table,tr,th,td,ol,ul,li,a,sub,sup,strike,br,del,div,p',
 		paste_webkit_styles: "none",
+		invalid_styles: {
+			'ol': 'list-style',
+			'ul': 'list-style',
+		},
 		browser_spellcheck: true,
 		allow_html_in_named_anchor: true,
 		visual: false,
@@ -480,8 +485,6 @@ var defaultSettings = function(selector) {
 		},*/
 		height: 500,
 		autoresize_max_height: 600,
-//		code_dialog_width: 1200,
-//		code_dialog_height: 500,
 		statusbar: false,
 		// the default text direction for the editor
 		directionality: tinyMCEDirectionality,
@@ -505,7 +508,7 @@ var defaultSettings = function(selector) {
 		// save plugin
 		save_enablewhendirty: true,
 		// Allow style tags in body and unordered lists in spans (inline)
-		valid_children: "+span[ul],+span[div],+em[div],+big[div],+small[div],+p[div]",
+		valid_children: "+span[ul],+span[div],+em[div],+big[div],+small[div],-p[p]",//+p[div]",
 		extended_valid_elements: "big,small",
 //	    custom_elements: "~nowiki",
 //		closed: /^(br|hr|input|meta|img|link|param|area|nowiki)$/,

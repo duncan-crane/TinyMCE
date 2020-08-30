@@ -924,6 +924,7 @@ reader.readAsText(file);*/
 
 									// if this is a valid url and doesn't start witha space
 									// then process as an external link, else ignore
+									// but look for links within these braces
 									if (tempLink.substr(1,tempLink.length - 2).match(urlProtocolMatch)
 										|| tempLink.substr(1,2) === "//" ) {
 									
@@ -935,6 +936,12 @@ reader.readAsText(file);*/
 										// reset the textlength and
 										// set the pos to the end of the placeholder
 										pos = linkStart + linkPlaceholder.length - 1;
+									} else {
+										// add two to link start as double square braces 
+										// will have been processed already as an 
+										// internal link. Then continue searching
+										pos = linkStart;// + 1;
+//										squareBraceDepth--;
 									}
 									tempLink = '';
 									break;
@@ -1030,25 +1037,25 @@ reader.readAsText(file);*/
 						html = parserTable[count];
 						elementTitle = _tags4Wiki[tag];
 
-						if ( html.match(blockMatcher) ) {
-							// if parser result contains a block tag. wrap in a <div>
-							// and add a new line to the wiki text
-							if (html.match(/<img/gmi)) {
-								// images should are given a placeholder for the editor window
-								// as the actual code may appear elsewhere in the text to where
-								// the image is displayed
-								html = '<div>' + html + '</div>' ;									
+						if ( html != undefined ) {
+							if ( html.match(blockMatcher) ) {
+								// if parser result contains a block tag. wrap in a <div>
+								// and add a new line to the wiki text
+								if (html.match(/<img/gmi)) {
+									// images should are given a placeholder for the editor window
+									// as the actual code may appear elsewhere in the text to where
+									// the image is displayed
+									html = '<div>' + html + '</div>' ;									
+								} else {
+									html = '<div>' + html + '</div>';
+									_tags4Wiki[tag] = '<@@bnl@@>' + _tags4Wiki[tag] + '<@@bnl@@>';
+								}
 							} else {
-								html = '<div>' + html + '</div>';
-								_tags4Wiki[tag] = '<@@bnl@@>' + _tags4Wiki[tag] + '<@@bnl@@>';
+								// otherwise wrap in a <span>
+								html = '<span>' + html + '</span>';
 							}
 						} else {
-							// otherwise wrap in a <span>
-							if (html) {
-								html = '<span>' + html + '</span>';
-							} else {
-								html = _nrw;
-							}
+							html = _nrw;					
 						}
 
 						// now build the html equivalent from each parsed wikicode fragment
@@ -1233,7 +1240,7 @@ reader.readAsText(file);*/
 					refNote = refNote.substr(0, refNote.search('<\/sup>') + 6);		
 					refNote = refNote.replace(/^<sup /, '<sup title="' + refText + '" contenteditable="false"');
 					refNote = refNote.replace(/>&#91;\d*&#93;</, '>&#91;&#8225;&#93;<');
-debugger;
+
 					return _getPlaceHolder4Html(parserResult.parsedWikiText, refNote + refHtml, $1, 'editable')	
 				}else {
 					return _getPlaceHolder4Html(match, 'toParse', $1, 'nonEditable');
@@ -1317,40 +1324,6 @@ debugger;
 				html = '<code class="mwt-nonEditable mwt-wikiMagic">' + match.replace(/\</gmi, '&lt;') + '</code>';
 				return _getPlaceHolder4Html(match, html, 'unknown', 'nonEditable');
 			});
-
-			// find and process pseudo <pre> tags where wikicode lines starts with spaces.  If
-			// several consecutive lines start with a space they are treated as a single <pre> block.
-			// If the space is followed by any tag or | then ignore
-/*2308			regex = '(^|\\n)( +[^\\s][^]+?)(?=(\\n\\S|\\n\\s*\\n|\\n\\s*$))';
-			matcher = new RegExp(regex, 'gmi');
-
-			text = text.replace(matcher, function(match, $1, $2, $3, offset, string) {
-				// $1 = the new lines preceding the text in pseudo <pre>s
-				// $2 = lines starting with spaces to be placed in the pseudo <pre>s
-				// $3 = the line following the text in pseudo <pre>s
-
-debugger;
-				// edge seems to match a '.' as a new line so check if $1 is '' and offset >0
-				
-//2208				if (( $1.search(/\n/) > -1 ) && ( offset > 0 )) return match;
-//				if (( $1.search(/\n/) == -1 ) && ( offset > 0 )) return match;
-				if (( $1.search(/\n/) > -1 ) 
-					&& ( offset > 0 )
-					&& ( $2.search(/\s*<@@@NOWIKI/) < 0)) {
-
-					return match;
-				}
-// DC TODO retest this in edge as changed due to bug!
-//				if (( $1.search(/./) > -1 ) && ( offset > 0 )) return match;
-
-				// spaces before the opening '{|' of a table aren't treated as a pseodo pre
-				if ( $2.match( /^\s*\{\|/ ) ) {
-					return match;
-				} else {
-					return $1 + _getPlaceHolder4Html($2, 'toParse', 'ppre', 'nonEditable');// +
-						tableCloseNewLine;
-				}
-			});*/
 
 			text = text.replace(/(^|\n{1,2})((----+)([ ]*)(.*)(\n{1,2}))/gi, function(match, $1, $2, $3, $4, $5, $6, offset, string) {
 				// $1 = start of text or new line that preceeds the '-----'
@@ -1463,8 +1436,6 @@ debugger;
 						// this tag is unrecognised as an html or a mediawiki tag
 						// so we wrap it in <code> tags.  All these should have be caught 
 						// before now so this is just a failsafe.
-						outerHTML = outerHTML.replace(/^\</, ltePlaceholder);
-						outerHTML = outerHTML.replace(/\>$/, gtePlaceholder);
 
 						elm.replaceWith( outerHTML );
 					}
@@ -1477,7 +1448,7 @@ debugger;
 			extensionTags = _mwtExtensionTagsList.split('|');
 			preservedTags = _mwtPreservedTagsList.split('|');
 			invariantTags = _mwtInvariantTagsList.split('|');
-
+			
 			// convert the text in the editor to a DOM in order
 			// to process the remaining html tags		
 			$dom = $( "<tinywrapper>" + text + "</tinywrapper>" );
@@ -1493,8 +1464,8 @@ debugger;
 			// find and process pseudo <pre> tags where wikicode lines starts with spaces.  If
 			// several consecutive lines start with a space they are treated as a single <pre> block.
 			// If the space is followed by any tag or | then ignore
-			regex = '(^|\\n)( +[^\\s][^]+?)(?=(\\n\\S|\\n\\s*\\n|\\n\\s*$))';
-			matcher = new RegExp(regex, 'gmi');
+			regex = '(^|\\n)( +[^\\s][^]+?)(?=(\\n\\S|\\n\\s*\\n|\\n\\s*$|$))';
+			matcher = new RegExp(regex, 'gi');
 			text = text.replace(matcher, function(match, $1, $2, $3, offset, string) {
 				// $1 = the new lines preceding the text in pseudo <pre>s
 				// $2 = lines starting with spaces to be placed in the pseudo <pre>s
@@ -1702,7 +1673,7 @@ debugger;
 			matcher2 = new RegExp(regex2, 'i');
 
 			// special case if page starts with a single new line
-			text = text.replace(/^\n([^\n]+)/, '<@@slb@@>$1');
+			text = text.replace(/^\n([^\n*#{]+)/, '<@@slb@@>$1');
 
 			// now process all single new lines
 			do {
@@ -1934,10 +1905,11 @@ debugger;
 			text = text.replace(/\n\|\}([ ]*)(.*)(?=\n)/gmi, function(match, $1, $2, offset, string) {
 				// $1 = spaces after table close
 				// $2 = text after table close
+
 				if ($2) {
 					// if there is text on the same line as the table end
 					// then process this so it can be retrieved when converting back
-					return '\n\|\}<div class="mwt-closeTable" mwt-spaces="' + $1 + '">' + $2 + '</div><br class="mwt-emptyline"/>';
+					return '\n\|\}<span class="mwt-closeTable" mwt-spaces="' + $1 + '">' + $2 + '</span><br class="mwt-emptyline"/>';
 				} else {
 					return match;
 				}
@@ -2443,7 +2415,6 @@ debugger;
 					+ '|<' 
 					+ _mwtBlockTagsList.split("|").join("[^>]*>|<") 
 					+ '|<\\/' + _mwtBlockTagsList.split("|").join(">|<\\/") 
-//					+ '|<br[^>]*>|<@@slb@@>)' ;
 					+ '|<br[^>]*>|<@@slb@@>)$' ;
 			matcher = new RegExp(regex, 'i');
 
@@ -2539,6 +2510,9 @@ debugger;
 										lines[i] = lines[i] + '<@@slb@@><@@slb@@>';
 									}
 								}
+							} else if (lastList.length > 0) {
+								// empty line following a list
+								lines[i] = lines[i] + '<@@slb@@><@@slb@@>';
 							} else {
 								lines[i] = lines[i] + '<br class="mwt-emptylineFirst"/>';
 							}
@@ -2614,6 +2588,103 @@ debugger;
 		text = textObject.text;
 		return text;
 	}
+
+	/*
+	 * Inserts content of the clipboard when it is copied from within
+	 * the TinyMCE editor.
+	 *
+	 * @param {dom} dom
+	 * @returns {dom}
+	 */
+	function _internalPaste( $dom ) {
+		// if pasting a copy from the TinyMCE mediwaiki editor
+		// walk through the dom element by element converting the
+		// html to wiki text from the leaves up to the root
+
+		// process blocks containing parsed wiki text
+		$dom.find(".mwt-wikiMagic").each( function ( a ) {
+			var elm = this;
+									
+			if (_tags4Wiki[elm.id] == undefined ) {
+				_tags4Wiki[elm.id] = htmlDecode( elm.attributes[ "data-mwt-wikitext" ].value );
+			}
+		});
+
+		return $dom;
+	}
+
+	/*
+	 * Inserts content of the clipboard when it is copied from outside
+	 * the TinyMCE editor.
+	 *
+	 * @param {dom} dom
+	 * @returns {dom}
+	 */
+	function _externalPaste( $dom ) {
+		// if pasting a copy from the TinyMCE mediwaiki editor
+		// walk through the dom element by element converting the
+		// html to wiki text from the leaves up to the root
+
+		$dom.find( "meta" ).replaceWith( function() {
+			return '';
+		});
+
+/*		// remove styles from css style sheets injected
+		// by browser when copying from rendered html
+		if (( elm.attr('style') != undefined)
+			&& (!_internal)) {
+			
+			elm.removeAttr('style');
+		}*/
+
+		$dom.find( "img" ).replaceWith( function() {
+			var elm = $( this ),
+				outerHtml = elm[0].innerHTML;
+				
+			if (elm[0].parentNode.tagName != "A") {
+				outerHtml = _getWikiImageLink( elm[0] );
+					elm.replaceWith( function(a) {
+					return _convertWiki2Html( _getWikiImageLink( elm[0] ));
+				});
+			} else {
+				return outerHtml;
+			}
+		});
+
+		$dom.find( "a" ).replaceWith( function() {
+			var elm = $( this ),
+				protocol = elm[0].protocol,
+				dstName = elm[0].href,
+				title = elm[0].text,
+				aLink;
+
+			if (elm[0].firstElementChild && elm[0].firstElementChild.tagName == "IMG") {
+				// process links to images
+				aLink = _getWikiImageLink(elm[0].firstElementChild, dstName);
+			} else if (protocol) {
+				// process external links
+				if (title) {
+					dstName = dstName + ' ' + title;
+				}
+				aLink = '[' + dstName + ']'
+			} else {
+				// process internal links
+				if (title) {
+					dstName = dstName + '|' + title;
+				}
+				aLink = '[[' + dstName + ']]'
+			}
+			elm.replaceWith( function(a) {
+				return _convertWiki2Html( aLink );
+			});
+		});
+		
+		$dom.not( "img", "a" ).addClass( "mwt-preserveHtml" );
+
+		// convert DOM back to html text
+		return $dom;
+	}
+
 	/*
 	 * Converts html content of the editor window to wiki code.
 	 *
@@ -2631,6 +2702,7 @@ debugger;
 		 */
 		function processHtml2Wiki( text ) {
 			var $dom;
+
 			// preprocess text before dom walkthrough
 			// the tables plugin uses thead tags to identify headers whereas
 			// mediawiki uses th tags in the body of the table.  This converts between the two
@@ -2653,24 +2725,24 @@ debugger;
 			}
 
 			function processElement( elm, level ) {
+				var id,
+					outerHtml;
+
+				// if this is a text node type then ignore
+				if ( elm[0].nodeType == 3) return;
+				
 				// first deal with elements that need no further processing
 				if (elm.hasClass( 'mwt-wikiMagic' )) {
 					// process blocks containing parsed wiki text
 					elm.replaceWith( function(a) {
-//						return this.id;
 						// process stuff after table close on the same line
 						var wikiText = htmlDecode( this.attributes[ "data-mwt-wikitext" ].value ),
-							id = "<@@@" + elm[0].tagName.toUpperCase() + ":" + createUniqueNumber() + "@@@>";
+//2908							id = "<@@@" + elm[0].tagName.toUpperCase() + ":" + createUniqueNumber() + "@@@>";
+							id = "<@@@MAGIC:" + createUniqueNumber() + "@@@>";
 
 						_tags4Wiki[id] = wikiText;
 						return id;
 					});
-/*				} else if (elm.hasClass( 'mwt-htmlEntity' )) {
-					// process html entities
-					elm.replaceWith( function(a) {
-//						return this.id;
-						return htmlDecode( this.attributes[ "data-mwt-wikitext" ].value );
-					});*/
 				} else if (elm.hasClass( 'mwt-nonBreakingSpace' )) {
 					// process html entities
 					elm.replaceWith( function(a) {
@@ -2699,40 +2771,33 @@ debugger;
 				} else {
 					if ( elm.children().length > 0) {
 					// process all descendents before further processing
-						elm.children().each( function ( index ) {
+					elm.children().each( function ( index ) {
 							processElement ( $(this), level + '.' + index )
 						})
 					}
-					if ( elm[0].tagName == 'TBODY' ) {
+
+					if ( elm.hasClass( 'mwt-dummyReference' )) {
+						// spans with class mwt-dummyRference are replaced with their innerHTML
+
+						outerHtml = $.trim( elm[0].innerHTML );
+
+					} else if ( elm.hasClass( 'mwt-reference' )) {
+						// spans with class mwt-rference are coverted to mediawiki <ref>
+
+						outerHtml = '<ref>' + elm[0].innerHTML + '</ref>';
+
+					} else if ( elm[0].tagName == 'TBODY' ) {
 						// tbody tags aren't recognised by mediawiki so replace with contents
-						var html,
-							tagNewline = '',
+						var tagNewline = '',
 							tagSpaces = '';
+
 						// set up newlines and spaces if required (for embedded html block tags)
 						if (typeof elm.attr('data-mwt-sameLine') != "undefined") {
 							if (elm.attr('data-mwt-sameLine') == 'false') tagNewline = '<@@bnl@@>';
 						}
 						if (elm.attr('data-mwt-spaces')) tagSpaces = elm.attr('data-mwt-spaces');
-						html = tagNewline + tagSpaces + elm[0].innerHTML;
-						elm.replaceWith( function(a) {
-							return html;
-						});
-					} else if ( elm.hasClass( 'mwt-dummyReference' )) {
-						// spans with class mwt-dummyRference are replaced with their innerHTML
-						var html;
+						outerHtml = tagNewline + tagSpaces + elm[0].innerHTML;
 
-						html = elm[0].innerHTML;
-						elm.replaceWith( function(a) {
-							return $.trim( html );
-						});
-					} else if ( elm.hasClass( 'mwt-reference' )) {
-						// spans with class mwt-rference are coverted to mediawiki <ref>
-						var html;
-
-						html = '<ref>' + elm[0].innerHTML + '</ref>';
-						elm.replaceWith( function(a) {
-							return html;
-						});
  					} else if ( elm.hasClass( 'mwt-preserveHtml' )) {
 						// process html that is preserved in wiki text
 						var outerHtml,
@@ -2760,24 +2825,21 @@ debugger;
 						if ( elm.attr( 'class' ) == '' ) {
 							elm.removeAttr( 'class' );
 						}
-						outerHtml = elm[0].outerHTML;
-						// add back new lines and spaces
-						_tags4Wiki[id] = _recoverPlaceholders2Wiki( outerHtml );
-						elm.replaceWith( function(a) {
+						outerHtml = tagNewline + tagSpaces + _recoverPlaceholders2Wiki( elm[0].outerHTML ) + newLineAfter;
 
-						return tagNewline + tagSpaces + id + newLineAfter;
-						});
 					} else if ( elm[0].tagName == 'IMG' ) {
+
+						outerHtml = elm[0].innerHTML 
 						if (elm[0].parentNode.tagName != "A") {
-							elm.replaceWith( function(a) {
-								return _getWikiImageLink( elm[0] );
-							});
+							outerHtml = _getWikiImageLink( elm[0] );
 						}
+
 					} else if ( elm[0].tagName == 'A' ) {
 						var aLink,
 							protocol = elm[0].protocol,
 							dstName = elm[0].href,
 							title = elm[0].text;
+
 						if (elm[0].firstElementChild && elm[0].firstElementChild.tagName == "IMG") {
 							// process links to images
 							aLink = _getWikiImageLink(elm[0].firstElementChild, dstName);
@@ -2794,16 +2856,17 @@ debugger;
 							}
 							aLink = '[[' + dstName + ']]'
 						}
-						elm.replaceWith( function(a) {
-							return aLink;
-						});
+
+						outerHtml = aLink;
+
 					} else if ( elm[0].tagName == 'BR' ) {
 						// remove 'bogus' br tags inserted by the editor
+
+						outerHtml = elm[0].innerHTML 
 						if ( elm.attr('data-mce-bogus') == 1 ) {
-							elm.replaceWith( function(a) {
-								return '';
-							});
+							outerHtml = '';
 						}
+
 					} else if (( elm[0].tagName == 'LI' )
 							|| ( elm[0].tagName == 'DD' )
 							|| ( elm[0].tagName == 'DT' )
@@ -2812,16 +2875,19 @@ debugger;
 						var parents = elm.parents("ul,ol,dl,dd"),
 							listTag = '',
 							html = '',
+							outerHTML,
 							tagNewline = '',
 							newLineAfter = '<@@bnl@@>',
-							tagSpaces = '';
+							tagSpaces = '',
+							id = "<@@@P" + elm[0].tagName.toUpperCase() + ":" + createUniqueNumber() + "@@@>";
+
 						// if this is a table in a definition then remove
 						// the new line before the table
 						// if this item isn't empty (eg starts with a block new line
-//						if ( elm[0].classList.contains( 'mwt-preserveHtml' )) {
-						if ( elm[0].classList.contains( 'mwt-list' )) {
-							// case where tag not inserted in TinyMCE editor
-							if ( !elm[0].innerHTML.match(/^&lt;@@bnl@@&gt;/) ) {
+						if ( !elm[0].classList.contains( 'mwt-preserveHtml' )) {
+							// case where tag inserted in TinyMCE editor
+							var temp = elm[0].innerHTML;
+							if ( !elm[0].innerHTML.match(/^&lt;@@@(LI|DD):/) ) {
 								// build the wiki text list tag
 								for (var i = parents.length - 1; i >= 0; i--) {
 									if ( !parents[i].classList.contains( 'mwt-preserveHtml' )) {
@@ -2862,38 +2928,48 @@ debugger;
 								} else if ( elm[0].nextSibling.attributes['data-mwt-sameLine'].value != 'false' ) {
 									newLineAfter = ''
 								}
-								if ( typeof elm.attr('data-mwt-sameLine') != "undefined" ) {
+
+								if ( typeof elm.attr('data-mwt-sameLine') == "undefined" ) {
+									if ( elm[0].previousSibling == null ) {
+										tagNewline = '<@@nl@@>';
+									} else {
+										tagNewline = '<@@bnl@@>';										
+									}
+								} else {
 									if ( elm.attr('data-mwt-sameLine') == 'false' ) tagNewline = '<@@bnl@@>';
 								}
+
 								if ( elm.attr('data-mwt-spaces')) tagSpaces = elm.attr('data-mwt-spaces') ;
 								html = tagNewline + listTag + tagSpaces + elm[0].innerHTML + newLineAfter;
 							} else {
 								// ignore empty list items
 								html = elm[0].innerHTML;
 							}
-							elm.replaceWith( function(a) {
-								return html;
-							});
-						} else if ( !elm[0].classList.contains( 'mwt-preserveHtml' )) {
+							outerHtml = html; 
+						} else {
 							// case where tag is being pasted from somewhere else
-							elm.addClass( 'mwt-preserveHtml' );
+							outerHtml = elm[0].outerHTML;
 						}
 					} else if (( elm[0].tagName == 'OL')
 							|| (elm[0].tagName == 'UL')
 							|| (elm[0].tagName == 'DL')
 							) {
+						var innerHtml = elm[0].innerHTML;
 						// replace ul and ol and dl tags with their contents
 						// as they don't exist in wiki text separately to list items
-						var children = elm.children("li");
 
-						if ( children.length == 0 ) {
+						// if no children of type list then this is a wiki list
+						// so just return the innerHtml
+						if ( !innerHtml.match(/^s*?<@@@(PLI|PDD):/)) {
 							elm.replaceWith( function(a) {
-								return elm[0].innerHTML;
+								return innerHtml;
 							});
+							return;
 						} else {
 							// case where tag is being pasted from somewhere else
-							elm.addClass( 'mwt-preserveHtml' );
+							outerHtml = elm[0].outerHTML;
 						}
+
 					} else if (elm.hasClass( 'mwt-heading' )) {
 						// process headings
 						var headingMarkup = '======',
@@ -2911,9 +2987,8 @@ debugger;
 						for (var i = 0; i < newlines; i++) {
 							heading += '<@@nl@@>';
 						}
-						elm.replaceWith( function(a) {
-							return heading;
-						});
+						outerHtml = heading;
+
 					} else if ( elm[0].tagName == 'TABLE' ) {
 						// now process code at start and end of tables.  Note the new line handling for these
 						// happens when all the other new line codes are processed in newLines2wiki
@@ -2926,6 +3001,7 @@ debugger;
 						if ( elm[0].parentElement.tagName.toUpperCase() == 'DD' ) {
 							newLineBefore = '';
 						}
+
 						outerHtml = outerHtml.replace(/^<table([^>]*)>([^<]*)<\/table>$/i, function (match, $1, $2) {
 							// $1 = any attributes contained in the tag
 							// $2 = content of the tag
@@ -2938,13 +3014,16 @@ debugger;
 								}
 								return '';
 							});
+
 							// process other attributes
 							$1 = processAttributes2Html( $1 );
 							// if this table is nested in another or there is text on
 							// the same line as the table closure, then no new line after
-							if (( elm[0].nextSibling != null ) && ( elm[0].tagName != 'TABLE' )) {
-								if ( elm[0].nextSibling.className.indexOf( 'mwt-closeTable' ) > -1 ) {
-									newLineAfter = '';
+							if ( elm[0].nextSibling != null ) {
+								if ( elm[0].nextSibling.className != undefined ) {
+									if ( elm[0].nextSibling.className.indexOf( 'mwt-closeTable' ) > -1 ) {
+										newLineAfter = '';
+									}
 								}
 							}
 							if ( parents.length >= 1 ) {
@@ -2952,10 +3031,7 @@ debugger;
 							}
 							return newLineBefore + "{" + _pipeText + $1 + newLines + $2 + "<@@tnl@@>" + _pipeText + "}" + newLineAfter;
 						});
-						_tags4Wiki[id] = outerHtml;
-						elm.replaceWith( function(a) {
-							return id;
-						});
+
 					} else if ( elm[0].tagName == 'CAPTION' ) {
 						// process table captions
 						var outerHtml = elm[0].outerHTML,
@@ -2973,10 +3049,7 @@ debugger;
 								return "<@@tnl@@>" + _pipeText + "+" + $2;
 							}
 						});
-						_tags4Wiki[id] = outerHtml;
-						elm.replaceWith( function(a) {
-							return id;
-						});
+
 					} else if ( elm[0].tagName == 'TR' ) {
 						// process table rows
 						var outerHtml = elm[0].outerHTML,
@@ -2996,10 +3069,7 @@ debugger;
 							$1 = processAttributes2Html( $1 );
 							return "<@@tnl@@>" + _pipeText + "-" + $1 + $2;
 						});
-						_tags4Wiki[id] = outerHtml;
-						elm.replaceWith( function(a) {
-							return id;
-						});
+
 					} else if ( elm[0].tagName == 'TH' ) {
 						// process table headings
 						var outerHtml = elm[0].outerHTML,
@@ -3053,12 +3123,9 @@ debugger;
 								return cellNewLine + cellPipeText + cellEmptyLineFirst + $2 + $3;
 							}
 						});
-						_tags4Wiki[id] = outerHtml;
-						elm.replaceWith( function(a) {
-							return id;
-						});
+
 					} else if ( elm[0].tagName == 'TD' ) {
-					// process table cells
+						// process table cells
 						var outerHtml,
 							innerHtml = elm[0].innerHTML,
 							id = "<@@@" + elm[0].tagName.toUpperCase() + ":" + createUniqueNumber() + "@@@>";
@@ -3067,7 +3134,7 @@ debugger;
 						elm.prop( "innerHTML", innerHtml );
 						
 						outerHtml = elm[0].outerHTML;
-						outerHtml = outerHtml.replace(/^<td([^>]*)>(\s*)([^<]*)<\/td>$/i, function (match, $1, $2, $3 ) {
+						outerHtml = outerHtml.replace(/^<td([^>]*?)>(\s*)([^<]*?)<\/td>$/i, function (match, $1, $2, $3 ) {
 							// $1 = any attributes associated with the cell
 							// $2 = spaces before content of the tag
 							// $3 = content of the tag
@@ -3116,13 +3183,11 @@ debugger;
 								return cellNewLine + cellPipeText + cellEmptyLineFirst + $2 + $3;
 							}
 						});
-						_tags4Wiki[id] = outerHtml;
-						elm.replaceWith( function(a) {
-							return id;
-						});
+
 					} else if (elm.hasClass( 'mwt-closeTable' )) {
 						// process stuff after table close on the same line
 						var outerHtml = elm[0].outerHTML,
+							innerHtml = elm[0].innerHTML,
 							id = "<@@@" + elm[0].tagName.toUpperCase() + ":" + createUniqueNumber() + "@@@>",
 							tableClose = '';
 
@@ -3131,38 +3196,27 @@ debugger;
 								// $1 = spaces following close table on the same line
 								// $2 = text following close table on the same line
 
-								if ($1) tableClose += $1;
+								innerHtml = $1 + innerHtml;
 
 								return '';
 						});
-						outerHtml = outerHtml.replace(/<div class="mwt-closeTable".*?>(.*?)<\/div>(?=<@@enl@@>){0,1}/gi,
-							function(match, $1, $2, $3) {
-								// $1 = spaces following close table on the same line
-								// $2 = text following close table on the same line
-								if ($1) tableClose += $1;
 
-								return '';
-						});
-						_tags4Wiki[id] = tableClose;
-						elm.replaceWith( function(a) {
-							return id;
-						});
+						outerHtml = innerHtml;
+
 					} else if ( elm[0].tagName == 'STRONG' ) {
-					// process strong text
-						var outerHtml = elm[0].outerHTML;
+						// process strong text
+
+						outerHtml = elm[0].outerHTML;
+
 						outerHtml = outerHtml.replace(/<strong>(.*?)<\/strong>/gmi, "'''$1'''");
-						elm.replaceWith( function(a) {
-							return outerHtml;
-						});
+
 					} else if ( elm[0].tagName == 'B' ) {
-					// process strong text
-						var outerHtml = elm[0].outerHTML;
+						// process strong text
+						outerHtml = elm[0].outerHTML;
 						outerHtml = outerHtml.replace(/<b>(.*?)<\/b>/gmi, "'''$1'''");
-						elm.replaceWith( function(a) {
-							return outerHtml;
-						});
+
 					} else if ( elm[0].tagName == 'EM' ) {
-					// process strong text
+						// process strong text
 						var outerHtml = elm[0].outerHTML,
 							innerHtml =  elm[0].innerHTML;
 						// TinyMCE copy/cut sometimes nests EMs in EMs so fix here for paste
@@ -3171,54 +3225,59 @@ debugger;
 						} else {
 							outerHtml = outerHtml.replace(/<em>(.*?)<\/em>/gmi, "''$1''");
 						}
-						elm.replaceWith( function(a) {
-							return outerHtml;
-						});
+
 					} else if ( elm[0].tagName == 'I' ) {
-					// process strong text
+						// process strong text
 						var outerHtml = elm[0].outerHTML;
 						outerHtml = outerHtml.replace(/<i>(.*?)<\/i>/gmi, "''$1''");
-						elm.replaceWith( function(a) {
-							return outerHtml;
-						});
+
 					} else if ( elm[0].tagName == 'STRIKE' ) {
 					// process strong text
 						var outerHtml = elm[0].outerHTML;
 						outerHtml = outerHtml.replace(/<strike>(.*?)<\/strike>/gi, "<s>$1</s>");
-						elm.replaceWith( function(a) {
-							return outerHtml;
-						});
+
 					} else if ( elm[0].tagName == 'P' ) {
+						var html,
+							outerHtml = elm[0].outerHTML,
+							id = "<@@@" + elm[0].tagName.toUpperCase() + ":" + createUniqueNumber() + "@@@>";
+
 						if (elm.hasClass( 'mwt-paragraph' )) {
-							// process 'p' tags (including forced root blocks) by
-							var html,
-								id = "<@@@" + elm[0].tagName.toUpperCase() + ":" + createUniqueNumber() + "@@@>";
-							// add new lines
-							html  = '<@@pnl@@>' + elm.html();
-							elm.replaceWith( function(a) {
-								return html;
-							});
+							// if copying from TinyMCE process 'p' tags 
+							// (including forced root blocks) by adding new lines
+							outerHtml  = '<@@pnl@@>' + elm.html();
 						}
+
 					} else if ( elm[0].tagName == 'DIV' ) {
+						var html,
+							outerHtml = elm[0].outerHTML,
+							id = "<@@@" + elm[0].tagName.toUpperCase() + ":" + createUniqueNumber() + "@@@>";
+
 						if (elm.hasClass( 'mwt-paragraph' )) {
-							// process 'div' tags (including forced root blocks) by
-							var html,
-								id = "<@@@" + elm[0].tagName.toUpperCase() + ":" + createUniqueNumber() + "@@@>";
-							// add new lines
-							html  = elm.html();
-							elm.replaceWith( function(a) {
-								return html;
-							});
+							// if copying from TinyMCE process 'div' tags 
+							outerHtml  = elm.html();
 						}
+
+					} else {
+						// treat everything else as preserved html
+							outerHtml = elm[0].outerHTML;	
 					}
+					// create and store a place holder for the converted element
+					id = "<@@@" + elm[0].tagName.toUpperCase() + ":" + createUniqueNumber() + "@@@>";
+					_tags4Wiki[id] = outerHtml;
+					elm.replaceWith( function(a) {
+						return id;
+					});
 				}
 			};
 
 			// convert html text to DOM
 			$dom = $( "<div id='tinywrapper'>" + text + "</div>", "text/xml" );
+			text = htmlDecode ($dom[0].innerHTML);
 
 			// walk through the dom element by element converting the
 			// html to wiki text from the leaves up to the root
+
+			// process blocks containing parsed wiki text
 			processElement ( $dom, '0' );
 
 			// convert DOM back to html text
@@ -3251,7 +3310,11 @@ debugger;
 //						return _tags4Wiki[$1].replace(/&amp;amp;/gmi,'&amp;');
 						// '&amp;' is processed by the wiki don and turned into '&'
 						// so we subsitue it with a placeholder which will be replaced later
-						return _tags4Wiki[$1].replace(/&amp;/gmi,'{{{{@@@@}}}}').replace(/&gt;/gmi,'>').replace(/&lt;/gmi,'<');
+						if ( _tags4Wiki[$1] != undefined) {
+							return _tags4Wiki[$1].replace(/&amp;/gmi,'{{{{@@@@}}}}').replace(/&gt;/gmi,'>').replace(/&lt;/gmi,'<');
+						} else {
+							return '### ' + $1.replace(/>/gmi,'&gt;').replace(/</gmi,'&lt;') + ' not found ###';;
+						}
 					});
 				}
 			}
@@ -3325,9 +3388,6 @@ debugger;
 		$(document).trigger('TinyMCEBeforeHtmlToWiki', [textObject]);
 		text = textObject.text;
 
-		//Remove any '\n' between tags as they are not part of original formatting
-		text = text.replace(/\n/gi, "");
-
 		// preprocess tags in html using placeholders where needed
 		text = processHtml2Wiki(text);
 
@@ -3399,14 +3459,12 @@ debugger;
 
 		// set format to raw so that the Tiny parser won't rationalise the html
 		e.format = 'raw';
+
 		// if the content is wikitext then convert to html
-//2408		if ( e.convert2html || e.initial ) {
 		if ( e.convert2html ) {
 			e.content = _convertWiki2Html(e.content);
 		}
 		if ( e.initial ) {
-//			e.content = _convertWiki2Html(e.content);
-debugger;
 			e.content = '<div class="mwt-paragraph">' + e.content + '</div>';
 		}
 		return;
@@ -3488,16 +3546,13 @@ debugger;
 		var text,
 			textObject;
 debugger;
-		text = e.content;
+		text = e.content,
 
 		// wrap the text in an object and send it to event listeners
 		textObject = {text: text};
 		$(document).trigger('TinyMCEBeforePastePreProcess', [textObject]);
 		text = textObject.text;
-
-		text = _convertHtml2Wiki( text );
-		text = _convertWiki2Html( text );
-
+		
 		// wrap the text in an object and send it to event listeners
 		textObject = {text: text};
 		$(document).trigger('TinyMCEAfterPastePreProcess', [textObject]);
@@ -3519,19 +3574,15 @@ debugger;
 			$dom;
 
 		$dom = $(e.node);
-text = htmlDecode ($dom[0].innerHTML);
-		$dom.find( "meta" ).replaceWith( function() {
-			return '';
-		});
 
-		// Show progress for the active editor
-		editor.setProgressState(true);
-
+		if ( e.internal ) {
+			_internalPaste( $dom );
+		} else {
+			_externalPaste( $dom );
+		}
 		// upload any images in the dropped content before continuing with paste
 //1408		e.node = _uploadImages(editor, $dom);
 
-		// Hide progress for the active editor
-		editor.setProgressState(false);
 	}
 
 	/**
