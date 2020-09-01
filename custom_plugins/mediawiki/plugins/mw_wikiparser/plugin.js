@@ -190,6 +190,18 @@
 		/**
 		 *
 		 * span for inserting a placeholder in editor text for 
+		 * non-breaking spaces.  
+		 * The character displayed is defined in MW_tinymce.css 
+		 * @type String
+		 */
+		_nbs = 
+			'<span class="mwt-placeHolder  mwt-nonBreakingSpace '  + _placeholderClass
+			+ '" draggable="true" contenteditable="false" title="&amp;nbsp;" >' 
+			+ '</span>',
+
+		/**
+		 *
+		 * span for inserting a placeholder in editor text for 
 		 * '<'.  
 		 * The character displayed is defined in MW_tinymce.css 
 		 * @type String
@@ -1106,6 +1118,10 @@ reader.readAsText(file);*/
 				matcher,
 				preservedTags = _mwtPreservedTagsList.split('|');
 
+			// find and process any &vert; htmlentities as it
+			// is highly likely these were introduced in the pastenprocess
+//			text = text.replace(/&vert;/gmi, '|');
+
 			// find and process all the switch tags in the wiki code
 			// may contain wikitext so process first to avoid processing tags within tags
 			regex = "__(.*?)__";
@@ -1167,11 +1183,14 @@ reader.readAsText(file);*/
 				if ( $1  == 'nbsp' ) {
 					// process non-breaking spaces 
 					html = _nbs;
-					return _getPlaceHolder4Html(match, html, 'htmlEntity', 'editable')
+					return _getPlaceHolder4Html(match, html, 'htmlEntity', 'editable');
+				} else if ( $1  == 'vert' ) {
+					// process vertical pipe 
+					return match;
 				} else {
 					// double encode &amp; otherwise will display incorrectly if recoverred
 					html = '<span class="mwt-nonEditable mwt-wikiMagic ">&' + $1 + ';</span>';
-					return _getPlaceHolder4Html(match, html, 'htmlEntity', 'nonEditable')
+					return _getPlaceHolder4Html(match, html, 'htmlEntity', 'nonEditable');
 				}
 			});
 
@@ -1426,8 +1445,11 @@ reader.readAsText(file);*/
 							&& (elmTagName != 'tbody')
 							&& (elmTagName != 'tr')) {
 							// conserve any new lines in the inner html
+							// and replace pipes with html entity equivalent
 							// except in table tags that don't contain data!
 							
+
+//							innerHTML = innerHTML.replace(/\|/gmi,'&amp;vert;');
 							innerHTML = innerHTML.replace(/\n/gmi,'<@@vnl@@>');
 							elm.prop( "innerHTML", innerHTML );
 						}
@@ -2629,25 +2651,17 @@ reader.readAsText(file);*/
 			return '';
 		});
 
-/*		// remove styles from css style sheets injected
-		// by browser when copying from rendered html
-		if (( elm.attr('style') != undefined)
-			&& (!_internal)) {
-			
-			elm.removeAttr('style');
-		}*/
-
 		$dom.find( "img" ).replaceWith( function() {
 			var elm = $( this ),
-				outerHtml = elm[0].innerHTML;
-				
+				outerHtml;
+
 			if (elm[0].parentNode.tagName != "A") {
 				outerHtml = _getWikiImageLink( elm[0] );
 					elm.replaceWith( function(a) {
-					return _convertWiki2Html( _getWikiImageLink( elm[0] ));
+					return _recoverTags2html(_preserveLinks4Html( _getWikiImageLink( elm[0] )));
 				});
 			} else {
-				return outerHtml;
+				return elm[0].outerHTML;
 			}
 		});
 
@@ -2656,32 +2670,45 @@ reader.readAsText(file);*/
 				protocol = elm[0].protocol,
 				dstName = elm[0].href,
 				title = elm[0].text,
-				aLink;
+				aLink,
+				linkClasses,
+				linkDataType,
+				id;
 
 			if (elm[0].firstElementChild && elm[0].firstElementChild.tagName == "IMG") {
 				// process links to images
+				linkClasses = 'mwt-nonEditableImage mwt-wikiMagic mwt-placeHolder mwt-image mwt-hidePlaceholder';
+				linkDataType = 'image';
 				aLink = _getWikiImageLink(elm[0].firstElementChild, dstName);
 			} else if (protocol) {
 				// process external links
+				linkClasses = 'mwt-nonEditable mwt-wikiMagic mwt-externallink';
+				linkDataType = 'externallink';
+				
 				if (title) {
 					dstName = dstName + ' ' + title;
 				}
 				aLink = '[' + dstName + ']'
 			} else {
 				// process internal links
+				// should never get here with external paste but
+				// we'll leave it here in case we develop logic to recognise
+				// external links which are really internal!!
+				linkClasses = 'mwt-nonEditable mwt-wikiMagic mwt-internallink';
+				linkDataType = 'internallink';
+				
 				if (title) {
 					dstName = dstName + '|' + title;
 				}
 				aLink = '[[' + dstName + ']]'
 			}
-			elm.replaceWith( function(a) {
-				return _convertWiki2Html( aLink );
-			});
+					
+			id = "<@@@EXTERNALLINK:" + createUniqueNumber() + "@@@>";
+			_tags4Wiki[id] = aLink;
+
+			return '<span class="' + linkClasses + '" title="' + aLink + '" id="' + id + '" data-mwt-type="' + linkDataType + '" data-mwt-wikitext="' + aLink + '" draggable="true" contenteditable="false">' + elm[0].outerHTML + '</span>';
 		});
 		
-		$dom.not( "img", "a" ).addClass( "mwt-preserveHtml" );
-
-		// convert DOM back to html text
 		return $dom;
 	}
 
@@ -2726,7 +2753,8 @@ reader.readAsText(file);*/
 
 			function processElement( elm, level ) {
 				var id,
-					outerHtml;
+					outerHtml,
+					innerHtml;
 
 				// if this is a text node type then ignore
 				if ( elm[0].nodeType == 3) return;
@@ -2775,6 +2803,12 @@ reader.readAsText(file);*/
 							processElement ( $(this), level + '.' + index )
 						})
 					}
+
+					// first do any processing of the inner html
+					innerHtml = elm[0].innerHTML;
+					// escape pipe characters
+					innerHtml = innerHtml.replace(/\|/gmi, '&amp;vert;');
+					elm.prop( "innerHTML", innerHtml );
 
 					if ( elm.hasClass( 'mwt-dummyReference' )) {
 						// spans with class mwt-dummyRference are replaced with their innerHTML
@@ -3236,6 +3270,14 @@ reader.readAsText(file);*/
 						var outerHtml = elm[0].outerHTML;
 						outerHtml = outerHtml.replace(/<strike>(.*?)<\/strike>/gi, "<s>$1</s>");
 
+					} else if ( elm[0].tagName == 'SPAN' ) {
+						// process spans containing only nbsp
+						innerHtml = elm[0].innerHTML;
+
+						outerHtml = elm[0].outerHTML;
+						
+						if ( innerHtml == '&nbsp;' ) outerHtml = innerHtml;
+
 					} else if ( elm[0].tagName == 'P' ) {
 						var html,
 							outerHtml = elm[0].outerHTML,
@@ -3543,10 +3585,9 @@ debugger;
 	 */
 	function _onPastePreProcess(e) {
 		// if this is html then covert to wiki and back so it displays correctly
+debugger;
 		var text,
 			textObject;
-debugger;
-		text = e.content,
 
 		// wrap the text in an object and send it to event listeners
 		textObject = {text: text};

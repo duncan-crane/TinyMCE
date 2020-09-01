@@ -832,7 +832,8 @@
 
     var pasteHtml = function (editor, html) {
 
-/*      editor.insertContent(html, {
+/*DC did this
+      editor.insertContent(html, {
         merge: shouldMergeFormats(editor),
         paste: true
       });*/
