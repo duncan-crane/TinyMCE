@@ -3586,7 +3586,7 @@ debugger;
 	function _onPastePreProcess(e) {
 		// if this is html then covert to wiki and back so it displays correctly
 debugger;
-		var text,
+		var text = e.content,
 			textObject;
 
 		// wrap the text in an object and send it to event listeners
