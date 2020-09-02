@@ -462,6 +462,7 @@
 	function _getWikiImageLink(imageElm, imageLink) {
 		var aLink,
 			file,
+			fileData,
 			fileType,
 			fileName,
 			mimeType,
@@ -485,23 +486,14 @@
 			property,
 			value,
 			imageCaption,
-			size;
-
-		//return a promise that resolves with a File instance
-		function urltoFile(url, filename, mimeType){
-			return (fetch(url)
-/*					.then(function(res){return res.arrayBuffer();})
-				.then(function(buf){return new File([buf], filename,{type:mimeType});})*/
-				.await (function(res){return res.arrayBuffer();})
-				.await (function(buf){return new File([buf], filename,{type:mimeType});})
-			);
-		}
+			size,
+			fileReader,
+			thumbsizes = ['120', '150', '180', '200', '250', '300'],
+			userThumbsize = _thumbsizes[ mw.user ? mw.user.options.get('thumbsize') : 3 ];
 
 		// return a file from the datat image
-		function dataURLtoFile(dataurl, filename) {
-			var arr = dataurl.split(','),
-			mime = arr[0].match(/:(.*?);/)[1],
-			bstr = atob(arr[1]), 
+		function dataURLtoFile(fileData, filename, mime) {
+			var bstr = atob( fileData ), 
 			n = bstr.length, 
 			u8arr = new Uint8Array(n);
 
@@ -523,41 +515,17 @@
 			extension = mimeType.split( '/' )[1];
 			fileName = 'img' + createUniqueNumber() + '.' + extension;
 			dstName = fileName;
-			file = dataURLtoFile( attributes['src'].value, fileName )
+			fileData = attributes['src'].value.split(',')[1];
+			file = dataURLtoFile( fileData, fileName, mimeType )
 			uploadDetails = doUpload( fileType, file, file.name, fileSummary, ignoreWarnings );
 			uploadResult = checkUploadDetail( editor, uploadDetails, ignoreWarnings, file.name );
-/*				urltoFile( attributes['src'].value, dstName, mimeType )
-			.then ( function ( file ) {
-				uploadDetails = doUpload( fileType, file, file.name, fileSummary, ignoreWarnings );
-				uploadResult = checkUploadDetail( uploadDetails, ignoreWarnings, file.name );
-			});*/
-/*			} else if (protocol.split(':')[0].toLowerCase() == 'blob') {
-//				var reader = new FileReader;
-//reader.onload = function(e) {
-// browser completed reading file - display it
-//	alert(e.target.result);
-//};
-//				file = urltoFile( sourceURI );
-			fileType = 'File';
-			mimeType = 'image/jpeg';
-			extension = 'jpg';
-			fileName = 'img' + createUniqueNumber() + '.' + extension;
-			dstName = fileName;
-			file = urltoFile( sourceURI, fileName, mimeType )
-			uploadDetails = doUpload( fileType, file, file.name, fileSummary, ignoreWarnings );
-			uploadResult = checkUploadDetail( uploadDetails, ignoreWarnings, file.name );*/
-
-/*  let file = input.files[0];
-
-let reader = new FileReader();
-
-reader.readAsText(file);*/
-
+			wikiImageObject[ 'thumb' ] = "true";
 		} else {
 			// the image is base64 data so create a link as a placeholder with details
 			fileType = 'File';
 			dstName = 'data_image';
 		}
+
 		// upload the image (or use existing image on wiki if already uploaded
 		// checking the response and process any errors or warning appropriately
 		// build the wiki code for the image link
@@ -710,10 +678,6 @@ reader.readAsText(file);*/
 			}
 			if ( property == 'border' && value === "true" ) {
 				wikiText.push( 'border' );
-				continue;
-			}
-			if ( property == 'src' && !imageLink ) {
-				imageLink = value;
 				continue;
 			}
 		}
@@ -2653,13 +2617,21 @@ reader.readAsText(file);*/
 
 		$dom.find( "img" ).replaceWith( function() {
 			var elm = $( this ),
-				outerHtml;
+				aLink,
+				linkClasses,
+				linkDataType,
+				id;
 
 			if (elm[0].parentNode.tagName != "A") {
-				outerHtml = _getWikiImageLink( elm[0] );
-					elm.replaceWith( function(a) {
-					return _recoverTags2html(_preserveLinks4Html( _getWikiImageLink( elm[0] )));
-				});
+				linkClasses = 'mwt-nonEditableImage mwt-wikiMagic mwt-placeHolder mwt-image mwt-hidePlaceholder';
+				linkDataType = 'image';
+				aLink = _getWikiImageLink( elm[0] );
+
+				id = "<@@@EXTERNALLINK:" + createUniqueNumber() + "@@@>";
+				_tags4Wiki[id] = aLink;
+
+				return '<span class="' + linkClasses + '" title="' + aLink + '" id="' + id + '" data-mwt-type="' + linkDataType + '" data-mwt-wikitext="' + aLink + '" draggable="true" contenteditable="false">' + elm[0].outerHTML + '</span>';
+
 			} else {
 				return elm[0].outerHTML;
 			}
@@ -2895,8 +2867,7 @@ reader.readAsText(file);*/
 
 					} else if ( elm[0].tagName == 'BR' ) {
 						// remove 'bogus' br tags inserted by the editor
-
-						outerHtml = elm[0].innerHTML 
+						outerHtml = elm[0].outerHTML 
 						if ( elm.attr('data-mce-bogus') == 1 ) {
 							outerHtml = '';
 						}
@@ -3286,7 +3257,7 @@ reader.readAsText(file);*/
 						if (elm.hasClass( 'mwt-paragraph' )) {
 							// if copying from TinyMCE process 'p' tags 
 							// (including forced root blocks) by adding new lines
-							outerHtml  = '<@@pnl@@>' + elm.html();
+							outerHtml  = '<@@pnl@@>' + $.trim( elm.html() );
 						}
 
 					} else if ( elm[0].tagName == 'DIV' ) {
@@ -3615,6 +3586,7 @@ debugger;
 			$dom;
 
 		$dom = $(e.node);
+text = htmlDecode ( $dom.html() );
 
 		if ( e.internal ) {
 			_internalPaste( $dom );

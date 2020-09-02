@@ -1022,12 +1022,13 @@
     };
     var uniqueId = createIdGenerator('mceclip');
     var pasteImage = function (editor, imageItem) {
-
+debugger;
       var _a = parseDataUri(imageItem.uri), base64 = _a.data, type = _a.type;
       var id = uniqueId();
       var name = editor.settings.images_reuse_filename && imageItem.blob.name ? extractFilename(editor, imageItem.blob.name) : id;
       var img = new domGlobals.Image();
       img.src = imageItem.uri;
+/* DC did this
       if (isValidDataUriImage(editor.settings, img)) {
         var blobCache = editor.editorUpload.blobCache;
         var blobInfo = void 0;
@@ -1039,9 +1040,9 @@
           blobInfo = existingBlobInfo;
         }
         pasteHtml$1(editor, '<img src="' + blobInfo.blobUri() + '">', false);
-      } else {
+      } else {*/
         pasteHtml$1(editor, '<img src="' + imageItem.uri + '">', false);
-      }
+//      }
     };
     var isClipboardEvent = function (event) {
       return event.type === 'paste';

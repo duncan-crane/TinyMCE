@@ -941,114 +941,6 @@ debugger;
 					ignoreWarnings,
 					wikitext = '';
 
-				// attempt upload of file to wiki
-/*				function doUpload(fileType, fileToUpload, fileName, fileSummary, ignoreWarnings){
-					var uploadData = new FormData(),
-						uploadDetails;
-
-					uploadData.append("action", "upload");
-					uploadData.append("filename", fileName);
-					uploadData.append("text", fileSummary);
-					uploadData.append("token", mw.user.tokens.get( 'csrfToken' ) );
-					uploadData.append("ignorewarnings", ignoreWarnings );
-					if (fileType == 'File') uploadData.append("file", fileToUpload);
-					if (fileType == 'URL') uploadData.append("url", fileToUpload);
-					uploadData.append("format", 'json');
-					
-					api.block('Loading...');
-
-					//as we now have created the data to send, we send it...
-					$.ajax( { //http://stackoverflow.com/questions/6974684/how-to-send-formdata-objects-with-ajax-requests-in-jquery
-						url: _mwtWikiApi,
-						contentType: false,
-						processData: false,
-						type: 'POST',
-						async: false,
-						data: uploadData,//the formdata object we created above
-						success: function(data){
-								uploadDetails = data;
-						},
-						error:function(xhr,status, error){
-							uploadDetails['responseText'] = xhr.responseText;
-							console.log(error);
-						}
-					});
-
-					api.unblock();
-
-					return uploadDetails;
-				}*/
-	
-				// check upload succesful or report errors and warnings
-/*				function checkUploadDetail(uploadDetails, ignoreWarnings) {
-					var message,
-						result = [];
-debugger;	
-					if ( typeof uploadDetails == "undefined") {
-						editor.windowManager.alert(mw.msg("tinymce-upload-alert-unknown-error-uploading"));
-						result = false;
-					} else if (typeof uploadDetails.error != "undefined") {
-						if (typeof uploadDetails.error.info != "undefined") {
-							message = mw.msg("tinymce-upload-alert-error-uploading",uploadDetails.error.info);
-						} else {
-							message = mw.msg("tinymce-upload-alert-error-uploading");		
-						}
-						editor.windowManager.alert(message);
-						result = false;
-					} else if (typeof uploadDetails.upload.responseText != "undefined") {
-						message = mw.msg("tinymce-upload-alert-error-uploading",uploadDetails.upload.responseText);
-						editor.windowManager.alert(message);
-						result = false;
-					} else if (typeof uploadDetails.upload.error != "undefined") {
-						message = mw.msg("tinymce-upload-alert-error-uploading",uploadDetails.upload.error.info);
-						editor.windowManager.alert(message);
-						result = false;
-					} else if (typeof uploadDetails.upload.warnings != "undefined" 
-						&& ( uploadDetails.upload.result != 'Success' )
-						&& (!ignoreWarnings)) {
-						message = mw.msg("tinymce-upload-alert-warnings-encountered") + "\n\n" ;  
-						result = 'warning';
-						for (warning in uploadDetails.upload.warnings) {
-							warningDetails = uploadDetails.upload.warnings[warning];
-							if (warning == 'badfilename') {
-								message = message + "	" + mw.msg("tinymce-upload-alert-destination-filename-not-allowed") + "\n";
-								result = false;
-							} else if (warning == 'exists') {
-								// this warning will also be trapped by destchange so just return warning
-								duplicate = warningDetails[0];
-								message = message + "	" + mw.msg("tinymce-upload-alert-destination-filename-already-exists", duplicate ) + "\n";
-								result = false;
-							} else if (warning == 'duplicate') {
-								duplicate = warningDetails[0];
-								message = message + "	" + mw.msg("tinymce-upload-alert-duplicate-file", duplicate ) + "\n"
-							} else {
-								message = message + "	" + mw.msg("tinymce-upload-alert-other-warning",warning ) + "\n"
-								result = false;
-							}
-						}
-						if (result == 'warning') {
-							result = false;
-							message = message + "\n" + mw.msg("tinymce-upload-confirm-ignore-warnings");
-							editor.windowManager.confirm(message,
-								function(ok) {
-									if (ok) {
-										result = 'ignore_warning';
-									} else {
-										result = false;
-									}
-								}
-							);
-						} else {
-							message = message + "\n" + mw.msg("tinymce-upload-alert-correct-and-try-again");
-							editor.windowManager.alert(message);		
-							result = false;
-						}
-					} else if (typeof uploadDetails.upload.imageinfo != "undefined") {
-						result["url"] = uploadDetails.upload.imageinfo.url;
-						result["page"] = uploadDetails.upload.imageinfo.canonicaltitle;
-					}
-					return result;
-				}*/
 	
 				// first check source and destination details are valid
 				if (!uploadCheck( api )) return;
@@ -1059,6 +951,7 @@ debugger;
 				uploadResult = '';
 				uploadPage = '';
 				ignoreWarnings = false;
+
 				// have to have a destination name unless editing previous upload
 				if (!dialogData.dest && !imgElm) {
 					// user may have clicked submit without exiting source field
@@ -1080,6 +973,7 @@ debugger;
 						fileSummary = dialogData.summary;
 						if ((fileContent) && (fileName)) {
 							do {
+debugger;
 								uploadDetails = doUpload(fileType, fileContent, fileName, fileSummary, ignoreWarnings);
 								result = checkUploadDetail( editor, uploadDetails, ignoreWarnings, fileName );
 								if (result) {
