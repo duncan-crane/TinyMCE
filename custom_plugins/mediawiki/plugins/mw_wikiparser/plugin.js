@@ -3669,7 +3669,7 @@ text = htmlDecode ( $dom.html() );
 
 			_cursorOnUp = cursorLocation.cursor;
 			_cursorOnUpPreviousNode = cursorLocation.previousNode;
-
+debugger;
 			if ( _cursorOnDown == _cursorOnUp) {
 				// cursor didn't move
 				if ( !_cursorOnDownPreviousNode ) {
@@ -3690,7 +3690,7 @@ text = htmlDecode ( $dom.html() );
 			var range,
 				ftxt,
 				cursorLocation = getCursorOffset();
-
+debugger;
 			_cursorOnUp = cursorLocation.cursor;
 			_cursorOnUpNextNode = cursorLocation.nextNode;
 			var range = editor.selection.getRng();
@@ -3699,7 +3699,7 @@ text = htmlDecode ( $dom.html() );
 			editor.selection.setRng( range );
 			if ( _cursorOnDown >= _cursorOnUp ) 
 				// the cursor din't move forward
-				if ( !_cursorOnDownNextNode ) {
+//				if ( !_cursorOnDownNextNode ) {
 					// there are no more nodes
 					if (_cursorOnUp >= ftxt ) {
 						// we're already at the end of the text
@@ -3711,7 +3711,7 @@ text = htmlDecode ( $dom.html() );
 						editor.selection.select( editor.getBody(), true );
 						editor.selection.collapse();
 					}
-			}
+//			}
 		}
 	};
 
