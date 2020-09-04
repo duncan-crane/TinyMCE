@@ -195,12 +195,12 @@ var wikilink = function (editor) {
 			{
 				type: 'cancel',
 				name: 'closeButton',
-				text: 'Cancel'
+				text: translate("tinymce-cancel")
 			},
 			{
 				type: 'submit',
 				name: 'submitButton',
-				text: 'OK',
+				text: translate("tinymce-ok"),
 				primary: true
 			}
 		];
