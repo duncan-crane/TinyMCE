@@ -1518,7 +1518,7 @@
 						var moreSpaces = $1,
 							anotherTag = $2;
 
-						anotherTag = anotherTag.replace(/(^<[^>]*?)>/i, '$1 data-mwt-sameLine="true" data-mwt-spaces="' + moreSpaces + '">');
+						anotherTag = $1 + anotherTag.replace(/(^<[^>]*?)>/i, '$1 data-mwt-sameLine="true" data-mwt-spaces="">');
 						return anotherTag;
 					});
 
