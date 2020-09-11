@@ -2781,7 +2781,7 @@
 					// first do any processing of the inner html
 					innerHtml = elm[0].innerHTML;
 					// escape pipe characters
-					innerHtml = innerHtml.replace(/\|/gmi, '&amp;vert;');
+//0911					innerHtml = innerHtml.replace(/\|/gmi, '&amp;vert;');
 					elm.prop( "innerHTML", innerHtml );
 
 					if ( elm.hasClass( 'mwt-dummyReference' )) {
@@ -3742,6 +3742,8 @@ function wikiparser( editor ) {
 		editor.on('dblclick', _onDblClick);
 		editor.on('keydown', _onKeyDown);
 		editor.on('keyup', _onKeyUp);
+		editor.on('undo', function() {debugger;});
+		editor.on('redo', function() {debugger;});
 
 		//
 		// add processing for browser context menu

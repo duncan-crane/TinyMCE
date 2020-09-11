@@ -395,7 +395,7 @@ var defaultSettings = function(selector) {
 			'save': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/save/plugin.js',
 			'searchreplace': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/searchreplace/plugin.js',
 			'template': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/template/plugin.js',
-//			'visualblocks': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualblocks/plugin.js',
+			'visualblocks': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualblocks/plugin.js',
 //			'visualchars': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/visualchars/plugin.js',
 			'wikilink': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikilink/plugin.js',
  			'wikinonbreaking': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikinonbreaking/plugin.js',
@@ -662,8 +662,8 @@ var updateSettings = function( tinyMCESelector, settings ) {
 				// key == value from it
 				var obj = defaultSet[k];
 				$.each( v, function ( key, val ) {
-					if ( obj[ key ] == val ) {
-						delete obj[ key ];
+					if ( obj[ val ] ) {
+						delete obj[ val ];
 					}
 				});
 				defaultSet[k] = obj;
