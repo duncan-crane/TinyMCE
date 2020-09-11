@@ -24,21 +24,50 @@
 		 * global variable that contains the editor instance
 		 * @type TinyMCE
 		 */
-		var	editor = tinymce.activeEditor,
+		var	editor = tinymce.activeEditor;
 
 		/**
 		 *
 		 * Utility functions used in this plugin and others
 		 * @type String
 		 */
-		utility = editor.getParam("wiki_utility"),
+		var utility = editor.getParam("wiki_utility");
+
+		/**
+		 *
+		 * set up utility functions used  
+		 * in this plugin
+		 * 
+		 */
+	
+		var setContent = utility.setContent;
+	
+		var setSelection = utility.setSelection;
+	
+		var getContent = utility.getContent;
+	
+		var getSelection = utility.getSelection;
+	
+		var htmlEncode = utility.htmlEncode;
+	
+		var htmlDecode = utility.htmlDecode;
+	
+		var createUniqueNumber = utility.createUniqueNumber;
+	
+		var onDblClickLaunch = utility.onDblClickLaunch;
+	
+		var doUpload = utility.doUpload;
+	
+		var checkUploadDetail = utility.checkUploadDetail;
+	
+		var translate = utility.translate;
 
 		/**
 		 *
 		 * Points to the mediawiki API for this wiki
 		 * @type String
 		 */
-		_mwtWikiApi = editor.getParam("wiki_api_path"),
+		var _mwtWikiApi = editor.getParam("wiki_api_path"),
 
 		/**
 		 *
@@ -135,7 +164,7 @@
 			'<span class="mwt-nonEditable mwt-placeHolder mwt-singleLinebreak mwt-slb' 
 			+ (editor.getParam("directionality")) + ' ' + _placeholderClass 
 			+ '" title="'
-			+ mw.msg('tinymce-wikicode-non-rendering-single-linebreak' )
+			+ translate('tinymce-wikicode-non-rendering-single-linebreak' )
 			+ '" draggable="true" contenteditable="false">'// + ' '
 			+ '</span>',
 
@@ -254,34 +283,7 @@
 		_cursorOnUpPreviousNode,
 		_cursorOnDownNextNode,
 		_cursorOnUpNextNode;
-
-	/**
-	 *
-	 * set up utility functions used  
-	 * in this plugin
-	 * 
-	 */
-
-	var setContent = utility.setContent;
-
-	var setSelection = utility.setSelection;
-
-	var getContent = utility.getContent;
-
-	var getSelection = utility.getSelection;
-
-	var htmlEncode = utility.htmlEncode;
-
-	var htmlDecode = utility.htmlDecode;
-
-	var createUniqueNumber = utility.createUniqueNumber;
-
-	var onDblClickLaunch = utility.onDblClickLaunch;
-
-	var doUpload = utility.doUpload;
-
-	var checkUploadDetail = utility.checkUploadDetail;
-
+	
 	var pluginManager = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
 	/**
@@ -776,7 +778,7 @@
 
 		// check result
 		if ( parserResult.result == 'fail' ) {
-			message = mw.msg("tinymce-wikicode-alert-mw-parser-fail", wikiCode);								
+			message = translate("tinymce-wikicode-alert-mw-parser-fail", wikiCode);								
 			alert( message );
 			parserResult.parsedHtml = wikiCode;
 		}
@@ -1516,7 +1518,7 @@
 						var moreSpaces = $1,
 							anotherTag = $2;
 
-						anotherTag = anotherTag.replace(/(^<[^>]*?)>/i, '$1 data-mwt-sameLine="true" data-mwt-spaces="' + moreSpaces + '">');
+						anotherTag = $1 + anotherTag.replace(/(^<[^>]*?)>/i, '$1 data-mwt-sameLine="true" data-mwt-spaces="">');
 						return anotherTag;
 					});
 
@@ -2779,7 +2781,7 @@
 					// first do any processing of the inner html
 					innerHtml = elm[0].innerHTML;
 					// escape pipe characters
-					innerHtml = innerHtml.replace(/\|/gmi, '&amp;vert;');
+//0911					innerHtml = innerHtml.replace(/\|/gmi, '&amp;vert;');
 					elm.prop( "innerHTML", innerHtml );
 
 					if ( elm.hasClass( 'mwt-dummyReference' )) {
@@ -3669,7 +3671,7 @@ text = htmlDecode ( $dom.html() );
 
 			_cursorOnUp = cursorLocation.cursor;
 			_cursorOnUpPreviousNode = cursorLocation.previousNode;
-
+debugger;
 			if ( _cursorOnDown == _cursorOnUp) {
 				// cursor didn't move
 				if ( !_cursorOnDownPreviousNode ) {
@@ -3690,7 +3692,7 @@ text = htmlDecode ( $dom.html() );
 			var range,
 				ftxt,
 				cursorLocation = getCursorOffset();
-
+debugger;
 			_cursorOnUp = cursorLocation.cursor;
 			_cursorOnUpNextNode = cursorLocation.nextNode;
 			var range = editor.selection.getRng();
@@ -3699,7 +3701,7 @@ text = htmlDecode ( $dom.html() );
 			editor.selection.setRng( range );
 			if ( _cursorOnDown >= _cursorOnUp ) 
 				// the cursor din't move forward
-				if ( !_cursorOnDownNextNode ) {
+//				if ( !_cursorOnDownNextNode ) {
 					// there are no more nodes
 					if (_cursorOnUp >= ftxt ) {
 						// we're already at the end of the text
@@ -3711,7 +3713,7 @@ text = htmlDecode ( $dom.html() );
 						editor.selection.select( editor.getBody(), true );
 						editor.selection.collapse();
 					}
-			}
+//			}
 		}
 	};
 
@@ -3740,16 +3742,18 @@ function wikiparser( editor ) {
 		editor.on('dblclick', _onDblClick);
 		editor.on('keydown', _onKeyDown);
 		editor.on('keyup', _onKeyUp);
+		editor.on('undo', function() {debugger;});
+		editor.on('redo', function() {debugger;});
 
 		//
 		// add processing for browser context menu
 		//
 		editor.ui.registry.addButton('browsercontextmenu', {
 			icon: 'info',
-			tooltip: mw.msg( 'tinymce-browsercontextmenu' ),
+			tooltip: translate( 'tinymce-browsercontextmenu' ),
 			onAction:  function(e) {
 				editor.focus();
-				editor.windowManager.confirm(mw.msg( 'tinymce-browsercontextmenu' ), function(state) {
+				editor.windowManager.confirm(translate( 'tinymce-browsercontextmenu' ), function(state) {
 					if (state) {
 						editor.off('contextmenu');
 					}
@@ -3758,12 +3762,12 @@ function wikiparser( editor ) {
 		});
 		editor.ui.registry.addMenuItem('browsercontextmenu', {
 			icon: 'info',
-			text: mw.msg('tinymce-browsercontextmenu-title'),
-			tooltip: mw.msg( 'tinymce-browsercontextmenu' ),
+			text: translate('tinymce-browsercontextmenu-title'),
+			tooltip: translate( 'tinymce-browsercontextmenu' ),
 			context: 'insert',
 			onAction: function(e) {
 				editor.focus();
-				editor.windowManager.confirm(mw.msg( 'tinymce-browsercontextmenu' ), function(state) {
+				editor.windowManager.confirm(translate( 'tinymce-browsercontextmenu' ), function(state) {
 					if (state) {
 						editor.off('contextmenu');
 					}

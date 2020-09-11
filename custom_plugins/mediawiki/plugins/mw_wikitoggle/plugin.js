@@ -44,14 +44,14 @@ var wikitoggle = function (editor) {
 
 	var registerButtons = function ( editor ) {
 		editor.ui.registry.addToggleButton('wikitoggle', {
-			tooltip: translate("wikitoggle.Show wiki placeholders"),
+			tooltip: translate("tinymce-toggle-button-toggle-wiki-placeholders"),
 			icon: 'visualchars',
 			onAction: function () {
 				return toggle( editor );
 			},
       	});
 		editor.ui.registry.addToggleMenuItem('wikitoggle', {
-			text: translate("wikitoggle.Show wiki placeholders"),
+			text: translate("tinymce-toggle-button-toggle-wiki-placeholders"),
 			icon: 'visualchars',
 			onAction: function () {
 				return toggle( editor );

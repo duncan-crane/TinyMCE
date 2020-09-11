@@ -63,6 +63,8 @@
 	"tinymce-upload-source-tooltip": "Enter the full file path of file you wish to upload: a local file which is on your device or a file located at a URL on the internet or a file which has already been uploaded onto this wiki",
 	"tinymce-upload-destination-label": "Destination",
 	"tinymce-upload-destination-tooltip": "Enter the full filename for storing this file on this wiki",
+	"tinymce-upload-overwrite-label": "will overwrite existing file",
+	"tinymce-upload-overwrite-tooltip": "Select OK if you want to overwrite this file",
 	"tinymce-upload-title-label": "Title/caption",
 	"tinymce-upload-title-tooltip": "Enter text to be used as the title/caption for this file/image",
 	"tinymce-upload-summary-label": "Summary",
@@ -104,7 +106,7 @@
 	"tinymce-upload-alert-error-uploading-to-wiki": "I'm sorry, there seems to be a problem accessing the wiki from this dialog.  If the problem persists try logging off and on again",
 	"tinymce-upload-alert-file-type-not-allowed": "I'm sorry, you are not allowed to upload files of this type to this wiki. Please choose a file of a different type",
 	"tinymce-upload-alert-unknown-error-uploading": "I'm sorry, you have encountered an unknown error trying to upload this file.  If this error persists please contact your systems administrator",
-	"tinymce-upload-alert-error-uploading": "I'm sorry, you have encountered an error trying to upload to this wiki : $1. Please try again",
+	"tinymce-upload-alert-error-uploading": "I'm sorry, you have encountered an error trying to upload to this wiki : $1 Please reload the page and try again",
 	"tinymce-upload-alert-warnings-encountered": "I'm sorry, you have encountered the following warnings trying to upload file $1",
 	"tinymce-upload-alert-destination-filename-not-allowed": "The destination filename is not allowed",
 	"tinymce-upload-alert-destination-filename-already-exists": "The destination filename already exists",
@@ -115,6 +117,7 @@
 	"tinymce-upload-alert-source-or-destination-undefined": "I'm sorry, there's a problem with either the source or destination being undefined.  Please check and try again",
 	"tinymce-upload-alert-file-source-empty" : "You must provide an image source file in the File details tab before you can access the image properties",
 	"tinymce-upload-confirm-file-already-exists": "The file $1 already exists on this wiki.  Select Yes if you would like to use the existing file or select No and choose a different file for this upload",
+	"tinymce-upload-confirm-file-name-already-exists": "A file with name $1 already exists on this wiki.  Select Yes if you would like to overwrite the existing file or select No and input a different destination file name for this upload",
 	"tinymce-upload-confirm-file-is-duplicate": "The file $1 is a duplicate of file $2 on this wiki.  Select Yes if you would like to use the existing file or select No and choose a different file for this upload",
 	"tinymce-upload-confirm-file-not-on-wiki": "The file does not exist on this wiki.  Select Yes if you would like to upload a new file or select No and enter a different filename for this link",
 	"tinymce-upload-confirm-ignore-warnings": "Select Yes if you wish to retry while ignoring these warnings, else select No",
@@ -149,5 +152,9 @@
 	"tinymce-link": "Link",
 	"tinymce-toggle-button-toggle-wiki-placeholders": "Toggle wiki placeholders",
 	"tinymce-nonbreaking-insertNonBreakingSpace": "Insert a non-breaking space",
-	"tinymce-reference-insertReference": "Insert a reference"
+	"tinymce-reference-insertReference": "Insert a reference",
+	"tinymce-yes": "Yes",
+	"tinymce-no": "No",
+	"tinymce-ok": "OK",
+	"tinymce-cancel": "Cancel"
 }

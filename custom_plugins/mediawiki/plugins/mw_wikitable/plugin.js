@@ -5973,17 +5973,17 @@ debugger;
       var table = render$1(rows, columns, 0, 0, options);
       set(table, 'data-mce-id', '__mce');
       var html = getOuter$2(table);
-//      editor.insertContent(html);
+      editor.insertContent(html);
 /*		editor.focus();
 		editor.selection.setContent(html);
 		editor.undoManager.add();
 		editor.format = 'raw';*/
 		editor.focus();
-		editor.undoManager.transact( function () {
+/*0911		editor.undoManager.transact( function () {
 			editor.selection.setContent( html );
-		});
+		});*/
 //		editor.selection.setCursorLocation();
-		editor.nodeChanged();
+//		editor.nodeChanged();
 
       return descendant$1(getBody$1(editor), 'table[data-mce-id="__mce"]').map(function (table) {
         if (isPixelsForced(editor)) {
