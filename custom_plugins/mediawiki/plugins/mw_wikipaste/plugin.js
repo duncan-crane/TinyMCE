@@ -832,28 +832,11 @@
 
     var pasteHtml = function (editor, html) {
 
-/*DC did this
       editor.insertContent(html, {
         merge: shouldMergeFormats(editor),
         paste: true
-      });*/
-		editor.focus();
-		var nonEditableParents = editor.dom.getParents(editor.selection.getNode(),function ( anode ) {
-
-			if (anode.contentEditable === 'false') {
-				return anode
-			}
-		});
-		if (nonEditableParents) {
-			editor.selection.select( nonEditableParents[ nonEditableParents.length - 1 ] );
-//			editor.selection.collapse();
-		}
-		editor.undoManager.transact( function () {
-			editor.selection.setContent( html, {
-				merge: shouldMergeFormats(editor),
-        paste: true });
-		});
-//		editor.selection.setCursorLocation();
+      });
+//DC did this
 		editor.nodeChanged();
 
       return true;
@@ -1022,13 +1005,11 @@
     };
     var uniqueId = createIdGenerator('mceclip');
     var pasteImage = function (editor, imageItem) {
-debugger;
       var _a = parseDataUri(imageItem.uri), base64 = _a.data, type = _a.type;
       var id = uniqueId();
       var name = editor.settings.images_reuse_filename && imageItem.blob.name ? extractFilename(editor, imageItem.blob.name) : id;
       var img = new domGlobals.Image();
       img.src = imageItem.uri;
-/* DC did this
       if (isValidDataUriImage(editor.settings, img)) {
         var blobCache = editor.editorUpload.blobCache;
         var blobInfo = void 0;
@@ -1040,9 +1021,9 @@ debugger;
           blobInfo = existingBlobInfo;
         }
         pasteHtml$1(editor, '<img src="' + blobInfo.blobUri() + '">', false);
-      } else {*/
+      } else {
         pasteHtml$1(editor, '<img src="' + imageItem.uri + '">', false);
-//      }
+      }
     };
     var isClipboardEvent = function (event) {
       return event.type === 'paste';
@@ -1436,17 +1417,9 @@ debugger;
       };
     };
     var getData = function (editor) {
-// DC did this 2708
-		var html,
-			text;
-			
-//		html = "<div class='mwt-tiny-copy'>" + editor.selection.getContent({ contextual: true }) + "</div>";
-//		text = 	editor.selection.getContent({ format: 'text' });
       return {
         html: editor.selection.getContent({ contextual: true }),
         text: editor.selection.getContent({ format: 'text' })
-//        html: html,
-//        text: text,
       };
     };
     var isTableSelection = function (editor) {
@@ -1457,7 +1430,6 @@ debugger;
     };
     var cut = function (editor) {
       return function (evt) {
-debugger;
         if (hasSelectedContent(editor)) {
           setClipboardData(evt, getData(editor), fallback(editor), function () {
             if (global$1.browser.isChrome()) {

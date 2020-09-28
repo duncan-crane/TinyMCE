@@ -115,6 +115,7 @@
 		editor.undoManager.transact( function () {
 			editor.setContent( content, args );
 		});
+		editor.focus();
 		editor.selection.setCursorLocation();
 		editor.nodeChanged();
 	};
@@ -171,8 +172,8 @@
 		return Math.floor( ( Math.random() * 100000000 ) + Date.now());
 	};
 	
-	var translate = function( message ) {
-		return mw.msg( message )
+	var translate = function( message, p1, p2, p3,p4, p5, p6 ) {
+		return mw.msg( message, p1, p2, p3,p4, p5, p6 )
 	};
 
 /*	var onDblClickLaunch = function ( editor, aTarget, aClass, aCommand) {	
@@ -277,61 +278,88 @@ debugger;
 		if (typeof uploadDetails == "undefined") {
 			message = mw.msg("tinymce-upload-alert-unknown-error-uploading",
 				uploadName );
-			result = false;
+			result["state"] = 'error';
+//			result = false;
 		} else if (typeof uploadDetails.responseText != "undefined") {
 			message = mw.msg("tinymce-upload-alert-error-uploading",uploadDetails.responseText);
 			editor.windowManager.alert(message);
-			result = false;
+			result["state"] = 'error';
+//			result = false;
 		} else if (typeof uploadDetails.error != "undefined") {
 			message = mw.msg("tinymce-upload-alert-error-uploading",uploadDetails.error.info);
 			// if the error is because the file exists then we can ignore and
 			// use the existing file
 			if (uploadDetails.error.code == "fileexists-no-change") {
-				result = 'exists';
+/*				editor.windowManager.confirm(mw.msg("tinymce-upload-confirm-file-already-exists", uploadName),
+					function(ok) {
+						if (ok) {
+							result["state"] = 'exists';
+//								result = 'exists';
+						} else {
+							result["state"] = 'error';
+//								result = false;
+						}
+					});*/
+				result["state"] = 'exists';
+//				result = 'exists';
 			} else {
-				result = false;
+				result["state"] = 'error';
+//				result = false;
 				editor.windowManager.alert(message);
 			}
 		} else if (typeof uploadDetails.upload.warnings != "undefined" && (!ignoreWarnings)) {
 			message = mw.msg("tinymce-upload-alert-warnings-encountered", uploadName) + "\n\n" ;
-			result = 'warning';
+//			result = 'warning';
 			for (warning in uploadDetails.upload.warnings) {
 				warningDetails = uploadDetails.upload.warnings[warning];
 				if (warning == 'badfilename') {
 					message = message + "	" + mw.msg("tinymce-upload-alert-destination-filename-not-allowed") + "\n";
 					editor.windowManager.alert(message);
-					result = false;
+					result["state"] = 'error';
+//					result = false;
 				} else if (warning == 'exists') {
+debugger;
 //					message = message + "	" + mw.msg("tinymce-upload-alert-destination-filename-already-exists") + "\n";
 					editor.windowManager.confirm(mw.msg("tinymce-upload-confirm-file-already-exists", uploadName),
 						function(ok) {
 							if (ok) {
-								result = 'exists';
+								result["state"] = 'exists';
+//								result = 'exists';
 							} else {
-								result = false;
+								result["state"] = 'error';
+//								result = false;
 							}
 						});
+//								result["state"] = 'exists';
 				} else if (warning == 'duplicate') {
+					// when mediawiki encounters a duplicate, it has already uploaded the
+					// file and stored it.  In thios case there is little point in sending
+					// a warning message so just pass information back to the calling function
 //					duplicate = warningDetails[ 0 ];
-					editor.windowManager.confirm(mw.msg("tinymce-upload-confirm-file-is-duplicate", uploadName, warningDetails[ 0 ]),
+/*					editor.windowManager.confirm(mw.msg("tinymce-upload-confirm-file-is-duplicate", uploadName, warningDetails[ 0 ]),
 						function(ok) {
 							if (ok) {
-								result = warningDetails[ 0 ];
+								result["state"] = 'duplicate';
+								result["url"] = warningDetails[ 0 ];
+								result["page"] = mw_fileNamespace + ':' + warningDetails[ 0 ];
 							} else {
-								result = false;
+								result["state"] = 'error';
 							}
-						});
-/*					message = message + "	" + mw.msg("tinymce-upload-alert-duplicate-file",warningDetails[ 0 ]) + "\n"
-					result = 'duplicate';*/
+						});*/
+					result["state"] = 'duplicate';
+					result["url"] = uploadDetails.upload.imageinfo.url;
+					result["page"] = uploadDetails.upload.imageinfo.canonicaltitle;
 				} else {
 					message = message + "	" + mw.msg("tinymce-upload-alert-other-warning",warning) + "\n"
 					editor.windowManager.alert(message);
-					result = false;
+					result["state"] = 'error';
+//					result = false;
 				}
 			}
 //			editor.windowManager.alert(message);
 		} else if (typeof uploadDetails.upload.imageinfo != "undefined") {
 //			result = uploadDetails.upload.imageinfo.url;
+			result["state"] = 'ok';
 			result["url"] = uploadDetails.upload.imageinfo.url;
 			result["page"] = uploadDetails.upload.imageinfo.canonicaltitle;
 		}
@@ -356,6 +384,7 @@ debugger;
 var defaultSettings = function(selector) {
 	return {
 		selector: selector,
+		auto_focus: true,
 		base_url: mw_extensionAssetsPath + '/TinyMCE/tinymce',
 		theme_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/themes/silver/theme.min.js',
 		skin_url: mw_extensionAssetsPath + '/TinyMCE/tinymce/skins/ui/oxide',
@@ -389,6 +418,7 @@ var defaultSettings = function(selector) {
 //			'link': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/link/plugin.js',
 			'lists': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/lists/plugin.js',
 //			'media': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/media/plugin.js',
+//			'n1ed': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/n1ed/plugins/n1ed/plugin.js',
 			'noneditable': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/noneditable/plugin.js',
 //			'paste': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/paste/plugin.js',
 			'preview': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/preview/plugin.js',
@@ -446,6 +476,8 @@ var defaultSettings = function(selector) {
 		// mediawiki markup that is not rendered in the page window.  These allow them to be
 		// identified and edited in the TinyMCE editore window
 		//
+		// n1ed config
+		apiKey: "2ZVEDFLT",
 		// single new lines: set non_rendering_newline_character to false if you don't use non-rendering single new lines in wiki
 		showPlaceholders: false,
 //		showPlaceholders: true,
@@ -509,7 +541,7 @@ var defaultSettings = function(selector) {
 		save_enablewhendirty: true,
 		// Allow style tags in body and unordered lists in spans (inline)
 		valid_children: "+span[ul],+span[div],+em[div],+big[div],+small[div],-p[p]",//+p[div]",
-		extended_valid_elements: "big,small",
+		extended_valid_elements: "big,small,references",
 //	    custom_elements: "~nowiki",
 //		closed: /^(br|hr|input|meta|img|link|param|area|nowiki)$/,
 //		valid_children: "+*[*]",
@@ -528,6 +560,10 @@ var defaultSettings = function(selector) {
 			{title: mw.msg("tinymce-upload-type-label-url"), value: 'URL'},
 			{title: mw.msg("tinymce-upload-type-label-wiki"), value: 'Wiki'}
 		],
+		images_dataimg_filter: function(img) {
+debugger;
+			return false;
+		},
 		menubar: false, //'edit insert view format table tools',
 		contextmenu_never_use_native: false,
 //		removed_menuitems: 'media',
@@ -662,8 +698,8 @@ var updateSettings = function( tinyMCESelector, settings ) {
 				// key == value from it
 				var obj = defaultSet[k];
 				$.each( v, function ( key, val ) {
-					if ( obj[ key ] == val ) {
-						delete obj[ key ];
+					if ( obj[ val ] ) {
+						delete obj[ val ];
 					}
 				});
 				defaultSet[k] = obj;
