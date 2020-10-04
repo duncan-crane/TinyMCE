@@ -131,7 +131,7 @@ div.mwt-unknown {
 }
 
 .mwt-hidePlaceholder.mwt-image:before {
-	content:  "\00A0";
+/*	content:  "\00A0";*/
 }
 
 .mwt-showPlaceholder.mwt-nowikiesc:before {

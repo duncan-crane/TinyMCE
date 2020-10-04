@@ -4,7 +4,7 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.4.2 (2020-08-17)
+ * Version: 5.3.0 (2020-05-21)
  */
 (function () {
     'use strict';
@@ -54,26 +54,14 @@
     var getTemplateReplaceValues = function (editor) {
       return editor.getParam('template_replace_values');
     };
-    var getTemplates = function (editor) {
-      return editor.getParam('templates');
+    var getTemplates = function (editorSettings) {
+      return editorSettings.templates;
     };
     var getCdateFormat = function (editor) {
       return editor.getParam('template_cdate_format', editor.translate('%Y-%m-%d'));
     };
     var getMdateFormat = function (editor) {
       return editor.getParam('template_mdate_format', editor.translate('%Y-%m-%d'));
-    };
-    var getBodyClassFromHash = function (editor) {
-      var bodyClass = editor.getParam('body_class', '', 'hash');
-      return bodyClass[editor.id] || '';
-    };
-    var getBodyClass = function (editor) {
-      var bodyClass = editor.getParam('body_class', '', 'string');
-      if (bodyClass.indexOf('=') === -1) {
-        return bodyClass;
-      } else {
-        return getBodyClassFromHash(editor);
-      }
     };
 
     var addZeros = function (value, len) {
@@ -110,9 +98,9 @@
       return fmt;
     };
 
-    var createTemplateList = function (editor, callback) {
+    var createTemplateList = function (editorSettings, callback) {
       return function () {
-        var templateList = getTemplates(editor);
+        var templateList = getTemplates(editorSettings);
         if (typeof templateList === 'function') {
           templateList(callback);
           return;
@@ -155,11 +143,12 @@
     };
     var insertTemplate = function (editor, ui, html) {
       var el;
+      var n;
       var dom = editor.dom;
       var sel = editor.selection.getContent();
       html = replaceTemplateValues(html, getTemplateReplaceValues(editor));
       el = dom.create('div', null, html);
-      var n = dom.select('.mceTmpl', el);
+      n = dom.select('.mceTmpl', el);
       if (n && n.length > 0) {
         el = dom.create('div', null);
         el.appendChild(n[0].cloneNode(true));
@@ -176,7 +165,12 @@
         }
       });
       replaceVals(editor, el);
-      editor.execCommand('mceInsertContent', false, el.innerHTML);
+//DC did this
+				var args = {format: 'wiki', mode: 'inline', convert2html: true};
+				editor.insertContent(el.innerHTML, args );
+				editor.focus( );
+				editor.nodeChanged();	
+//      editor.execCommand('mceInsertContent', false, el.innerHTML);
       editor.addVisual();
     };
 
@@ -190,7 +184,7 @@
         global$1.each(dom.select('div', o.node), function (e) {
           if (dom.hasClass(e, 'mceTmpl')) {
             global$1.each(dom.select('*', e), function (e) {
-              if (dom.hasClass(e, getModificationDateClasses(editor).replace(/\s+/g, '|'))) {
+              if (dom.hasClass(e, editor.getParam('template_mdate_classes', 'mdate').replace(/\s+/g, '|'))) {
                 e.innerHTML = getDateTime(editor, dateFormat);
               }
             });
@@ -354,12 +348,17 @@
     };
 
     var getPreviewContent = function (editor, html) {
+debugger;
       if (html.indexOf('<html>') === -1) {
         var contentCssLinks_1 = '';
         global$1.each(editor.contentCSS, function (url) {
           contentCssLinks_1 += '<link type="text/css" rel="stylesheet" href="' + editor.documentBaseURI.toAbsolute(url) + '">';
         });
-        var bodyClass = getBodyClass(editor);
+        var bodyClass = editor.settings.body_class || '';
+        if (bodyClass.indexOf('=') !== -1) {
+          bodyClass = editor.getParam('body_class', '', 'hash');
+          bodyClass = bodyClass[editor.id] || '';
+        }
         var encode = editor.dom.encode;
         var directionality = editor.getBody().dir;
         var dirAttr = directionality ? ' dir="' + encode(directionality) + '"' : '';
@@ -412,6 +411,7 @@
       };
       var getTemplateContent = function (t) {
         return new global$3(function (resolve, reject) {
+debugger;
           t.value.url.fold(function () {
             return resolve(t.value.content.getOr(''));
           }, function (url) {
@@ -446,6 +446,7 @@
       };
       var onSubmit = function (templates) {
         return function (api) {
+debugger;
           var data = api.getData();
           findTemplate(templates, data.template).each(function (t) {
             getTemplateContent(t).then(function (previewHtml) {
@@ -540,17 +541,17 @@
       editor.ui.registry.addButton('template', {
         icon: 'template',
         tooltip: 'Insert template',
-        onAction: createTemplateList(editor, showDialog(editor))
+        onAction: createTemplateList(editor.settings, showDialog(editor))
       });
       editor.ui.registry.addMenuItem('template', {
         icon: 'template',
         text: 'Insert template...',
-        onAction: createTemplateList(editor, showDialog(editor))
+        onAction: createTemplateList(editor.settings, showDialog(editor))
       });
     };
 
     function Plugin () {
-      global.add('template', function (editor) {
+      global.add('wikitemplate', function (editor) {
         register$1(editor);
         register(editor);
         setup(editor);

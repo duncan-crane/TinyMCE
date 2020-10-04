@@ -23,9 +23,11 @@
 
 	var insertNbsp = function (editor, times) {
 
-		var args = {format: 'wiki', load: 'true', convert2html: true};
+		var args = {format: 'wiki', mode: 'inline', convert2html: true};
   
-		setSelection( editor, '&nbsp;', args );
+				editor.insertContent('&nbsp;', args );
+				editor.focus( );
+				editor.nodeChanged();	
 
     };
 

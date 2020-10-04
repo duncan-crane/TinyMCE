@@ -404,7 +404,7 @@ tinymce.PluginManager.add('wikiupload', function(editor) {
 			 * @returns {String}
 			 */
 			function cleanSubmittedData(submittedData) {
-				if (!Array.isArray( submittedData["dimensions"] )) submittedData["dimensions"] = [];
+//				if (!Array.isArray( submittedData["dimensions"] )) submittedData["dimensions"] = [];
 				if (!submittedData.type) submittedData.type = '';
 				if (!submittedData.fileSrc) submittedData.fileSrc = {meta:{},value:''};
 				if (!submittedData.urlSrc) submittedData.urlSrc = '';
@@ -659,7 +659,7 @@ tinymce.PluginManager.add('wikiupload', function(editor) {
 
 				var	editor = tinymce.activeEditor;
 				editor.focus( );
-				editor.insertContent(wikitext, {format: 'wiki', convert2html: 'true'} );
+				editor.insertContent(wikitext, {format: 'wiki', convert2html: 'true', mode: 'inline'} );
 				editor.focus( );
 				editor.nodeChanged();	
 				return;
@@ -1142,7 +1142,7 @@ tinymce.PluginManager.add('wikiupload', function(editor) {
 
 					return;
 				}
-	
+debugger;
 				dialogData = cleanSubmittedData( dialogData );
 				uploadDetails = [];
 				result = [];

@@ -108,7 +108,6 @@
 	  }
 	};
 
-
 	var setContent = function ( editor, content, args ) {
 		// sets the content of the editor window
 		editor.focus();
@@ -159,12 +158,10 @@
 	};
 
 	var htmlDecode = function ( value ) {
-//		return $("<textarea/>").html( value ).text();
 		return tinymce.DOM.decode( value );
 	};
 	
 	var  htmlEncode = function (value) {
-//		return $('<textarea/>').text(value).html();
 		return tinymce.DOM.encode( value );
 	};
 	
@@ -202,13 +199,12 @@
 			editor.on('NodeChange', function (e) {
 				var selectedNode = e.element,
 					parents;
-//debugger;
-//				api.setDisabled(true);
+
 				api.setDisabled( on );
 				
 				for (var selector in selectors) {
 					if (selectedNode.className.indexOf( selectors[ selector ]) > -1) {
-//						editor.selection.select(selectedNode);
+
 						editor.off('NodeChange', true);
 						return api.setDisabled( !on );						
 					}
@@ -221,20 +217,9 @@
 					return api.setDisabled(false);						
 				}
 				
-/*				while (selectedNode.parentNode != null) {
-					if (typeof selectedNode.className != "undefined") {
-						for (var selector in selectors) {
-							if (selectedNode.className.indexOf( selectors[ selector ]) > -1) {
-								editor.selection.select(selectedNode);
-								editor.off('NodeChange', true);
-								return api.setDisabled(false);						
-							}
-						}
-					}
-					selectedNode = selectedNode.parentNode;
-				}*/
+
 			});
-//			return editor.off('NodeChange', true);
+
 		};
 	};
 
@@ -274,78 +259,45 @@
 	var checkUploadDetail = function (editor, uploadDetails, ignoreWarnings, uploadName) {
 		var message,
 			result = [];
-debugger;
+
 		if (typeof uploadDetails == "undefined") {
 			message = mw.msg("tinymce-upload-alert-unknown-error-uploading",
 				uploadName );
 			result["state"] = 'error';
-//			result = false;
+
 		} else if (typeof uploadDetails.responseText != "undefined") {
 			message = mw.msg("tinymce-upload-alert-error-uploading",uploadDetails.responseText);
 			editor.windowManager.alert(message);
 			result["state"] = 'error';
-//			result = false;
+
 		} else if (typeof uploadDetails.error != "undefined") {
 			message = mw.msg("tinymce-upload-alert-error-uploading",uploadDetails.error.info);
 			// if the error is because the file exists then we can ignore and
 			// use the existing file
 			if (uploadDetails.error.code == "fileexists-no-change") {
-/*				editor.windowManager.confirm(mw.msg("tinymce-upload-confirm-file-already-exists", uploadName),
-					function(ok) {
-						if (ok) {
-							result["state"] = 'exists';
-//								result = 'exists';
-						} else {
-							result["state"] = 'error';
-//								result = false;
-						}
-					});*/
 				result["state"] = 'exists';
-//				result = 'exists';
 			} else {
 				result["state"] = 'error';
-//				result = false;
 				editor.windowManager.alert(message);
 			}
 		} else if (typeof uploadDetails.upload.warnings != "undefined" && (!ignoreWarnings)) {
 			message = mw.msg("tinymce-upload-alert-warnings-encountered", uploadName) + "\n\n" ;
-//			result = 'warning';
 			for (warning in uploadDetails.upload.warnings) {
 				warningDetails = uploadDetails.upload.warnings[warning];
 				if (warning == 'badfilename') {
 					message = message + "	" + mw.msg("tinymce-upload-alert-destination-filename-not-allowed") + "\n";
 					editor.windowManager.alert(message);
 					result["state"] = 'error';
-//					result = false;
 				} else if (warning == 'exists') {
-debugger;
-//					message = message + "	" + mw.msg("tinymce-upload-alert-destination-filename-already-exists") + "\n";
 					editor.windowManager.confirm(mw.msg("tinymce-upload-confirm-file-already-exists", uploadName),
 						function(ok) {
 							if (ok) {
 								result["state"] = 'exists';
-//								result = 'exists';
 							} else {
 								result["state"] = 'error';
-//								result = false;
 							}
 						});
-//								result["state"] = 'exists';
 				} else if (warning == 'duplicate') {
-					// when mediawiki encounters a duplicate, it has already uploaded the
-					// file and stored it.  In thios case there is little point in sending
-					// a warning message so just pass information back to the calling function
-//					duplicate = warningDetails[ 0 ];
-/*					editor.windowManager.confirm(mw.msg("tinymce-upload-confirm-file-is-duplicate", uploadName, warningDetails[ 0 ]),
-						function(ok) {
-							if (ok) {
-								result["state"] = 'duplicate';
-								result["url"] = warningDetails[ 0 ];
-								result["page"] = mw_fileNamespace + ':' + warningDetails[ 0 ];
-							} else {
-								result["state"] = 'error';
-							}
-						});*/
 					result["state"] = 'duplicate';
 					result["url"] = uploadDetails.upload.imageinfo.url;
 					result["page"] = uploadDetails.upload.imageinfo.canonicaltitle;
@@ -353,12 +305,9 @@ debugger;
 					message = message + "	" + mw.msg("tinymce-upload-alert-other-warning",warning) + "\n"
 					editor.windowManager.alert(message);
 					result["state"] = 'error';
-//					result = false;
 				}
 			}
-//			editor.windowManager.alert(message);
 		} else if (typeof uploadDetails.upload.imageinfo != "undefined") {
-//			result = uploadDetails.upload.imageinfo.url;
 			result["state"] = 'ok';
 			result["url"] = uploadDetails.upload.imageinfo.url;
 			result["page"] = uploadDetails.upload.imageinfo.canonicaltitle;
@@ -434,6 +383,7 @@ var defaultSettings = function(selector) {
 			'wikipaste': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikipaste/plugin.js',
 			'wikireference': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikireference/plugin.js',
 			'wikitable': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikitable/plugin.js',
+			'wikitemplate': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikitemplate/plugin.js',
 			'wikitext': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikitext/plugin.js',
 			'wikitoggle': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikitoggle/plugin.js',
 			'wikiupload': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiupload/plugin.js',
@@ -469,6 +419,9 @@ var defaultSettings = function(selector) {
 		wiki_block_tags: mw_htmlBlockPairsStatic.join("|"),
 		wiki_invariant_tags: mw_htmlInvariants.join("|"),
 //		wiki_preserved_html_tags: mw_preserveHtml.join("|"),
+		mediawikiTemplateClasses: [
+			'mcePartOfTemplate',
+		],
 		//
 		// ** TinyMCE editor settings **
 		//
@@ -510,11 +463,20 @@ var defaultSettings = function(selector) {
 			{title: 'Internal', value: 'mwt-nonEditable mwt-wikiMagic mwt-internallink'},
 		],
 		target_list: false,
-//		visual_table_class : "wikitable",
-		visual_table_class: " ",
-/*		table_default_attributes: {
+//		visual_table_class: "wikitable",
+		table_default_attributes: {
 			class: 'wikitable'
-		},*/
+		},
+		table_class_list: [
+			{title: 'None', value: ''},
+			{title: 'Wikitable', value: 'wikitable'}
+		],
+		table_cell_class_list: [
+			{title: 'None', value: ''}
+		],
+		table_row_class_list: [
+			{title: 'None', value: ''}
+		],
 		height: 500,
 		autoresize_max_height: 600,
 		statusbar: false,
@@ -542,6 +504,8 @@ var defaultSettings = function(selector) {
 		// Allow style tags in body and unordered lists in spans (inline)
 		valid_children: "+span[ul],+span[div],+em[div],+big[div],+small[div],-p[p]",//+p[div]",
 		extended_valid_elements: "big,small,references",
+		noneditable_noneditable_class: 'fa',
+		extended_valid_elements: 'span[*]',
 //	    custom_elements: "~nowiki",
 //		closed: /^(br|hr|input|meta|img|link|param|area|nowiki)$/,
 //		valid_children: "+*[*]",
@@ -568,8 +532,6 @@ debugger;
 		contextmenu_never_use_native: false,
 //		removed_menuitems: 'media',
 		// fontawesome configuration
-		noneditable_noneditable_class: 'fa',
-		extended_valid_elements: 'span[*]',
 		// tinymce configuration
 		toolbar_sticky: true,
 //		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap fontawesome singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect removeformat | searchreplace ',

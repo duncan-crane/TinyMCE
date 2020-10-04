@@ -44,7 +44,7 @@ var wikitext = function (editor) {
 		if ( typeof selectedNode.className != "undefined" ) {
 			if ( selectedNode.className.indexOf("mwt-wikiMagic") > -1 ) {
 				if ( selectedNode.attributes["data-mwt-wikitext"] != "undefined" ) {
-					wikitext = htmlDecode(selectedNode.attributes["data-mwt-wikitext"].value);
+					wikitext = htmlDecode(selectedNode.attributes["data-mwt-wikitext"].value).replace(/<@@nl@@>/gmi, '\n');
 				}
 			} else if ( editor.selection.isCollapsed() ) {
 				// if nothing is selected then select everything*/
@@ -84,14 +84,17 @@ var wikitext = function (editor) {
 		];
 
 		var submitDialog = function (api) {
-				var args = {format: 'wiki', load: 'true', convert2html: true};
+				var args;
 
 				if ( editor.selection.isCollapsed() ) {
 					// if nothing is selected then reset everything
+					args = {format: 'wiki', load: 'true', convert2html: true}
 					setContent( editor, api.getData().wikitext, args );
 				} else if ( editor.selection ) {
 					// else reset the content selected
-					setSelection( editor, api.getData().wikitext, args );
+//0930					setSelection( editor, api.getData().wikitext, args );
+					args = {format: 'wiki', mode: 'inline', convert2html: true}
+					editor.insertContent( api.getData().wikitext, args );
 				}
 				api.close();
 			}	

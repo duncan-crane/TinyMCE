@@ -55,7 +55,7 @@
 			return range
 		}
 
-		var args = {format: 'wiki', /*load: 'true',*/ convert2html: true, newRef: true},
+		var args = {format: 'wiki', mode: 'inline', convert2html: true, newRef: true},
 			reference,
 			refHtml = ' ',
 			bm,
@@ -64,10 +64,10 @@
 		editor.selection.setRng( fix_selection( editor.selection.getRng() ));
 
 		refHtml = getSelection( editor, {format : 'html', convert2wiki : false});
-		if ( refHtml == '') refHtml = ' ';
+		if ( refHtml == '') refHtml = '_';
 		reference = '<ref>' + '<span class="mwt-dummyReference" id="' + id + '">' + refHtml + '</span></ref>&nbsp;';
 
-		setSelection( editor, reference, args );
+		editor.insertContent(reference, args );
 		editor.selection.select( editor.dom.select('#' + id )[0]); //select the inserted element
 		editor.nodeChanged();
 

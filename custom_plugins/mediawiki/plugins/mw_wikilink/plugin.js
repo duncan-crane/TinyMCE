@@ -206,27 +206,6 @@ var wikilink = function (editor) {
 		];
 
 		var dialogChange = function( api, changed ) {
-/*			var newData;
-
-			newData = api.getData();
-			switch (changed.name) {
-				case 'class': 
-					// class of link has changed
-					data.class = newData.class;
-					break;
-				case 'href':
-					// href of link hjas changed
-					data.href = newData.href;
-					break;
-				case 'text':
-					// text of link has changed
-					data.text = newData.text;
-					break;
-				case 'trail':
-					// href of link hjas changed
-					data.trail = newData.trail;
-					break;
-			}*/
 		};
 
 		var dialogSubmit = function (api) {
@@ -234,7 +213,6 @@ var wikilink = function (editor) {
 				hasUrl = false,
 				urlProtocolMatch,
 				newData = '';
-
 
 			// Delay confirm since onSubmit will move focus
 			function delayedConfirm(message, callback) {
@@ -287,8 +265,11 @@ var wikilink = function (editor) {
 					}
 				}
 				
-				args = {format: 'wiki', load: 'true', convert2html: true};
-				setSelection( editor, wikitext, args );
+				args = {format: 'wiki', mode: 'inline', convert2html: true};
+//0929				setSelection( editor, wikitext, args );
+				editor.insertContent(wikitext, args );
+				editor.focus( );
+				editor.nodeChanged();	
 			}
 
 			newData = api.getData();
