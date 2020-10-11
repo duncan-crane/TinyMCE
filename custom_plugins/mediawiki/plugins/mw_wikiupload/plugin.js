@@ -225,6 +225,7 @@ tinymce.PluginManager.add('wikiupload', function(editor) {
 					tooltip: translate("tinymce-upload-vertalign-tooltip"),
 					items :
 						[
+							{ text: "", value: '' },
 							{ text: translate("tinymce-upload-vertalign-middle-text"), value: 'middle' },
 							{ text: translate("tinymce-upload-vertalign-top-text"), value: 'top' },
 							{ text: translate("tinymce-upload-vertalign-bottom-text"), value: 'bottom' },
@@ -242,6 +243,7 @@ tinymce.PluginManager.add('wikiupload', function(editor) {
 					tooltip: translate("tinymce-upload-horizontalalign-tooltip"),
 					items :
 						[
+							{ text: "", value: '' },
 							{ text: translate("tinymce-upload-horizontalalign-left-text"), value: 'left' },
 							{ text: translate("tinymce-upload-horizontalalign-centre-text"), value: 'center' },
 							{ text: translate("tinymce-upload-horizontalalign-right-text"), value: 'right' },
@@ -427,8 +429,10 @@ tinymce.PluginManager.add('wikiupload', function(editor) {
 				if (!submittedData.summary) submittedData.summary = '';
 				if (!submittedData.alt) submittedData.alt = '';
 				if (!submittedData.link) submittedData.link = '';
-				if (!submittedData.horizontalalignment) submittedData.horizontalalignment = 'right';
-				if (!submittedData.verticalalignment) submittedData.verticalalignment = 'middle';
+//				if (!submittedData.horizontalalignment) submittedData.horizontalalignment = 'right';
+				if (!submittedData.horizontalalignment) submittedData.horizontalalignment = '';
+//				if (!submittedData.verticalalignment) submittedData.verticalalignment = 'middle';
+				if (!submittedData.verticalalignment) submittedData.verticalalignment = '';
 				if (!submittedData.format) submittedData.format = 'thumb';
 				if (!submittedData.overwriteFile) submittedData.overwriteFile = '';
 				return submittedData;
@@ -884,8 +888,10 @@ tinymce.PluginManager.add('wikiupload', function(editor) {
 				if (!dialogData.alt) dialogData.alt = '';
 				if (!dialogData.dimensions["width"]) dialogData.dimensions["width"] = "";
 				if (!dialogData.dimensions["height"]) dialogData.dimensions["height"] = "";
-				if (!dialogData.horizontalalignment) dialogData.horizontalalignment = 'right';
-				if (!dialogData.verticalalignment) dialogData.verticalalignment = 'middle';
+//				if (!dialogData.horizontalalignment) dialogData.horizontalalignment = 'right';
+				if (!dialogData.horizontalalignment) dialogData.horizontalalignment = '';
+//				if (!dialogData.verticalalignment) dialogData.verticalalignment = 'middle';
+				if (!dialogData.verticalalignment) dialogData.verticalalignment = '';
 				if (!dialogData.format) dialogData.format = 'thumb';
 				if (!dialogData.overwriteFile) dialogData.overwriteFile = '';
 				return dialogData;

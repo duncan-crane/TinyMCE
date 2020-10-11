@@ -185,7 +185,7 @@ tinymce.PluginManager.add('fontawesome', function(editor, url) {
             if (this.hasAttribute('data-spin')) {
                 id += ' fa-spin';
             }
-            var content = '<span class="fas fa-' + id + ' mwt-preserveHtml" dragable="true" contenteditable="false"></span>';
+            var content = '<span class="fas fa-' + id + ' mwt-preserveHtml" draggable="true" contenteditable="false"></span>';
 			setSelection( editor, content, {format: 'raw'} )
             win.close();
         }

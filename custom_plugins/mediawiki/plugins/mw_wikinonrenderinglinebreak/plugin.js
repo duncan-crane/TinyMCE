@@ -31,7 +31,7 @@
 				+ '" title="'
 				+ translate('tinymce-wikicode-non-rendering-single-linebreak' )
 				+ '" data-mwt-wikitext = "\n"'
-				+ '" dragable="true" contenteditable="false">'// + ' '
+				+ '" dragable="true" contenteditable="false">' + '&nbsp;'
 				+ '</span>';
 
 		setSelection( editor, slb, args );

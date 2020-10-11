@@ -9,7 +9,7 @@
 	var mw_title = mw.config.get( "wgTitle" );
 	var tinyMCETemplates = mw.config.get( 'wgTinyMCETemplates' );
 	var tinyMCETagList = mw.config.get( 'wgTinyMCETagList' );
-	var tinyMCEPreservedTagList = mw.config.get( 'wgTinyMCEPreservedTagList' );
+//	var tinyMCEPreservedTagList = mw.config.get( 'wgTinyMCEPreservedTagList' );
 	var tinyMCELanguage = mw.config.get( 'wgTinyMCELanguage' );
 	var tinyMCEDirectionality = mw.config.get( 'wgTinyMCEDirectionality' );
 	var tinyMCESettings = mw.config.get( 'wgTinyMCESettings' );
@@ -65,7 +65,10 @@
 	//  'link', 'meta', 'wbr',
 	];
 	var mw_htmlSingleOnly = [
-	  'br', 'hr', 'link', 'meta', 'wbr',
+		'br', 'hr', 'link', 'meta', 'wbr', // these are html tags too
+	];
+	var mw_extensionSingleOnly = [
+		'references', 
 	];
 	var mw_htmlNestable = [
 	  'bdo', 'big', 
@@ -84,8 +87,13 @@
 	var mw_htmlInsideList = [
 	  'li',
 	];
+	// the following will be used so TinyMCE doesn't filter out parser tags defined in the wiki
 	var mw_preservedTagsList = mw_htmlPairsStatic.concat(mw_htmlSingleOnly, mw_htmlNestable, mw_htmlInvariants).join("|") + "|" + tinyMCETagList; 
-	
+	var mw_parserValidElements = tinyMCETagList.split("|").join("[*],") + '[*]';
+	var mw_parserCustomElements = '~' + tinyMCETagList.split("|").join(",~");
+	// for some reason, setting short_ended_elements overwrites the defaults, so we include them here
+	var mw_parserShortElements = tinyMCETagList.split("|").join(" ") + ' area base basefont br col frame hr img input isindex link meta param embed source wbr track' ;
+
 	//set up other mw related constants
 	
 	// set up language url if language not 'en'
@@ -408,20 +416,20 @@ var defaultSettings = function(selector) {
 		wiki_url_protocols: mw_url_protocols,
 		// following allowed html tags are taken from
 		// https://phabricator.wikimedia.org/source/mediawiki/browse/REL1_29/includes/Sanitizer.php
-//		wiki_tags_list: tinyMCETagList + '|' + tinyMCEPreservedTagList,
 		wiki_extension_tags_list: tinyMCETagList,
 		wiki_preserved_tags_list: mw_preservedTagsList,
 		wiki_preserved_single_tags_list: mw_htmlSingle.concat(mw_htmlInsideTable).join("|"),
 		wiki_preserved_pairs_static_tags_list: mw_htmlPairsStatic.join("|"),
 		wiki_preserved_pairs_nestable_tags_list: mw_htmlNestable.join("|"),
 		wiki_preserved_pairs_tags_list: mw_htmlPairsStatic.concat(mw_htmlNestable).join("|"),
-//		wiki_preserved_tags_list: mw_htmlPairsStatic.concat(mw_htmlSingleOnly, mw_htmlNestable).join("|") + tinyMCETagList,
 		wiki_block_tags: mw_htmlBlockPairsStatic.join("|"),
 		wiki_invariant_tags: mw_htmlInvariants.join("|"),
 //		wiki_preserved_html_tags: mw_preserveHtml.join("|"),
 		mediawikiTemplateClasses: [
 			'mcePartOfTemplate',
 		],
+		// n1ed config
+		apiKey: "2ZVEDFLT",
 		//
 		// ** TinyMCE editor settings **
 		//
@@ -429,8 +437,6 @@ var defaultSettings = function(selector) {
 		// mediawiki markup that is not rendered in the page window.  These allow them to be
 		// identified and edited in the TinyMCE editore window
 		//
-		// n1ed config
-		apiKey: "2ZVEDFLT",
 		// single new lines: set non_rendering_newline_character to false if you don't use non-rendering single new lines in wiki
 		showPlaceholders: false,
 //		showPlaceholders: true,
@@ -487,7 +493,7 @@ var defaultSettings = function(selector) {
 		// enable resizing for element like images, tables or media objects
 		object_resizing: true,
 		// the html mode for tag creation (we need xhtml)
-		element_format: 'xhtml',
+//		element_format: 'xhtml',
 //		element_format: 'html',
 		// define the element what all inline elements needs to be wrapped in
 		forced_root_block: 'p',
@@ -503,9 +509,12 @@ var defaultSettings = function(selector) {
 		save_enablewhendirty: true,
 		// Allow style tags in body and unordered lists in spans (inline)
 		valid_children: "+span[ul],+span[div],+em[div],+big[div],+small[div],-p[p]",//+p[div]",
-		extended_valid_elements: "big,small,references",
+		extended_valid_elements: "span[*],big,small," + mw_parserValidElements,
+		custom_elements: mw_parserCustomElements,
+//		short_ended_elements: mw_parserShortElements,	
+//		short_ended_elements: 'references',	
 		noneditable_noneditable_class: 'fa',
-		extended_valid_elements: 'span[*]',
+//		extended_valid_elements: '',
 //	    custom_elements: "~nowiki",
 //		closed: /^(br|hr|input|meta|img|link|param|area|nowiki)$/,
 //		valid_children: "+*[*]",
@@ -525,7 +534,6 @@ var defaultSettings = function(selector) {
 			{title: mw.msg("tinymce-upload-type-label-wiki"), value: 'Wiki'}
 		],
 		images_dataimg_filter: function(img) {
-debugger;
 			return false;
 		},
 		menubar: false, //'edit insert view format table tools',
@@ -572,6 +580,21 @@ debugger;
 //		autoresize_max_height: 400,
 		template_selected_content_classes: "selectedcontent",
 		setup: function (editor) {
+			editor.on('PreInit', function() {
+				// we need to tell the editor which wiki parser tags
+				// or short ended as we can't find this out from the wiki itself
+				// Standard ones are identified above
+				var shortEndedElements = editor.schema.getShortEndedElements();
+				var extensionShortEndedTags = editor.getParam( "mediawikiExtensionTagsShortEnded" )
+				for (tag in mw_extensionSingleOnly) {
+					shortEndedElements[ mw_extensionSingleOnly[ tag ]] = {};
+				}
+				if ( extensionShortEndedTags ) {
+					for (tag in extensionShortEndedTags) {
+						shortEndedElements[ extensionShortEndedTags[ tag ] ] = {};
+					}
+				}
+			});
 		},
 		init_instance_callback: function (instance) {
 			// For some reason, in some installations this only works as an inline function,

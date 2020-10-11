@@ -172,17 +172,18 @@ class TinyMCEHooks {
 		}
 
 		$defaultTags = array(
-			"includeonly", "onlyinclude", "noinclude", "nowiki", "pre" //Definitively MediaWiki core
+//			"includeonly", "onlyinclude", "noinclude", "nowiki", "pre" //Definitively MediaWiki core
+			"includeonly", "onlyinclude", "noinclude", "nowiki" //Definitively MediaWiki core
 		);
 
 		$tinyMCETagList = $specialTags . implode( '|', $defaultTags );
-		$tinyMCEPreservedTagList = $preservedTags . implode( '|', $wgTinyMCEPreservedTags);
-/*		if ( $wgTinyMCEPreservedTags  ) {
+/*		$tinyMCEPreservedTagList = $preservedTags . implode( '|', $wgTinyMCEPreservedTags);
+		if ( $wgTinyMCEPreservedTags  ) {
 			$tinyMCETagList = $tinyMCETagList . '|' . implode( '|', $wgTinyMCEPreservedTags );
 		}*/
 
 		$vars['wgTinyMCETagList'] = $tinyMCETagList;
-		$vars['wgTinyMCEPreservedTagList'] = $tinyMCEPreservedTagList;
+//		$vars['wgTinyMCEPreservedTagList'] = $tinyMCEPreservedTagList;
 
 		$mwLanguage = $context->getLanguage()->getCode();
 		$tinyMCELanguage = self::mwLangToTinyMCELang( $mwLanguage );
