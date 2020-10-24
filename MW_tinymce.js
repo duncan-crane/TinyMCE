@@ -13,6 +13,7 @@
 	var tinyMCELanguage = mw.config.get( 'wgTinyMCELanguage' );
 	var tinyMCEDirectionality = mw.config.get( 'wgTinyMCEDirectionality' );
 	var tinyMCESettings = mw.config.get( 'wgTinyMCESettings' );
+	var tinyMCEVersion = mw.config.get( 'wgTinyMCEVersion' );
 	var tinyMCELangURL = null;
 	var mw_skin = mw.config.get( 'skin' );
 	var mw_skin_css = '/load.php?debug=false&lang=en-gb&modules=mediawiki.legacy.commonPrint%2Cshared%7Cmediawiki.sectionAnchor%7Cmediawiki.skinning.interface%7Cskins.' + mw_skin + '.styles&only=styles&skin=' + mw_skin ;
@@ -323,6 +324,35 @@
 		return result;
 	}
 
+	var debug = function( editor, scope, debug, text ) {
+
+		if ( debug == 'true' ) {
+			var d = new Date()
+				v = editor.getParam( "mwt_version" ),
+				id = editor.getParam( "id" );
+
+			var print_r = function (printthis, levels ) {
+				var output = '';
+			
+				if ($.isArray(printthis) || typeof(printthis) == 'object') {
+					for(var i in printthis) {
+						output += i + ' : ' + printthis[i] + '\n';
+					}
+				} else {
+					output += printthis;
+				}
+
+				return output;
+			}
+				
+			console.log( "TinyMCE Extension version " + v + " Debug Log on selector " + id + " for " + scope + " at " + d );
+			console.log( print_r( text ));
+			console.log( "END LOG" );
+			console.log( "" );
+			
+		}
+	}
+
 	var utility = {
 		setContent: setContent,
 		setSelection: setSelection,
@@ -335,7 +365,8 @@
 		toggleEnabledState: toggleEnabledState,
 		translate: translate,
 		doUpload: doUpload,
-		checkUploadDetail: checkUploadDetail
+		checkUploadDetail: checkUploadDetail,
+		debug: debug
 	};
 
 var defaultSettings = function(selector) {
@@ -352,6 +383,16 @@ var defaultSettings = function(selector) {
 		language_url: tinyMCELangURL,
 		language: tinyMCELanguage,
   		wiki_utility: utility,
+		mwt_version: tinyMCEVersion,
+  		tinyMCEDebugFlags: {
+			settings: false,
+			anteOnBeforeSetContent: false,
+			anteOnGetContent: false,
+			anteOnPastePostProcess: false,
+			postOnBeforeSetContent: false,
+			postOnGetContent: false,
+			postOnPastePostProcess: false
+		},
 		content_css:
 			[
 				mw_scriptPath + mw_skin_css,

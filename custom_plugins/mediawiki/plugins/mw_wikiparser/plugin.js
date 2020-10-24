@@ -62,6 +62,8 @@
 	
 		var translate = utility.translate;
 
+		var debug = utility.debug;
+
 		/**
 		 *
 		 * Points to the mediawiki API for this wiki
@@ -141,6 +143,13 @@
 		 * @type Array
 		 */
 		_mwtTemplateClasses = editor.getParam("mediawikiTemplateClasses"),
+
+		/**
+		 *
+		 * flags used to determine which debug logs are active
+		 * @type Array
+		 */
+		_mwtDebugFlags = editor.getParam("tinyMCEDebugFlags"),
 
 		/**
 		 *
@@ -318,25 +327,37 @@
 			text,
 			bm,
 			index,
+			parents = {},
+			parentsPreviousSibling = {},
+			rootNode = editor.getBody(),
 			currentNode,
-			previousNode,
-			nextNode,
+			previousNode = null,
+			nextNode = null,
 			firstNode = false;
 
 		currentNode = editor.selection.getNode()
 		previousNode = currentNode.previousSibling;
-		if ( !previousNode ) {
-			previousNode = editor.dom.getParent( currentNode, function ( aParent) {
-				return aParent.previousSiblineg
-			});
-		}
 		nextNode = currentNode.nextSibling;
-		if ( !nextNode ) {
-			nextNode = editor.dom.getParent( currentNode, function ( aParent) {
-				return aParent.nextSiblineg
+		parents = editor.dom.getParents( currentNode)
+		if ( !previousNode ) {
+			tinymce.each( parents , function( aParent ) {
+				if ( aParent == rootNode ) return false;
+				if ( aParent.previousSibling ) {
+					previousNode = aParent.previousSibling;
+					return false
+				}
 			});
 		}
-
+		if ( !nextNode ) {
+			tinymce.each( parents , function( aParent ) {
+				if ( aParent == rootNode ) return false;
+				if ( aParent.nextSibling ) {
+					nextNode = aParent.nextSibling;
+					return false
+				}
+			});
+		}
+		
 		bm = tinymce.activeEditor.selection.getBookmark();
 		range = editor.selection.getRng();
 		range.setStart(editor.getBody().firstChild, 0);
@@ -3779,6 +3800,8 @@
 		// undo/redo. So no additional processing should occur. Default is 'html'
 //debugger;
 
+		debug( editor, "anteOnBeforeSetContent", _mwtDebugFlags.anteOnBeforeSetContent, e.content );
+
 		// if the format is raw then don't process further
 		if (e.format == 'raw' ) {
 			return;
@@ -3820,6 +3843,8 @@
 
 		// sanitize the content to be sure xss vulnerabilities are removed
 		e.content = _sanitize( e.content );
+
+		debug( editor, "postOnBeforeSetContent", _mwtDebugFlags.postOnBeforeSetContent, e.content );
 
 /*		if ( e.initial ) {
 			e.content = '<p class="mwt-paragraph">' + e.content + '</p>';
@@ -3886,8 +3911,9 @@
 	 * @param {tinymce.ContentEvent} e
 	 */
 	function _onGetContent(e) {
-		var text;
-		text = e.content;
+		var text = e.content;
+		
+		debug( editor, "anteOnGetContent", _mwtDebugFlags.anteOnGetContent, text );
 //debugger;
 		// sanitize the content to be sure xss vulnerabilities are removed
 		text = _sanitize( text );
@@ -3905,6 +3931,8 @@
 			// TinyMCE makes to the html, mainly as a result of forcing root blocks
 			text = text.replace(/<br class="mwt-emptylineFirst"><\/p>/gm,"</p>");
 		}
+
+		debug( editor, "postOnGetContent",_mwtDebugFlags.postOnGetContent, text );
 
 		e.content = text;
 
@@ -3968,15 +3996,22 @@
 		// if it is then no need to convert wiki to html
 //debugger;
 		var text,
-			$dom;
+			dom;
 
-		$dom = $(e.node);
+
+		dom = $(e.node);
+		text = dom[0].innerHTML;
+
+		debug( editor, "anteOnPastePreProcess", _mwtDebugFlags.anteOnPastePreProcess, text );
 
 		if ( e.internal ) {
-			_internalPaste( $dom );
+			_internalPaste( dom );
 		} else {
-			_externalPaste( $dom );
+			_externalPaste( dom );
 		}
+
+		text = dom[0].innerHTML;
+		debug( editor, "postOnPastePreProcess", _mwtDebugFlags.postOnPastePreProcess, text );
 	}
 
 	/**
@@ -4026,14 +4061,44 @@
 	 * @param {tinymce.onKeyDownEvent} e
 	 */	
 	function _onKeyDown(evt) {
-		if (( evt.keyCode == 38 ) || ( evt.keyCode == 40 )) {
+		if ( evt.keyCode == 38 ) {
 			// up-arrow or down arrow at start or end of editor
 			// content results in an empty paragraph being added
 			var cursorLocation = _getCursorOffset();
 
 			_cursorOnDown = cursorLocation.cursor;
 			_cursorOnDownPreviousNode = cursorLocation.previousNode;
+			if (( _cursorOnDown == 0) && ( _cursorOnDownPreviousNode == null ))  {
+				// we are already at start of text
+				var el = editor.dom.create( 'p', { 'class' : 'mwt-notParagraph' }, '<br class="mwt-emptyline"/>' );
+				editor.getBody().insertBefore(el, editor.getBody().firstChild);
+				editor.selection.setCursorLocation();
+				evt.preventDefault();
+				evt.stopImmediatePropagation();
+				evt.stopPropagation();
+			}
+		} else if ( evt.keyCode == 40 ) {
+			// up-arrow or down arrow at start or end of editor
+			// content results in an empty paragraph being added
+			var cursorLocation = _getCursorOffset();
+
+			_cursorOnDown = cursorLocation.cursor;
 			_cursorOnDownNextNode = cursorLocation.nextNode;
+			var range = editor.selection.getRng();
+			editor.selection.select(tinyMCE.activeEditor.getBody(), true);
+			var ftxt = editor.selection.getRng().toString().trimRight().length;
+			editor.selection.setRng( range );
+			if (( _cursorOnDown >= ftxt ) && ( _cursorOnDownNextNode == null )) { 
+				// the cursor din't move forward
+				// we're already at the end of the text
+				var el = editor.dom.create( 'p', { 'class' : 'mwt-paragraph' }, '<br class="mwt-emptyline"/>' );
+				$(el).insertAfter(editor.getBody().lastChild);;
+				editor.selection.select( el );
+				editor.selection.collapse();
+				evt.preventDefault();
+				evt.stopImmediatePropagation();
+				evt.stopPropagation();
+			}
 		}
 	};
 
@@ -4045,7 +4110,7 @@
 	 * @param {tinymce.onKeyUpEvent} e
 	 */	
 	function _onKeyUp(evt) {
-		if ( evt.keyCode == 38 ) {
+/*		if ( evt.keyCode == 38 ) {
 			var cursorLocation = _getCursorOffset();
 
 			_cursorOnUp = cursorLocation.cursor;
@@ -4087,7 +4152,7 @@
 					editor.selection.select( editor.getBody(), true );
 					editor.selection.collapse();
 				}
-		}
+		}*/
 	};
 
 function wikiparser( editor ) {
@@ -4099,12 +4164,14 @@ function wikiparser( editor ) {
 	 * @param {string} url = the url of this tinyMCE plugin
 	 * @returns {String}
 	 */
-	this.init = function(ed, url) {
+	this.init = function(editor, url) {
 		//
 		// see if we are in a template class  and set the pipe text accordingly
 		//
 		var isInTemplate = false;
 		
+		debug( editor, "anteOnBeforeSetContent", _mwtDebugFlags.anteOnBeforeSetContent, editor.settings );
+
 		_mwtTemplateClasses.forEach( function( aClass ) {
 			if ($(editor.targetElm).hasClass( aClass ) ) {
 				isInTemplate = true;

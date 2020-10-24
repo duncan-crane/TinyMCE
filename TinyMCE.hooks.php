@@ -195,6 +195,7 @@ class TinyMCEHooks {
 		$vars['wgFileExtensions'] = $wgFileExtensions;
 		$vars['wgFileBlacklist'] = $wgFileBlacklist;
 		$vars['wgEnableUploads'] = $wgEnableUploads;
+		$vars['wgTinyMCEVersion'] = ExtensionRegistry::getInstance()->getAllThings()['TinyMCE']['version'];
 
 		$user = $context->getUser();
 
