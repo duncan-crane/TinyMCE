@@ -326,7 +326,7 @@
 
 	var debug = function( editor, scope, debug, text ) {
 
-		if ( debug == 'true' ) {
+		if ( debug ) {
 			var d = new Date()
 				v = editor.getParam( "mwt_version" ),
 				id = editor.getParam( "id" );
@@ -471,6 +471,8 @@ var defaultSettings = function(selector) {
 		],
 		// n1ed config
 		apiKey: "2ZVEDFLT",
+		// ws tools flag to deco9de html enities on input
+		decodeHtmlEntitiesOnInput: false,
 		//
 		// ** TinyMCE editor settings **
 		//

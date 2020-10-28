@@ -66,6 +66,12 @@
 
 		/**
 		 *
+		 * Flags if html entities need to be decoded on the input
+		 * @type String
+		 */
+		var _decodeHtmlEntitiesOnInput = editor.getParam("decodeHtmlEntitiesOnInput");
+
+		/*
 		 * Points to the mediawiki API for this wiki
 		 * @type String
 		 */
@@ -3802,6 +3808,10 @@
 
 		debug( editor, "anteOnBeforeSetContent", _mwtDebugFlags.anteOnBeforeSetContent, e.content );
 
+		// decode html entities in input if flag is set
+		if ( _decodeHtmlEntitiesOnInput ) {
+			e.content = htmlDecode( e.content );
+		}
 		// if the format is raw then don't process further
 		if (e.format == 'raw' ) {
 			return;
@@ -3970,6 +3980,8 @@
 		var text = e.content,
 			textObject;
 
+		debug( editor, "anteOnPastePreProcess", _mwtDebugFlags.anteOnPastePreProcess, text );
+
 		// sanitize the conten to be sure xss vulnerabilities are removed
 //		text = _sanitize( text );
 
@@ -3982,6 +3994,8 @@
 		textObject = {text: text};
 		$(document).trigger('TinyMCEAfterPastePreProcess', [textObject]);
 		text = textObject.text;
+
+		debug( editor, "postOnPastePreProcess", _mwtDebugFlags.postOnPastePreProcess, text );
 
 		e.content = text;
 	}
@@ -3996,22 +4010,15 @@
 		// if it is then no need to convert wiki to html
 //debugger;
 		var text,
-			dom;
+			$dom;
 
-
-		dom = $(e.node);
-		text = dom[0].innerHTML;
-
-		debug( editor, "anteOnPastePreProcess", _mwtDebugFlags.anteOnPastePreProcess, text );
+		$dom = $(e.node);
 
 		if ( e.internal ) {
-			_internalPaste( dom );
+			_internalPaste( $dom );
 		} else {
-			_externalPaste( dom );
+			_externalPaste( $dom );
 		}
-
-		text = dom[0].innerHTML;
-		debug( editor, "postOnPastePreProcess", _mwtDebugFlags.postOnPastePreProcess, text );
 	}
 
 	/**
