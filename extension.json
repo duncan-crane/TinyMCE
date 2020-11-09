@@ -37,6 +37,8 @@
 				"ext.tinymce.core"
 			],
 			"messages": [
+				"tinymce-editcomment",
+				"tinymce-editreference",
 				"tinymce-upload",
 				"tinymce-upload-title",
 				"tinymce-upload-title-general",
@@ -151,6 +153,8 @@
 				"tinymce-toggle-button-toggle-wiki-placeholders",
 				"tinymce-nonbreaking-insertNonBreakingSpace",
 				"tinymce-reference-insertReference",
+				"tinymce-reference-alert-not-allowed",
+				"tinymce-pre-alert-only-plain-text",
 				"tinymce-yes",
 				"tinymce-no",
 				"tinymce-ok",

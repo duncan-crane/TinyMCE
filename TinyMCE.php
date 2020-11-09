@@ -114,6 +114,8 @@ $GLOBALS['wgResourceModules'] += array(
 #			'ext.tinymce.fancybox'
 		),
 		'messages' => array(
+			'tinymce-editcomment',
+			'tinymce-editreference',
 			'tinymce-upload',
 			'tinymce-upload-title',
 			'tinymce-upload-title-general',
@@ -226,8 +228,10 @@ $GLOBALS['wgResourceModules'] += array(
 			'tinymce-link',
 			'tinymce-insert-linebreak',
 			'tinymce-toggle-button-toggle-wiki-placeholders',
-			"tinymce-nonbreaking-insertNonBreakingSpace",
+			'tinymce-nonbreaking-insertNonBreakingSpace',
 			'tinymce-reference-insertReference',
+			'tinymce-reference-alert-not-allowed',
+			'tinymce-pre-alert-only-plain-text',
 			'tinymce-yes',
 			'tinymce-no',
 			'tinymce-ok',

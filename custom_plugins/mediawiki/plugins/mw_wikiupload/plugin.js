@@ -661,8 +661,16 @@ tinymce.PluginManager.add('wikiupload', function(editor) {
 				}
 				wikitext += "]]";
 
-				var	editor = tinymce.activeEditor;
+				var	editor = tinymce.activeEditor,
+					parentNode;
 				editor.focus( );
+				// OK this was interesting.  Insert an image in a <p> block that is preserved html
+				// within a table cell that isn't preserved html, removes the <p> block and also
+				// makes the cell preserved html - which breaks stuff.  This traps this condition
+/*				if (tinymce.DOM.is( editor.selection.getNode(), 'P' )) {
+//					tinymce.DOM.removeClass( editor.selection.getNode(), 'mwt-preserveHtml' );
+					tinymce.DOM.rename( editor.selection.getNode(), 'div' );
+				}*/
 				editor.insertContent(wikitext, {format: 'wiki', convert2html: 'true', mode: 'inline'} );
 				editor.focus( );
 				editor.nodeChanged();	

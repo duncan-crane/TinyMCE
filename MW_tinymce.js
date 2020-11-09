@@ -1,4 +1,4 @@
-	var editor = tinymce.activeEditor
+	var editor = tinymce.activeEditor;
 	var mw_server = 'https://' + mw.config.get( 'wgServer' ) + '/';
 	var mw_scriptPath = mw.config.get( 'wgScriptPath' );
 	var	mw_api = mw_scriptPath + '/api.php';
@@ -12,7 +12,8 @@
 //	var tinyMCEPreservedTagList = mw.config.get( 'wgTinyMCEPreservedTagList' );
 	var tinyMCELanguage = mw.config.get( 'wgTinyMCELanguage' );
 	var tinyMCEDirectionality = mw.config.get( 'wgTinyMCEDirectionality' );
-	var tinyMCESettings = mw.config.get( 'wgTinyMCESettings' );
+	var tinyMCESettings = mw.config.get( 'wgTinyMCESettings' ) ? mw.config.get( 'wgTinyMCESettings' ) : { "#wpTextbox1": [] };
+	var tinyMCEVersion = mw.config.get( 'wgTinyMCEVersion' );
 	var tinyMCELangURL = null;
 	var mw_skin = mw.config.get( 'skin' );
 	var mw_skin_css = '/load.php?debug=false&lang=en-gb&modules=mediawiki.legacy.commonPrint%2Cshared%7Cmediawiki.sectionAnchor%7Cmediawiki.skinning.interface%7Cskins.' + mw_skin + '.styles&only=styles&skin=' + mw_skin ;
@@ -56,6 +57,7 @@
 		'dl','dd','dt',
 		'div',
 		'hr',
+		'code',
 //		'source',
 		'table', 
 	];
@@ -64,6 +66,9 @@
 	  'dd', 'dt', 'hr', 'li',
 	//  'link', 'meta', 'wbr',
 	];
+	var mw_htmlVoid = [
+		'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr',
+	];
 	var mw_htmlSingleOnly = [
 		'br', 'hr', 'link', 'meta', 'wbr', // these are html tags too
 	];
@@ -71,21 +76,35 @@
 		'references', 
 	];
 	var mw_htmlNestable = [
-	  'bdo', 'big', 
-	  'blockquote', 
-	  'dd', 'div', 'dl', 'dt', 'em', 'font',
-	  'kbd', 'li', 'ol', 'q', 'ruby', 
-	  'samp', 'small', 'span', 'strong', 'sub', 'sup',
-	  'table', 'td', 'th', 'tr', 'ul', 'var', 'tbody',
+		'bdo', 'big', 
+		'blockquote', 'code',
+		'dd', 'div', 'dl', 'dt', 'em', 'font',
+		'kbd', 'li', 'ol', 'q', 'ruby', 
+		'samp', 'small', 'span', 'strong', 'sub', 'sup',
+		'table', 'td', 'th', 'tr', 'ul', 'var', 'tbody',
 	];
 	var mw_htmlInsideTable = [
-	  'td', 'th', 'tr',
+		'td', 'th', 'tr',
 	];
 	var mw_htmlList = [
-	  'ol', 'ul', 
+		'ol', 'ul', 
 	];
 	var mw_htmlInsideList = [
-	  'li',
+		'li',
+	];
+	var mw_plainTextTagsBlock = [
+		'pre', /*'ppre',*/ 'pnowiki', 'source', 'comment',
+	];
+	var mw_plainTextTagsInLine = [
+		'nowiki', 
+	];
+	var mw_plainTextTagsAllowedCommands = [
+		'Undo', 'Redo', 
+		'SelectAll', 'Cut', 'Copy', 'Paste', 
+		'ToggleSidebar','Delete', 'ForwardDelete',
+		'InsertUnorderedList', 'InsertOrderedList',
+		'mceInsertContent', 'mceVisualBlocks', 'mceToggleFormat', 
+		'wikiToggleRefText', 'mwt-insertReference',
 	];
 	// the following will be used so TinyMCE doesn't filter out parser tags defined in the wiki
 	var mw_preservedTagsList = mw_htmlPairsStatic.concat(mw_htmlSingleOnly, mw_htmlNestable, mw_htmlInvariants).join("|") + "|" + tinyMCETagList; 
@@ -323,6 +342,39 @@
 		return result;
 	}
 
+	var debug = function( editor, scope, debug, text ) {
+		var tinyMCEDebugFlags = editor.getParam( "tinyMCEDebugFlags" )
+		
+		if ( debug == 'true' ) {
+			var d = new Date()
+				v = editor.getParam( "mwt_version" ),
+				id = editor.getParam( "id" );
+
+			var print_r = function ( printthis ) {
+				var output = '';
+			
+				if ($.isArray(printthis) || typeof(printthis) == 'object') {
+					for(var i in printthis) {
+						output += i + ' : ' + printthis[i] + '\n';
+					}
+				} else {
+					output += printthis;
+				}
+
+				return output;
+			}
+				
+			console.log( "TinyMCE Extension version " + v + " Debug Log on selector " + id + " for " + scope + " at " + d );
+			console.log( print_r( text ));
+			console.log( "END LOG" );
+			console.log( "" );
+			
+		}
+
+		if ( tinyMCEDebugFlags.debug = 'true' ) debugger;
+		
+	}
+
 	var utility = {
 		setContent: setContent,
 		setSelection: setSelection,
@@ -335,7 +387,8 @@
 		toggleEnabledState: toggleEnabledState,
 		translate: translate,
 		doUpload: doUpload,
-		checkUploadDetail: checkUploadDetail
+		checkUploadDetail: checkUploadDetail,
+		debug: debug
 	};
 
 var defaultSettings = function(selector) {
@@ -352,6 +405,17 @@ var defaultSettings = function(selector) {
 		language_url: tinyMCELangURL,
 		language: tinyMCELanguage,
   		wiki_utility: utility,
+		mwt_version: tinyMCEVersion,
+  		tinyMCEDebugFlags: {
+			settings: false,
+			debug: false,
+			anteOnBeforeSetContent: false,
+			anteOnGetContent: false,
+			anteOnPastePostProcess: false,
+			postOnBeforeSetContent: false,
+			postOnGetContent: false,
+			postOnPastePostProcess: false
+		},
 		content_css:
 			[
 				mw_scriptPath + mw_skin_css,
@@ -365,7 +429,7 @@ var defaultSettings = function(selector) {
 //			'wikiutiilities': mw_extensionAssetsPath + '/TinyMCE/custom_plugins/mediawiki/plugins/mw_wikiutilities/plugin.js',
 			'advlist': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/advlist/plugin.js',
 			'anchor': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/anchor/plugin.js',
-			'autolink': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autolink/plugin.js',
+//			'autolink': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autolink/plugin.js',
 //DC TODO autoresize is broken - it just endlessly extends the editor window?
 //			'autoresize': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autoresize/plugin.js',
 			'autosave': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/autosave/plugin.js',
@@ -424,12 +488,17 @@ var defaultSettings = function(selector) {
 		wiki_preserved_pairs_tags_list: mw_htmlPairsStatic.concat(mw_htmlNestable).join("|"),
 		wiki_block_tags: mw_htmlBlockPairsStatic.join("|"),
 		wiki_invariant_tags: mw_htmlInvariants.join("|"),
+		wiki_plain_text_tags_block: mw_plainTextTagsBlock,
+		wiki_plain_text_tags_inline: mw_plainTextTagsInLine,
+		wiki_plain_text_tags_allowed_commands: mw_plainTextTagsAllowedCommands,
 //		wiki_preserved_html_tags: mw_preserveHtml.join("|"),
-		mediawikiTemplateClasses: [
+		wiki_template_classes: [
 			'mcePartOfTemplate',
 		],
 		// n1ed config
 		apiKey: "2ZVEDFLT",
+		// ws tools flag to deco9de html enities on input
+		decodeHtmlEntitiesOnInput: false,
 		//
 		// ** TinyMCE editor settings **
 		//
@@ -455,7 +524,7 @@ var defaultSettings = function(selector) {
 			'ul': 'list-style',
 		},
 		browser_spellcheck: true,
-		allow_html_in_named_anchor: true,
+//		allow_html_in_named_anchor: true,
 		visual: false,
 		nonbreaking_wrap: false,
 		wikimagic_context_toolbar: true,
@@ -468,6 +537,7 @@ var defaultSettings = function(selector) {
 			{title: 'External', value: 'mwt-nonEditable mwt-wikiMagic mwt-externallink'},
 			{title: 'Internal', value: 'mwt-nonEditable mwt-wikiMagic mwt-internallink'},
 		],
+		allow_html_in_named_anchor: true,
 		target_list: false,
 //		visual_table_class: "wikitable",
 		table_default_attributes: {
@@ -508,8 +578,10 @@ var defaultSettings = function(selector) {
 		// save plugin
 		save_enablewhendirty: true,
 		// Allow style tags in body and unordered lists in spans (inline)
-		valid_children: "+span[ul],+span[div],+em[div],+big[div],+small[div],-p[p]",//+p[div]",
-		extended_valid_elements: "span[*],big,small," + mw_parserValidElements,
+		valid_children: "+span[ul],+span[div],+em[div],+big[div],+small[div],-p[p],+pre[p],+p[pre]",//+p[div]",
+//		extended_valid_elements: "a[!href='#'],span[*],big,small," + mw_parserValidElements,
+//		extended_valid_elements: "br[class='mwt-emptyline'],span[*],pre[*],big,small," + mw_parserValidElements,
+		extended_valid_elements: "span[*],pre[*],big,small," + mw_parserValidElements,
 		custom_elements: mw_parserCustomElements,
 //		short_ended_elements: mw_parserShortElements,	
 //		short_ended_elements: 'references',	
@@ -543,7 +615,7 @@ var defaultSettings = function(selector) {
 		// tinymce configuration
 		toolbar_sticky: true,
 //		toolbar1: 'undo redo | cut copy paste insert | bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | charmap fontawesome singlelinebreak wikilink unlink table wikiupload wikimagic wikisourcecode | formatselect styleselect removeformat | searchreplace ',
-		toolbar: 'undo redo | cut copy paste insert selectall| bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist advlist outdent indent | wikilink wikiunlink table image media | formatselect removeformat| visualchars visualblocks| searchreplace | wikimagic wikisourcecode wikitext wikiupload | wikitoggle nonbreaking singlelinebreak reference template',
+		toolbar: 'undo redo | cut copy paste insert selectall| bold italic underline strikethrough subscript superscript forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist advlist outdent indent | wikilink wikiunlink table image media | formatselect removeformat| visualchars visualblocks| searchreplace | wikimagic wikisourcecode wikitext wikiupload | wikitoggle nonbreaking singlelinebreak reference comment template',
 		//style_formats_merge: true,
 		style_formats: [
 			{
@@ -574,8 +646,13 @@ var defaultSettings = function(selector) {
 			h4: { block: 'h4', classes: 'mwt-heading', attributes: { 'data-mwt-headingSpacesBefore': ' ' , 'data-mwt-headingSpacesAfter': ' ' } },
 			h5: { block: 'h5', classes: 'mwt-heading', attributes: { 'data-mwt-headingSpacesBefore': ' ' , 'data-mwt-headingSpacesAfter': ' ' } },
 			h6: { block: 'h6', classes: 'mwt-heading', attributes: { 'data-mwt-headingSpacesBefore': ' ' , 'data-mwt-headingSpacesAfter': ' ' } },
+//			nowiki: { inline: 'span', classes: [ 'mwt-nowiki', 'mwt-pnowiki' ] /*,attributes: { 'data-mwt-headingSpacesBefore': ' ' , 'data-mwt-headingSpacesAfter': ' ' }*/ }
+			pre: { block: 'pre', classes: 'mwt-pre' ,attributes: { 'data-mwt-type': 'pre' /*, 'data-mwt-headingSpacesAfter': ' '*/ } },
+			pre2: { block: 'pre', classes: 'mwt-ppre' ,attributes: { 'data-mwt-type': 'ppre' /*, 'data-mwt-headingSpacesAfter': ' '*/ } },
+			code: { inline: 'code', classes: 'mwt-code' ,attributes: { 'data-mwt-type': 'code' /*, 'data-mwt-headingSpacesAfter': ' '*/ } },
+			nowiki: { inline: 'span', classes: 'mwt-nowiki' ,attributes: { 'data-mwt-type': 'nowiki' /*, 'data-mwt-headingSpacesAfter': ' '*/ } }
 		},
-		block_formats: 'Paragraph=p;Heading 1=h1;Heading 2=h2;Heading 3=h3;Heading 4=h4;Heading 5=h5;Heading 6=h6;Preformatted=pre;Code=code',
+		block_formats: 'Paragraph=p;Heading 1=h1;Heading 2=h2;Heading 3=h3;Heading 4=h4;Heading 5=h5;Heading 6=h6;Pre(without markup)=pre;Pre(with markup)=pre2;Code=code;Nowiki=nowiki',
 		images_upload_credentials: true,
 //		autoresize_max_height: 400,
 		template_selected_content_classes: "selectedcontent",
@@ -637,73 +714,76 @@ var mwTinyMCEInit = function( tinyMCESelector, settings ) {
 
 var updateSettings = function( tinyMCESelector, settings ) {
 	var defaultSet = defaultSettings(tinyMCESelector);
-	$.each(settings, function (k, v) {
-		if ( k.endsWith( '+' ) ) {
 
-			// adding to default parameter
-			k = k.slice( 0, - 1 );
-			if ( defaultSet[k] === undefined ) {
-				defaultSet[k] = v;
-			} else if ($.type( defaultSet[k] ) === "string") {
-				defaultSet[k] = defaultSet[k] + v;
-			} else if (Array.isArray ( defaultSet[k] ) ) {
-				defaultSet[k] = defaultSet[k].concat( v );
-			} else if ( Object.keys( defaultSet[k]).length > 0 ) {
-				$.extend( defaultSet[k], v );
-			}
-		} else if ( k.endsWith( '-' ) ) {
-			// removing from default parameter
-			k = k.slice( 0, - 1 );
-			if ( defaultSet[k] === undefined ) {
-				// do nothing
-			} else if ($.type( defaultSet[k] ) === "string") {
-				// if default value is a string remove the value from it
-				var str = defaultSet[k],
-					regex,
-					matcher;
-				regex = '\\s*' + v + '\\s*';
-				matcher = new RegExp(regex, 'gm');
-				str = str.replace(matcher, ' ');
-				defaultSet[k] = str;
-			} else if (Array.isArray ( defaultSet[k] ) ) {
-				// if default value is an array remove the element with
-				// key == value from it
-				var i = 0,
-					arr = defaultSet[k];
-				while (i < arr.length) {
-					if (arr[i] === v) {
-						arr.splice(i, 1);
-    				} else {
-     					++i;
-    				}
+	if ( settings ) {
+		$.each(settings, function (k, v) {
+			if ( k.endsWith( '+' ) ) {
+	
+				// adding to default parameter
+				k = k.slice( 0, - 1 );
+				if ( defaultSet[k] === undefined ) {
+					defaultSet[k] = v;
+				} else if ($.type( defaultSet[k] ) === "string") {
+					defaultSet[k] = defaultSet[k] + v;
+				} else if (Array.isArray ( defaultSet[k] ) ) {
+					defaultSet[k] = defaultSet[k].concat( v );
+				} else if ( Object.keys( defaultSet[k]).length > 0 ) {
+					$.extend( defaultSet[k], v );
 				}
-				defaultSet[k] = arr;
-			} else if ( Object.keys( defaultSet[k] ).length > 0 ) {
-				// if default value is an object remove the element with
-				// key == value from it
-				var obj = defaultSet[k];
-				$.each( v, function ( key, val ) {
-					if ( obj[ val ] ) {
-						delete obj[ val ];
+			} else if ( k.endsWith( '-' ) ) {
+				// removing from default parameter
+				k = k.slice( 0, - 1 );
+				if ( defaultSet[k] === undefined ) {
+					// do nothing
+				} else if ($.type( defaultSet[k] ) === "string") {
+					// if default value is a string remove the value from it
+					var str = defaultSet[k],
+						regex,
+						matcher;
+					regex = '\\s*' + v + '\\s*';
+					matcher = new RegExp(regex, 'gm');
+					str = str.replace(matcher, ' ');
+					defaultSet[k] = str;
+				} else if (Array.isArray ( defaultSet[k] ) ) {
+					// if default value is an array remove the element with
+					// key == value from it
+					var i = 0,
+						arr = defaultSet[k];
+					while (i < arr.length) {
+						if (arr[i] === v) {
+							arr.splice(i, 1);
+						} else {
+							++i;
+						}
 					}
-				});
-				defaultSet[k] = obj;
-			} else if ( v == '' ) {
-				// if the value is blank remove the key from the default values 
-				// key == value from it
-				var obj = defaultSet;
-//				$.each( v, function ( key, val ) {
-					if ( obj[ k ]) {
-						delete obj[ k ];
-					}
-//				});
-				defaultSet = obj;
+					defaultSet[k] = arr;
+				} else if ( Object.keys( defaultSet[k] ).length > 0 ) {
+					// if default value is an object remove the element with
+					// key == value from it
+					var obj = defaultSet[k];
+					$.each( v, function ( key, val ) {
+						if ( obj[ val ] ) {
+							delete obj[ val ];
+						}
+					});
+					defaultSet[k] = obj;
+				} else if ( v == '' ) {
+					// if the value is blank remove the key from the default values 
+					// key == value from it
+					var obj = defaultSet;
+	//				$.each( v, function ( key, val ) {
+						if ( obj[ k ]) {
+							delete obj[ k ];
+						}
+	//				});
+					defaultSet = obj;
+				}
+			} else {
+				//replacing default parameter
+				defaultSet[k] = v;
 			}
-		} else {
-			//replacing default parameter
-			defaultSet[k] = v;
-		}
-	});
+		});
+	}
 	return defaultSet;
 };
 

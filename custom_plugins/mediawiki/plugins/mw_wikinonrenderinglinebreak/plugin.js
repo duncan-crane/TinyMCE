@@ -26,7 +26,7 @@
 			showPlaceholders = editor.getParam("showPlaceholders"),
 			placeholderClass = showPlaceholders ? "mwt-showPlaceholder" : "mwt-hidePlaceholder",
 			slb = 
-				'<span class="mwt-nonEditable mwt-placeHolder mwt-singleLinebreak mwt-slb' 
+				'<span class="mwt-placeHolder mwt-singleLinebreak mwt-slb' 
 				+ (editor.getParam("directionality")) + ' ' + placeholderClass 
 				+ '" title="'
 				+ translate('tinymce-wikicode-non-rendering-single-linebreak' )

@@ -1431,6 +1431,7 @@
     var cut = function (editor) {
       return function (evt) {
         if (hasSelectedContent(editor)) {
+debugger;
           setClipboardData(evt, getData(editor), fallback(editor), function () {
             if (global$1.browser.isChrome()) {
               var rng_1 = editor.selection.getRng();

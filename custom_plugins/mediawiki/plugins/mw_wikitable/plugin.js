@@ -5972,8 +5972,9 @@ debugger;
       };
       var table = render$1(rows, columns, 0, 0, options);
       set(table, 'data-mce-id', '__mce');
-      var html = getOuter$2(table);
-      editor.insertContent(html);
+      var html = getOuter$2(table),
+			args = {format: 'html', convert2wiki: true};
+      editor.insertContent(html, args);
 /*		editor.focus();
 		editor.selection.setContent(html);
 		editor.undoManager.add();

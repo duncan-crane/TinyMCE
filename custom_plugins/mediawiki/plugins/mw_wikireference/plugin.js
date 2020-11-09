@@ -27,8 +27,8 @@
 	var toggleEnabledState = utility.toggleEnabledState;
 
 	var translate = utility.translate;
-
-	var insertReference = function (editor, times) {
+	
+	var insertReference = function ( editor, type, times ) {
 
 		function fix_selection(range) {
 			var selection = editor.selection.getSel(editor.selection.setRng( range )),
@@ -56,16 +56,49 @@
 		}
 
 		var args = {format: 'wiki', mode: 'inline', convert2html: true, newRef: true},
+			selectedNode = editor.selection.getNode(),
+			classList = selectedNode.className.split(' '),
 			reference,
 			refHtml = ' ',
 			bm,
 			id = 'R' + createUniqueNumber();
 
+
 		editor.selection.setRng( fix_selection( editor.selection.getRng() ));
 
-		refHtml = getSelection( editor, {format : 'html', convert2wiki : false});
-		if ( refHtml == '') refHtml = '_';
-		reference = '<ref>' + '<span class="mwt-dummyReference" id="' + id + '">' + refHtml + '</span></ref>&nbsp;';
+		
+		if ( type == 'reference' ) {
+			if ( classList.includes( "mwt-reference" )) {
+				alert( translate( "tinymce-reference-alert-not-allowed" ));
+				return;
+			} else {
+				refHtml = getSelection( editor, {format : 'html', convert2wiki : false});
+			}
+			if ( refHtml == '') refHtml = '_';
+			reference = '<ref>' + '<span class="mwt-dummyReference " id="' + id + '">' + refHtml + '</span></ref>&nbsp;';
+	  
+		} else if ( type = 'comment' ) {
+			// comments are plain text so convert the content to wikitext
+			refHtml = getSelection( editor, {format : 'html', convert2wiki : true});
+			args = {format: 'html', mode: 'inline', convert2html: false};
+			
+			// create inner span that contains the content of the comment
+			refHtml = 
+				'<span class="mwt-editable mwt-reference mwt-comment'  
+				+ '" id="' + id
+				+ '" data-mwt-type="comment"'
+				+ '" draggable="false" contenteditable="true">' 
+				+ refHtml
+				+ '</span>';
+			
+			// create outer span that contains the visible comment placeholder
+			reference = '<span class="mwt-placeHolder mwt-commentHolder mwt-showPlaceholder" title="' 
+				+ translate( 'tinymce-editcomment' ) 
+				+ '" data-mwt-type="comment" contenteditable="false" draggable="true" data-mwt-ref="' 
+				+ id + '">' 
+				+ refHtml 
+				+ '</span>';
+		}
 
 		editor.insertContent(reference, args );
 		editor.selection.select( editor.dom.select('#' + id )[0]); //select the inserted element
@@ -73,14 +106,33 @@
 
     };
 
-	var registerCommands = function (editor) {
-		editor.addCommand('mwt-insertReference', function () {
-			insertReference(editor, 1);
+	var toggleRefText = function ( editor ) {
+		var selection = editor.selection.getNode(),
+			id = editor.dom.getAttrib( selection, 'data-mwt-ref' ) ?  editor.dom.getAttrib( selection, 'data-mwt-ref' ): '' ;
+			
+		if ( id ) {
+			selection = editor.selection.select( editor.dom.select('#' + id )[0] );
+			editor.dom.toggleClass( editor.dom.select('#' + id )[0], 'mwt-showReference' );
+			editor.selection.setCursorLocation( editor.selection.getNode());
+			editor.selection.collapse( false );
+		}
+	};
+
+	var registerCommands = function ( editor ) {
+		editor.addCommand( 'mwt-insertReference', function () {
+			insertReference(editor, "reference", 1);
+		});
+		editor.addCommand( 'mwt-insertComment', function () {
+			insertReference( editor, "comment", 1);
+		});
+		editor.addCommand( 'wikiToggleRefText', function () {
+			toggleRefText( editor, 1 );
 		});
 	};
 
-	var registerButtons = function (editor) {
-		var selectors = ["mwt-dummyReference", "mwt-reference"];
+	var registerButtons = function (editor ) {
+		var refSelectors = ["mwt-dummyReference", "mwt-reference"];
+		var comSelectors = ["mwt-dummyReference", "mwt-comment"];
 
 		editor.ui.registry.addToggleButton('reference', {
 			icon: 'footnote',
@@ -88,13 +140,28 @@
 			onAction: function () {
 				return editor.execCommand('mwt-insertReference');
 			},
-			onSetup: toggleEnabledState(editor, selectors, false )
+			onSetup: toggleEnabledState(editor, refSelectors, false )
 		});
 		editor.ui.registry.addMenuItem('reference', {
 			icon: 'footnote',
 			text: translate( 'tinymce-reference-insertReference' ),
 			onAction: function () {
 				return editor.execCommand('mwt-insertReference');
+			}
+		});
+		editor.ui.registry.addToggleButton('comment', {
+			icon: 'comment',
+			tooltip: translate( 'tinymce-reference-insertComment' ),
+			onAction: function () {
+				return editor.execCommand('mwt-insertComment');
+			},
+			onSetup: toggleEnabledState(editor, comSelectors, false )
+		});
+		editor.ui.registry.addMenuItem('comment', {
+			icon: 'comment',
+			text: translate( 'tinymce-reference-insertComment' ),
+			onAction: function () {
+				return editor.execCommand('mwt-insertComment');
 			}
 		});
 	};
