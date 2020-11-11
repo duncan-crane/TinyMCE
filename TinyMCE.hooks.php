@@ -19,7 +19,7 @@ class TinyMCEHooks {
 			return 1;
 		}
 
-		define( 'TINYMCE_VERSION', '0.5' );
+		define( 'TINYMCE_VERSION', '1.0' );
 
 		$GLOBALS['wgTinyMCEIP'] = dirname( __DIR__ ) . '/../';
 
@@ -148,10 +148,12 @@ class TinyMCEHooks {
 	}
 
 	static function setGlobalJSVariables( &$vars, $out ) {
-		global $wgTinyMCEEnabled, $wgTinyMCEMacros, $wgTinyMCEPreservedTags;
+		global $wgTinyMCEEnabled, $wgTinyMCETemplates, $wgTinyMCEPreservedTags;
 		global $wgCheckFileExtensions, $wgStrictFileExtensions;
 		global $wgFileExtensions, $wgFileBlacklist;
 		global $wgEnableUploads;
+		global $wgTinyMCESettings;
+		global $wgWsTinyMCEModals;
 
 		if ( !$wgTinyMCEEnabled ) {
 			return true;
@@ -170,17 +172,12 @@ class TinyMCEHooks {
 		}
 
 		$defaultTags = array(
-			"includeonly", "onlyinclude", "noinclude", "nowiki", "pre" //Definitively MediaWiki core
+			"includeonly", "onlyinclude", "noinclude", "nowiki" //Definitively MediaWiki core
 		);
 
 		$tinyMCETagList = $specialTags . implode( '|', $defaultTags );
-		$tinyMCEPreservedTagList = $preservedTags . implode( '|', $wgTinyMCEPreservedTags);
-/*		if ( $wgTinyMCEPreservedTags  ) {
-			$tinyMCETagList = $tinyMCETagList . '|' . implode( '|', $wgTinyMCEPreservedTags );
-		}*/
 
 		$vars['wgTinyMCETagList'] = $tinyMCETagList;
-		$vars['wgTinyMCEPreservedTagList'] = $tinyMCEPreservedTagList;
 
 		$mwLanguage = $context->getLanguage()->getCode();
 		$tinyMCELanguage = self::mwLangToTinyMCELang( $mwLanguage );
@@ -192,6 +189,7 @@ class TinyMCEHooks {
 		$vars['wgFileExtensions'] = $wgFileExtensions;
 		$vars['wgFileBlacklist'] = $wgFileBlacklist;
 		$vars['wgEnableUploads'] = $wgEnableUploads;
+		$vars['wgTinyMCEVersion'] = ExtensionRegistry::getInstance()->getAllThings()['TinyMCE']['version'];
 
 		$user = $context->getUser();
 
@@ -215,29 +213,41 @@ class TinyMCEHooks {
 			$userIsBlocked = false;
 		}
 		$vars['wgTinyMCEUserIsBlocked'] = $userIsBlocked ;
+ 		$vars['wgTinyMCESettings'] = $wgTinyMCESettings;
+		$vars['wgWsTinyMCEModals'] = $wgWsTinyMCEModals;
 
-		$jsMacroArray = array();
-		foreach ( $wgTinyMCEMacros as $macro ) {
-			if ( !array_key_exists( 'name', $macro ) || !array_key_exists( 'text', $macro ) ) {
+/*		$jsTemplateArray = array();
+		foreach ( $wgTinyMCETemplates as $template ) {
+			if ( !array_key_exists( 'title', $template ) ) {
 				continue;
 			}
 
-			$imageURL = null;
-			if ( array_key_exists( 'image', $macro ) ) {
-				if ( strtolower( substr( $macro['image'], 0, 4 ) ) === 'http' ) {
-					$imageURL = $macro['image'];
-				} else {
-					$imageFile = wfLocalFile( $macro['image'] );
-					$imageURL = $imageFile->getURL();
-				}
+			$description = null;
+			if ( array_key_exists( 'description', $template ) ) {
+				$description = $template['description'];
 			}
-			$jsMacroArray[] = array(
-				'name' => $macro['name'],
-				'image' => $imageURL,
-				'text' => htmlentities( $macro['text'] )
-			);
+
+			if ( array_key_exists( 'url', $template ) ) {
+				if ( strtolower( substr( $template['url'], 0, 4 ) ) === 'http' ) {
+					$contentURL = $template['url'];
+				} else {
+					$contentFile = wfLocalFile( $template['url'] );
+					$contentURL = $contentFile->getURL();
+				}
+				$jsTemplateArray[] = array(
+					'title' => $template['title'],
+					'description' => $template['description'],
+					'url' => $contentURL,
+				);
+			} else if ( array_key_exists( 'content', $template ) ) {
+				$jsTemplateArray[] = array(
+					'title' => $template['title'],
+					'description' => $template['description'],
+					'content' => $template['content'] 
+				);
+			}
 		}
-		$vars['wgTinyMCEMacros'] = $jsMacroArray;
+		$vars['wgTinyMCETemplates'] = $jsTemplateArray;*/
 
 		return true;
 	}
@@ -265,6 +275,25 @@ class TinyMCEHooks {
 		if ( $magicWord->matchAndRemove( $text ) ) {
 			$parser->mOutput->setProperty( 'notinymce', 'y' );
 		}
+		return true;
+	}
+
+	/**
+	 * If a talk page does not exist, modify the red link to it to point
+	 * to "action=tinymceedit". Uses the hook SkinTemplateTabAction.
+	 */
+	public static function modifyTalkPageLink( &$sktemplate, $title, $message, $selected, $checkEdit, &$classes, &$query, &$text, &$result ) {
+		if ( !$checkEdit ) {
+			return true;
+		}
+
+		$context = $sktemplate->getContext();
+		if ( !TinyMCEHooks::enableTinyMCE( $title, $context ) ) {
+			return true;
+		}
+
+		$query = str_replace( 'action=edit', 'action=tinymceedit', $query );
+
 		return true;
 	}
 
@@ -446,10 +475,10 @@ class TinyMCEHooks {
 			return false;
 		}
 
-        global $wgTinyMCELoadOnView;
-        if ( Action::getActionName( $context ) === 'view') {
-            return (bool)$wgTinyMCELoadOnView;
-        }
+		global $wgTinyMCELoadOnView;
+		if ( Action::getActionName( $context ) === 'view') {
+		    return (bool)$wgTinyMCELoadOnView;
+		}
 
 		return true;
 	}
@@ -505,28 +534,28 @@ class TinyMCEHooks {
 		return true;
 	}
 
-    /**
-     * Load the extension on every view, if allowed.
-     *
-     * @param OutputPage $output
-     * @return void
-     */
-    public static function addToViewPage( OutputPage &$output ) {
-        $context = $output->getContext();
-        $action = Action::getActionName( $context );
+	/**
+	 * Load the extension on every view, if allowed.
+	 *
+	 * @param OutputPage $output
+	 * @return void
+	*/
+	public static function addToViewPage( OutputPage &$output ) {
+		$context = $output->getContext();
+		$action = Action::getActionName( $context );
 
-        if ( $action != 'view' ) {
-            return;
-        }
+		if ( $action != 'view' ) {
+			return;
+		}
 
-        if( self::enableTinyMCE( $output->getTitle(), $context ) ) {
-            $GLOBALS['wgTinyMCEEnabled'] = true;
-            $output->addModules( 'ext.tinymce' );
-        } else {
-            $GLOBALS['wgTinyMCEEnabled'] = false;
-        }
-    }
-
+		if( self::enableTinyMCE( $output->getTitle(), $context ) ) {
+			$GLOBALS['wgTinyMCEEnabled'] = true;
+			$output->addModules( 'ext.tinymce' );
+		} else {
+			$GLOBALS['wgTinyMCEEnabled'] = false;
+		}
+	}
+	
 	public static function addPreference( $user, &$preferences ) {
 		$preferences['tinymce-use'] = array(
 			'type' => 'toggle',
