@@ -25,7 +25,7 @@ if ( version_compare( $GLOBALS['wgVersion'], '1.31', '>' ) ) {
 			'Please use wfLoadExtension instead, ' .
 			'see https://www.mediawiki.org/wiki/Extension_registration for more details.'
 		); */
-		return;
+		return; 
 	}
 }
 
@@ -69,8 +69,7 @@ $GLOBALS['wgTinyMCEIP'] = dirname( __FILE__ );
 $GLOBALS['wgHooks']['MakeGlobalVariablesScript'][] = 'TinyMCEHooks::setGlobalJSVariables';
 $GLOBALS['wgHooks']['MagicWordwgVariableIDs'][] = 'TinyMCEHooks::addMagicWordVariableIDs';
 $GLOBALS['wgHooks']['ParserAfterTidy'][] = 'TinyMCEHooks::handleMagicWords';
-$GLOBALS['wgHooks']['SkinTemplateNavigation'][] = 'TinyMCEAction::displayTab';
-$GLOBALS['wgHooks']['SkinTemplateTabAction'][] = 'inyMCEHooks::modifyTalkPageLink';
+$GLOBALS['wgHooks']['SkinTemplateNavigation::Universal'][] = 'TinyMCEAction::displayTab';
 $GLOBALS['wgHooks']['SkinEditSectionLinks'][] = 'TinyMCEHooks::addEditSectionLink';
 
 if ( class_exists( 'MediaWiki\Linker\LinkRenderer' ) ) {
@@ -124,8 +123,6 @@ $GLOBALS['wgResourceModules'] += array(
 			'tinymce-upload-source-tooltip',
 			'tinymce-upload-destination-label',
 			'tinymce-upload-destination-tooltip',
-			'tinymce-upload-overwrite-label',
-			'tinymce-upload-overwrite-tooltip',
 			'tinymce-upload-title-label',
 			'tinymce-upload-title-tooltip',
 			'tinymce-upload-summary-label',

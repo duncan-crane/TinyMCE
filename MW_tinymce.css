@@ -27,6 +27,10 @@ thead{
     text-align: center;
 }
 
+.client-nojs #ca-ve-edit, .client-nojs .mw-editsection-divider, .client-nojs .mw-editsection-visualeditor, .ve-not-available #ca-ve-edit, .ve-not-available .mw-editsection-divider, .ve-not-available .mw-editsection-visualeditor {
+	display: initial;
+}
+
 .mceEditable {
 	border: 1px dotted #0000cc;
 }
