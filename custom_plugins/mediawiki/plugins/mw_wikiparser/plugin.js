@@ -3846,6 +3846,12 @@
 		// set format to raw so that the Tiny parser won't rationalise the html
 		e.format = 'raw';
 
+		// if the content left over from browser back event
+		if ( e.content.match(/^<div class="tinywrapper">/)
+			|| e.content.match(/^<p class="mwt-notParagraph">/) ) {
+			e.convert2html = false;
+		}
+
 		// if the content is wikitext then convert to html
 		if ( e.convert2html ) {
 			e.content = _convertWiki2Html(e.content);
