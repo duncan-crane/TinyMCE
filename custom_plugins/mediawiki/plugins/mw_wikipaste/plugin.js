@@ -1518,7 +1518,9 @@ debugger;
       editor.on('drop', function (e) {
         var dropContent, rng;
         rng = getCaretRangeFromEvent(editor, e);
-        if (e.isDefaultPrevented() || draggingInternallyState.get()) {
+// dc dis this to prevent dropping css styles with content
+//        if (e.isDefaultPrevented() || draggingInternallyState.get()) {
+        if (e.isDefaultPrevented()) {
           return;
         }
         dropContent = clipboard.getDataTransferItems(e.dataTransfer);
