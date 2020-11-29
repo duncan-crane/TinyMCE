@@ -344,12 +344,12 @@
 	 */
 	function _sanitize( text, validate ) {
 		var serializer = new tinymce.html.Serializer(),
-			parser = new tinymce.html.DomParser({validate: validate});
+			parser = new tinymce.html.DomParser({validate: validate}, editor.schema);
 
 		if (text == '' ) return text;
 		text = "<div class='tinywrapper'>" + text + "</div>";
 		text = text.replace(/\n/gmi, '{@@vnl@@}');	
-		text = serializer.serialize( parser.parse( text ) );
+		text = serializer.serialize( parser.parse( text, { forced_root_block: false, context: editor.getBody() } ) );
 		text = text.replace(/<p class="mwt-paragraph">{@@vnl@@}<\/p>/gmi, '\n');	
 		text = text.replace(/{@@vnl@@}/gmi, '\n');	
 		text = text.replace(/^<div class=('|")tinywrapper\1>([^]*)<\/div>$/m, '$2');	
@@ -1200,7 +1200,7 @@
 						
 						if ((tagClass == 'internallink' )|| (tagClass == 'externallink' )) {
 							element.attr({
-								'href': ( element.attr.href ? element.attr.href : '#')
+								'href': ( element.attr( "href" ) ? element.attr( "href" ) : '#')
 							});
 						}
 
@@ -1623,11 +1623,13 @@
 							&& (elmTagName != 'tbody')
 							&& (elmTagName != 'tr')) {
 							// conserve any new lines in the inner html
-							// except in table tags that don't contain data!
-							
+							// except in table tags that don't contain data!			
 							innerHTML = innerHTML.replace(/\n/gmi,'{@@vnl@@}');
-							elm.prop( "innerHTML", innerHTML );
+						} else {
+							// if table markup the remove spaces at start of lines
+							innerHTML = innerHTML.replace(/\n\s*/gmi,'\n');
 						}
+						elm.prop( "innerHTML", innerHTML );
 
 						if ((elmTagName != 'table')
 							&& (elmTagName != 'tbody')
@@ -3428,15 +3430,25 @@
 							altro = headingMarkup.substring(0, hLevel),
 							heading;
 
-						// build the header, including any spaces before the header text
-						heading = altro + spacesBefore + text + spacesAfter + altro ;
-						heading = '{@@hnl@@}' + heading + '{@@hnl@@}';
-						// build back any new lines after the heading
-						for (var i = 0; i < newlines; i++) {
-							heading += '{@@nl@@}';
-						}
-						outerHtml = heading;
+						// mediawiki doesn't like leading and trailing new lines
+						text = text.replace(/^(\n*)([^]*?)(\n*)$/, function (match, $1, $2, $3) {
+							// $1 = new lines before
+							// $2 = new lines after
+							// $3 = new lines after
 
+							// build the header, including any spaces before the header text
+							heading = altro + spacesBefore + $2 + spacesAfter + altro ;
+							heading = '{@@hnl@@}' + heading + '{@@hnl@@}';
+							// build back any new lines after the heading
+							for (var i = 0; i < newlines; i++) {
+								heading += '{@@nl@@}';
+							}
+							$1 = $1.replace(/\n/gm, '{@@nl@@}');
+							$2 = $2.replace(/\n/gm, '{@@nl@@}');
+							return $1 + heading + $3;
+						});
+						outerHtml = text;
+						
 					} else if ( elm[0].tagName == 'TABLE' ) {
 						// now process code at start and end of tables.  Note the new line handling for these
 						// happens when all the other new line codes are processed in newLines2wiki
@@ -4070,8 +4082,9 @@
 			e.content = htmlDecode( e.content );
 		}
 
-		if ( _decodeHtmlEntitiesOnInput == 'true' ) {
-			e.content = htmlDecode( e.content );
+		// if the format is raw then don't process further
+		if (e.format == 'raw' ) {
+			return;
 		}
 
 		// if this is the initial load of the editor
@@ -4111,7 +4124,7 @@
 
 		// if the content is wikitext then convert to html
 		if ( e.convert2html ) {
-			e.content = _convertWiki2Html(e.content);
+			e.content = _convertWiki2Html(e.content, e.mode);
 		}
 
 		// sanitize the content to be sure xss vulnerabilities are removed
@@ -4143,7 +4156,7 @@
 			selectedNodeParent = editor.selection.getNode().parentNode,
 			args,
 			wikitext;
-			
+
 		// if this is a SelectAll operation then bypass processing altogether
 		if ( e.command == "SelectAll" ) {
 			//return;
@@ -4226,7 +4239,9 @@
 				}
 			}
 			if (e.value.convert2html) {
+_pipeText;
 				e.value.content = _convertWiki2Html(e.value.content, e.value.mode);
+				e.value.convert2html = false;
 				e.value["format"] = 'raw';
 			}			
 		}

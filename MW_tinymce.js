@@ -362,7 +362,7 @@
 			
 		}
 
-		if ( tinyMCEDebugFlags.debug = 'true' ) debugger;
+		if ( tinyMCEDebugFlags.debug == 'true' ) debugger;
 		
 	}
 
@@ -505,6 +505,7 @@
 			contextmenu: "undo redo | cut copy paste insert | link wikimagic table | styleselect removeformat | browsercontextmenu",
 			convert_fonts_to_spans: true,
 			link_title: false,
+			link_allow_external_targets: true,
 			link_assume_external_targets: true,
 			link_class_list: [
 				{title: 'External', value: 'mwt-nonEditable mwt-wikiMagic mwt-externallink'},
@@ -535,12 +536,15 @@
 			// enable resizing for element like images, tables or media objects
 			object_resizing: true,
 			// define the element what all inline elements needs to be wrapped in
-			forced_root_block: 'p',
+//			forced_root_block: 'p',
+			forced_root_block: true,
 			forced_root_block_attrs: {
 				'class': 'mwt-paragraph'
 			},
 			remove_trailing_brs: false,
 			// indentation depth
+			indentation: "25px",
+			indent_use_margin: true,
 			// keep current style on pressing return
 			keep_styles: true,
 			// save plugin

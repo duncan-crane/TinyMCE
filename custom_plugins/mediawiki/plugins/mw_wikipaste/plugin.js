@@ -1431,7 +1431,6 @@
     var cut = function (editor) {
       return function (evt) {
         if (hasSelectedContent(editor)) {
-debugger;
           setClipboardData(evt, getData(editor), fallback(editor), function () {
             if (global$1.browser.isChrome()) {
               var rng_1 = editor.selection.getRng();
@@ -1448,7 +1447,6 @@ debugger;
     };
     var copy = function (editor) {
       return function (evt) {
-debugger;
         if (hasSelectedContent(editor)) {
           setClipboardData(evt, getData(editor), fallback(editor), function () {
           });
@@ -1491,7 +1489,9 @@ debugger;
       editor.on('drop', function (e) {
         var dropContent, rng;
         rng = getCaretRangeFromEvent(editor, e);
-        if (e.isDefaultPrevented() || draggingInternallyState.get()) {
+// DC did this to enable filtering on drop
+//        if (e.isDefaultPrevented() || draggingInternallyState.get()) {
+        if (e.isDefaultPrevented() ) {
           return;
         }
         dropContent = clipboard.getDataTransferItems(e.dataTransfer);
