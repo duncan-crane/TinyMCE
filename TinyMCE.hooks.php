@@ -258,6 +258,8 @@ class TinyMCEHooks {
 		global $wgTinyMCEUse;
 		$context = $skin->getContext();
 		$user = $context->getUser();
+		
+		$wgTinyMCEUse =  TinyMCEHooks::enableTinyMCE( $title, $context );
 
 		if ( method_exists( 'MediaWiki\Permissions\PermissionManager', 'userCan' ) ) {
 			// MW 1.33+
@@ -278,7 +280,7 @@ class TinyMCEHooks {
 		foreach ( $links as &$link ) {
 			if ( $link['query']['action'] == 'edit' ) {
 				$newLink = $link;
-				$link['text'] = $skin->msg( 'tinymce-editsectionsource' )->text();
+				$link['text'] = ' | ' . $skin->msg( 'tinymce-editsectionsource' )->text() ;
 			}
 		}
 		$newLink['query']['action'] = 'tinymceedit';
