@@ -4055,6 +4055,21 @@
 				return elm[0].outerHTML;
 			}
 		});
+debugger;
+		// process headers from rendered wiki pages
+		$dom.find( ":header" ).replaceWith( function() {
+			var elm = $( this ),
+				contentText,
+				childElm;
+				
+			childElm = elm.children( ".mw-headline" )[0]
+			if ( childElm ) {
+				childElm.replaceWith( childElm.innerHTML );
+				elm.addClass( "mw-headline" );
+			}
+			
+			return elm[0].outerHTML;
+		});
 
 		return $dom;
 	}
@@ -4118,7 +4133,8 @@
 
 		// if the content left over from browser back event
 		if ( e.content.match(/^<div class="tinywrapper">/)
-			|| e.content.match(/^<p class="mwt-notParagraph">/) ) {
+			|| e.content.match(/^<p class="mwt-notParagraph">/)
+			|| e.content.match(/.*class=('|")[^\1]*mwt-[^\1]*?\1/) ) {
 			e.convert2html = false;
 		}
 

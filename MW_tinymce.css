@@ -6,6 +6,19 @@
 	display: none;
 }
 
+.rvs-note {
+	padding: 10px 10px 10px 10px;
+	min-height: 15px;
+	font-size: 14px;
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+	margin-left: 30px;
+	margin-right: 20px;
+	-webkit-box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.19);
+	-moz-box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.19);
+	box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.19);
+}
+
 .mce-item-table th {
     display: table-cell;
     vertical-align: inherit;
@@ -25,10 +38,6 @@ thead{
     vertical-align: inherit;
     font-weight: bold;
     text-align: center;
-}
-
-.client-nojs #ca-ve-edit, .client-nojs .mw-editsection-divider, .client-nojs .mw-editsection-visualeditor, .ve-not-available #ca-ve-edit, .ve-not-available .mw-editsection-divider, .ve-not-available .mw-editsection-visualeditor {
-	display: initial;
 }
 
 .mceEditable {

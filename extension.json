@@ -1,7 +1,7 @@
 {
 	"@Note": "When updating this file please also update TinyMCE.php with the same changes.",
 	"name": "TinyMCE",
-	"version": "1.0",
+	"version": "1.0.1",
 	"author": [
 		"Ephox",
 		"Hallo Welt",
@@ -11,7 +11,7 @@
 	"url": "https://www.mediawiki.org/wiki/Extension:TinyMCE",
 	"descriptionmsg": "tinymce-desc",
 	"license-name": "GPL-2.0+",
-	"type": "hook",
+	"type": "editor",
 	"callback": "TinyMCEHooks::registerExtension",
 	"requires": {
 		"MediaWiki": ">= 1.31.0"
