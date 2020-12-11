@@ -1491,10 +1491,14 @@
         rng = getCaretRangeFromEvent(editor, e);
 // DC did this to enable filtering on drop
 //        if (e.isDefaultPrevented() || draggingInternallyState.get()) {
+debugger;
         if (e.isDefaultPrevented() ) {
           return;
         }
         dropContent = clipboard.getDataTransferItems(e.dataTransfer);
+        if (draggingInternallyState.get()) {
+			dropContent['mce-internal'] = dropContent['text/html'];
+		}
         var internal = clipboard.hasContentType(dropContent, internalHtmlMime());
         if ((!clipboard.hasHtmlOrText(dropContent) || isPlainTextFileUrl(dropContent)) && clipboard.pasteImageData(e, rng)) {
           return;
@@ -1507,6 +1511,7 @@
               editor.undoManager.transact(function () {
                 if (dropContent['mce-internal']) {
                   editor.execCommand('Delete');
+				  internal = false;
                 }
                 setFocusedRange(editor, rng);
                 content_1 = trimHtml(content_1);
@@ -1552,6 +1557,7 @@
 
     function addPreProcessFilter(editor, filterFunc) {
       editor.on('PastePreProcess', function (e) {
+debugger;
         e.content = filterFunc(editor, e.content, e.internal, e.wordContent);
       });
     }

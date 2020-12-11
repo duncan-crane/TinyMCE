@@ -4055,7 +4055,7 @@
 				return elm[0].outerHTML;
 			}
 		});
-debugger;
+
 		// process headers from rendered wiki pages
 		$dom.find( ":header" ).replaceWith( function() {
 			var elm = $( this ),
@@ -4338,7 +4338,6 @@ _pipeText;
 	 */
 	function _onPastePreProcess(e) {
 		// if this is html then covert to wiki and back so it displays correctly
-
 		var text = e.content,
 			textObject,
 			selectedNode = editor.selection.getNode(),
@@ -4389,7 +4388,19 @@ _pipeText;
 
 		dom = $(e.node);
 		text = dom[0].innerHTML;
-
+		
+		// get rid of any empty spans - these result from drag drop
+		// operations where computed styles have been filtered out
+		dom.find( "span" ).replaceWith( function() {
+			if (this.attributes.length == 0 ||
+				this.classList.length == 0 ||
+				this.style == '') {
+				return this.innerHTML;
+			} else {
+				return this.outerHTML;
+			}
+		})
+		
 		debug( editor, "anteOnPastePostProcess", _mwtDebugFlags.anteOnPastePreProcess, text );
 
 		if ( e.internal ) {
