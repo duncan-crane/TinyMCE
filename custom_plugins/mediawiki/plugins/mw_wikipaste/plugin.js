@@ -1491,7 +1491,6 @@
         rng = getCaretRangeFromEvent(editor, e);
 // DC did this to enable filtering on drop
 //        if (e.isDefaultPrevented() || draggingInternallyState.get()) {
-debugger;
         if (e.isDefaultPrevented() ) {
           return;
         }
@@ -1557,7 +1556,6 @@ debugger;
 
     function addPreProcessFilter(editor, filterFunc) {
       editor.on('PastePreProcess', function (e) {
-debugger;
         e.content = filterFunc(editor, e.content, e.internal, e.wordContent);
       });
     }

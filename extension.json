@@ -1,7 +1,7 @@
 {
 	"@Note": "When updating this file please also update TinyMCE.php with the same changes.",
 	"name": "TinyMCE",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"author": [
 		"Ephox",
 		"Hallo Welt",
@@ -182,7 +182,8 @@
 		"WikiEditorDisable": "TinyMCEHooks::disableWikiEditor",
 		"GetPreferences": "TinyMCEHooks::addPreference",
 		"PageForms::addRLModules": "TinyMCEHooks::addRLModules",
-		"OutputPageBeforeHTML": "TinyMCEHooks::addToViewPage"
+		"OutputPageParserOutput": "TinyMCEHooks::addToViewPage",
+    		"ParserFirstCallInit": "TinyMCEHooks::onParserFirstCallInit"
 	},
 	"Actions": {
 		"tinymceedit": "TinyMCEAction"

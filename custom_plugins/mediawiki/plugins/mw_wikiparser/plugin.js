@@ -2057,7 +2057,7 @@
 
 			// step through text a line at a time looking for lines 
 			// that that belong to tables
-			lines = text.split(/\n/);
+			lines = text.split("\n");
 			for (var i = 0; i < lines.length; i++) {
 				line = lines[i].match(/^\:?\s*\{\|(.*)/gi);
 				lastLine = (i == lines.length - 1);
@@ -3148,6 +3148,12 @@
 							processElement2Wiki ( $(this), level + '.' + index )
 						})
 					}
+					
+					// remove classes left over from pasting parsed mw text
+					elm.removeClass( 'mw-headline' );
+					if ( elm.attr( 'class' ) == '' ) {
+						elm.removeAttr( 'class' );
+					}
 
 					if ( _mwtPlainTextClasses.some( r => elm[0].className.split(' ').includes( r )) &&
 						(elm[0].id != "_mce_caret")) {
@@ -3258,7 +3264,9 @@
 									newLineAfter = '{@@bnl@@}';
 							}
 
+							elm.removeClass( 'mwt-paragraph' );
 							elm.removeClass( 'mwt-preserveHtml' );
+							elm.removeClass( 'mw-headline' );
 							elm.removeAttr( 'data-mwt-sameLine' );
 							elm.removeAttr( 'data-mwt-spaces' );
 							if ( elm.attr( 'class' ) == '' ) {
@@ -3504,9 +3512,9 @@
 							// process other attributes
 							$1 = processStoredAttributes2Wiki( $1 );
 							if ($1) {
-								return "{@@tnl@@}" + _pipeText + "+" + $1 + _pipeText + $2;
+								return "{@@tnl@@}" + _pipeText + "+ " + $1 + _pipeText + $2;
 							} else {
-								return "{@@tnl@@}" + _pipeText + "+" + $2;
+								return "{@@tnl@@}" + _pipeText + "+ " + $2;
 							}
 						});
 
@@ -3718,7 +3726,20 @@
 					} else if (( elm[0].tagName == 'DIV' ) || ( elm[0].tagName == 'P' )) {
 						var html,
 							outerHtml = elm[0].outerHTML,
-							innerHtml = elm[0].innerHTML;
+							innerHtml = elm[0].innerHTML,
+							indentation = editor.getParam( "indentation" ).replace(/px/i, ""),
+							indented = editor.dom.getStyle( elm[0], "margin-left").replace(/px/i, ""),
+							tabChars = "::::::::::::::::::::::::::::",
+							tabs,
+							tabStops = '';
+							
+						if ((indented > 0) && ( indentation > 0)) {
+							tabs = Math.round( indented / indentation );
+							tabStops = tabChars.substr( 0, tabs) ;
+						}
+							
+						innerHtml = tabStops + innerHtml;
+
 						if ( innerHtml.match(/^(\s|&nbsp;|\{@@nl@@})*$/)) {
 							// remove empty P's and DIV's created by TinyMCE and this plugin
 							outerHtml = '';
@@ -3727,19 +3748,21 @@
 							if ( innerHtml == '&nbsp;' ) {
 								outerHtml  = '{@@pnl@@}';
 							} else {
-								outerHtml  = '{@@pnl@@}' + $.trim( elm.html() );
+//								outerHtml  = '{@@pnl@@}' + $.trim( elm.html() );
+								outerHtml  = '{@@pnl@@}' + $.trim( innerHtml );
 							}
 						} else if ( elm.hasClass( 'mwt-notParagraph' ) ||
 							elm.hasClass( 'tinywrapper' )) {
 							// not paragraph or tinywrapper means it has no new lines before it
-							outerHtml  = $.trim(elm.html());
+//0701							outerHtml  = $.trim(elm.html()) + '{@@pnl@@}';
+							outerHtml  = $.trim( innerHtml ) + '{@@npl@@}';
 						} else if ( elm.hasClass( 'mw-references-wrap' ) ) {
 							// not paragraph or tinywrapper means it has no new lines before it
 							outerHtml  = '<references />';
 						}
 					} else {
 						// treat everything else as preserved html
-							outerHtml = elm[0].outerHTML;	
+						outerHtml = elm[0].outerHTML;	
 					}
 
 					// create a place holder for the converted element
@@ -4667,6 +4690,22 @@ function wikiparser( editor ) {
 		editor.on('keydown', _onKeyDown);
 		editor.on('keyup', _onKeyUp);
 
+			
+		//
+		// set up element to contain toolbar if not attached to edit window
+		//
+		var selector = '#top',
+			mwexttb = $( '#mwext-tinytoolbar' );
+
+		// if there is no placeholder for inline toolbar alreayy, the add one
+		if ( mwexttb.length == 0 ) {
+			$( selector ).before( '<div id="mwext-tinytoolbar" class="mwt-toolbar"></div>' );
+			mwexttb = $( '#mwext-tinytoolbar' );
+			// if you wish to have empty space permanently for the tool bar then
+			// un-comment the following line
+//			mwexttb.append( '' );
+		}
+				
 		//
 		// add processing for browser context menu
 		//
@@ -4725,6 +4764,7 @@ function wikiparser( editor ) {
 			});
 		}
 		editor.settings['templates'] = templateItems;
+
 	//
 	// setup minimising menubar when field not selected in pageforms
 	//
