@@ -1237,7 +1237,11 @@ tinymce.PluginManager.add('wikiupload', function(editor) {
 
 				if ( !allow_external_targets ) {
 					// remove the link item if extenal links not allowed
-					uploadDialogBody.tabs[1].items.splice(2,1);
+					if ( uploadDialogBody.tabs ) { 
+						uploadDialogBody.tabs[1].items.splice(2,1);
+					} else {
+						uploadDialogBody.items.splice(2,1);					
+					}
 				}
 
 				if ( action == 'overwrite' ) {

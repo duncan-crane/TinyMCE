@@ -830,9 +830,9 @@
 		return defaultSet;
 	};
 
-	$.each(tinyMCESettings, function (selector, settings) {
-		mwTinyMCEInit(selector, settings);
-	});
+	Object.keys( tinyMCESettings ).forEach( function(selector, index) {
+			mwTinyMCEInit( selector, this[selector] );
+		}, tinyMCESettings );
 
 	// Let others know we're done here
 	$( document ).trigger( 'TinyMCELoaded' ); 

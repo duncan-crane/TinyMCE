@@ -2183,7 +2183,7 @@
 					// check to see if cell row starts with '|' or '||' and remeber
 					if (line[0].substr(1,1) == '|') cellStart = 2 ;
 
-					// split the cell row inot individual cells if there are any
+					// split the cell row into individual cells if there are any
 					cells = line[0].substr(cellStart, line[0].length).split("||");
 
 					// process the individual cells in the row
@@ -3711,7 +3711,14 @@
 							outerHtml = innerHtml;
 						} else if ( innerHtml == '&nbsp;' ) {
 							// likewise spans containing only nbsp
-							outerHtml = innerHtml;
+//0205							outerHtml = innerHtml;
+							if (elm[0].attributes.length == 0 ||
+								elm[0].classList.length == 0 ||
+								elm[0].style == '') {
+								outerHtml = ' ';
+							} else {
+								outerHtml = innerHtml;
+							}
 						}
 					} else if ( elm[0].tagName == 'PRE' ) {
 						// process spans containing only nbsp
@@ -4540,6 +4547,8 @@ _pipeText;
 	 * @param {tinymce.onKeyDownEvent} e
 	 */	
 	function _onKeyDown(evt) {
+		var editor = tinyMCE.activeEditor;
+		
 		if ( evt.keyCode == 38 ) {
 			// up-arrow or down arrow at start or end of editor
 			// content results in an empty paragraph being added
@@ -4689,7 +4698,6 @@ function wikiparser( editor ) {
 		editor.on('dblclick', _onDblClick);
 		editor.on('keydown', _onKeyDown);
 		editor.on('keyup', _onKeyUp);
-
 			
 		//
 		// set up element to contain toolbar if not attached to edit window

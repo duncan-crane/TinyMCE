@@ -1498,7 +1498,8 @@
         if (draggingInternallyState.get()) {
 			dropContent['mce-internal'] = dropContent['text/html'];
 		}
-        var internal = clipboard.hasContentType(dropContent, internalHtmlMime());
+//0205        var internal = clipboard.hasContentType(dropContent, internalHtmlMime());
+        var internal = draggingInternallyState.get();
         if ((!clipboard.hasHtmlOrText(dropContent) || isPlainTextFileUrl(dropContent)) && clipboard.pasteImageData(e, rng)) {
           return;
         }
@@ -1510,7 +1511,8 @@
               editor.undoManager.transact(function () {
                 if (dropContent['mce-internal']) {
                   editor.execCommand('Delete');
-				  internal = false;
+//0205				  internal = false;
+				  internal = true;
                 }
                 setFocusedRange(editor, rng);
                 content_1 = trimHtml(content_1);
