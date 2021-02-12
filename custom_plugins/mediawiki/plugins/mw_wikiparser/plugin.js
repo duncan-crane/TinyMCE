@@ -3863,9 +3863,22 @@
 			text = text.replace(/({@@[bht]nl@@})*((\s*{@@(enl|elf)?@@}\s*)+)({@@[bht]nl@@})*/gmi, "$2"); //0907a
 			text = text.replace(/({@@[p]nl@@})((\s*{@@(enl|elf)?@@}\s*)+)({@@[p]nl@@})/gmi, "$2"); //0907a
 //0916			text = text.replace(/({@@pnl@@})({@@[bht]nl@@})/gmi, "$1"); //0907a
-			text = text.replace(/({@@pnl@@})({@@[bht]nl@@})*/gmi, "$1"); //0916
-			text = text.replace(/({@@pnl@@})({@@enl@@})* /gmi, "$1"); //1030
-			text = text.replace(/({@@elf@@}\s*)({@@pnl@@})*/gmi, "$1"); //1018
+//0114			text = text.replace(/({@@pnl@@})({@@[bht]nl@@})*/gmi, "$1"); //0916
+//0202			text = text.replace(/({@@pnl@@})({@@[bht]nl@@})+/gmi, "$2"); //0114
+			text = text.replace(/({@@pnl@@})({@@[bht]nl@@})/gmi, "$2"); //0114
+//0202			text = text.replace(/({@@npl@@})({@@[bht]nl@@})+/gmi, "$2"); //0118
+			text = text.replace(/({@@npl@@})({@@[bht]nl@@})/gmi, "$2"); //0118
+//0115			text = text.replace(/({@@[bht]nl@@})({@@pnl@@})+/gmi, "$1"); //0115
+//0115			text = text.replace(/({@@[bht]nl@@})({@@pnl@@})+/gmi, "$2"); //0115
+			text = text.replace(/({@@[bht]nl@@})({@@pnl@@})+({@@enl@@})/gmi, "{@@nl@@}{@@nl@@}{@@nl@@}"); //0115
+			text = text.replace(/({@@npl@@})({@@pnl@@})+({@@enl@@})/gmi, "{@@nl@@}{@@nl@@}{@@nl@@}"); //0119
+			text = text.replace(/({@@[bht]nl@@})({@@pnl@@})+/gmi, "$1"); //0115
+//0115			text = text.replace(/({@@pnl@@})({@@enl@@})*/gmi, "$1"); //1030
+//0119			text = text.replace(/({@@pnl@@})({@@enl@@})+/gmi, "$2"); //0115
+			text = text.replace(/({@@npl@@})({@@enl@@})+/gmi, "$2"); //0118
+			// process tables with separate cells on same line separated by '||'
+			text = text.replace(/({@@npl@@})\|\|/gmi, " ||"); //0118
+			text = text.replace(/({@@elf@@}\s*)({@@(npl|pnl)@@})*/gmi, "$1"); //0212
 
 			// deal with table ends
 			text = text.replace(/{@@tnl@@}{@@pnl@@}(({@@enl@@})*)/gmi, function(match, $1) {
@@ -3925,6 +3938,8 @@
 			text = text.replace(/{@@pnl@@}:{/gmi, '{@@bnl@@}:{');
 			// otherwise replace forced 'p' placeholder with single new line
 			text = text.replace(/{@@pnl@@}/gmi, "{@@2nl@@}");
+			// otherwise replace no paragraph placeholders with nothing
+			text = text.replace(/{@@npl@@}/gmi, "");
 			// otherwise replace forced new line placeholder with single new line
 			text = text.replace(/{@@[bht]nl@@}/gmi, "{@@nl@@}");
 			// replace br_singlelinebreak with single new line
