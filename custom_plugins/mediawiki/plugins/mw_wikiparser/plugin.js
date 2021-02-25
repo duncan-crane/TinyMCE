@@ -1672,34 +1672,35 @@
 			// find and process pseudo <pre> tags where wikicode lines starts with spaces.  If
 			// several consecutive lines start with a space they are treated as a single <pre> block.
 			// If the space is followed by any tag or | then ignore
-			regex = '(^|\\n)( +)([^]*?)(?=(\\n\\S|\\n\\s*$|$))';
-			matcher = new RegExp(regex, 'gi');
+			regex = '(^|\\n)(([ ][^]*?\\n)+)'; //0119
+			matcher = new RegExp(regex, 'gmi');
 			text = text.replace(matcher, function(match, $1, $2, $3, $4, offset, string) {
 				// $1 = the new lines preceding the text in pseudo <pre>s
-				// $2 = the initial space
-				// $3 = lines starting with spaces to be placed in the pseudo <pre>s
-				// $4 = the line following the text in pseudo <pre>s
+
+				// $2 = lines starting with spaces to be placed in the pseudo <pre>s //0119
+				// $3 = the line following the text in pseudo <pre>s //0119
 				var tagName,
 					html;
 
-				if ( $3.match( /^\s*\{\|/ ) ) {
+				if ( $2.match( /^\s*\{\|/ ) ) {
 					// spaces before the opening '{|' of a table aren't treated as a pseodo pre
 					return match;
-				} else if ( $3.match(/^\s*{@@@NOWIKI:\d*@@@}\s*$/) ) {
-					var id = $3.match(/{@@@NOWIKI:\d*@@@}/); 
+				} else if ( $2.match(/^\s*{@@@NOWIKI:\d*@@@}\s*$/) ) {
+					var id = $2.match(/{@@@NOWIKI:\d*@@@}/); 
 					// pseudo nowiki is plain text so treat differently
 					tagName = 'pnowiki';
 					html = _tags4Html[ id ].replace(/^<span class="mwt-nowiki" data-mwt-type="nowiki"([^]*)\/span>$/, '<pre class="mwt-pnowiki" data-mwt-type="pnowiki"$1/pre>');
-					return _getPlaceHolder4Html($2 + $3, html, tagName, 'editable');
+					return $1 + _getPlaceHolder4Html($2, html, tagName, 'editable') + '\n';
 				} else {
 					// we need to preserve any new lines so they aren't lost when we
+					$2 = $2.substring( 1, $2.length );
 					// decode the contents of any preserved html tags
-					$3 = $3.replace(/\n /gmi,'{@@@ENL:0@@@}');
-					$3 = _convertWiki2Html( $3 );
+					$2 = $2.replace(/\n /gmi,'{@@@ENL:0@@@}');
+					$2 = _convertWiki2Html( $2 );
 
 					tagName = 'ppre';
-					html = '<pre class="mwt-ppre" data-mwt-type="ppre">' + $3 + '</pre>';
-					return $1 + _getPlaceHolder4Html(match, html, tagName, 'editable');
+					html = '<pre class="mwt-ppre" data-mwt-type="ppre">' + $2 + '</pre>';
+					return $1 + _getPlaceHolder4Html(match, html, tagName, 'editable') + '\n';
 				}
 			});
 
@@ -2020,7 +2021,7 @@
 
 			// replace multiple new lines after table start with single new line
 			// and a data attribute to store the number of new lines for recovery later
-			text = text.replace(/(^|\n)(\{\|[^\n]*?)(\n+)/gmi, function(match, $1, $2, $3) {
+			text = text.replace(/(^|\n)(\{\|[^\n]*?)(\n+)/i, function(match, $1, $2, $3) { //0125
 				// $1 = start of page or new line before table defiunition
 				// $2 = the first line of the table defintion 
 				// $3 = the empty new lines immediately following the table definition
@@ -2337,10 +2338,18 @@
 							// if this is first line in cell
 							if ( lines[i-1].match( /<td[^>]*>(\s|&nbsp;)*$/) ) {
 								// if first line of data in a table cell
+								// if the next line is not empty remove and set counter back one
+								if ( lines[i + 1].match(/^(\s|&nbsp;)*$/)) {
+									lines[i] = lines[i] + '{@@@ELF:0@@@}'; //0125
+									lines.splice(i+1, 1); //0125
+								} else { //0125
+									lines.splice(i, 1); //0125
+									i = i - 1;
+								}
 							}
 						} else {
 							// process non empty first line of data
-							if ( lines[i-1].match( /<td[^>]*>/) ) {
+							if ( lines[i-1].match( /^<td[^>]*>/) ) { //0125
 								// previous line was start of cell
 								if ( lines[i-1].match( /<td[^>]*>(\s|&nbsp;)*$/) ) {
 									// previous line contained no data
@@ -2862,7 +2871,7 @@
 						if ( mode == 'inline' ) {
 							return $1 + $2 + '{@@@ELF:0@@@}';
 						} else {
-							return $1 + $2 + '</p><p class="mwt-paragraph">' + _slb + _slb;
+							return $1 + $2 + '<p class="mwt-paragraph"></p>';
 						}
 					}else {
 						if ( mode == 'inline' ) {
@@ -2900,6 +2909,13 @@
 					|| ( elm[0].tagName == 'DIV' )) {
 					// process cells
 					innerHtml = elm[0].innerHTML;
+					if (( elm[0].tagName == 'TD' ) 
+						|| ( elm[0].tagName == 'TH' )) {
+							// cells that start n a new line should have
+							// the initial new line removed as this has been 
+							// stored in the TD tag
+							innerHtml = innerHtml.replace(/^\n/, '');
+						}
 					innerHtml = singleLinebreaks2html( innerHtml ); 
 					innerHtml = paragraphNewLines2html( innerHtml, mode );
 
@@ -3183,7 +3199,7 @@
 							outerHtml = outerHtml.replace(/<pre/, ' <pre');
 							regex = '^(\\{@@nl@@\\})?(\\s?)<(' + tagName + ')([^]*?)\n?<\\/\\3>$';
 							matcher = new RegExp(regex, 'gmi');
-							outerHtml = outerHtml.replace( matcher, '{@@enl@@}$2<' + targetTagName + '$4</' + targetTagName + '>');
+							outerHtml = outerHtml.replace( matcher, '{@@bnl@@}$2<' + targetTagName + '$4</' + targetTagName + '>{@@bnl@@}'); //0120
 						} else if ( targetTagName == 'comment' ) {
 							// beware comments are double wrapped
 							if ( innerHtml.match(/^{@@@PRE:\d*@@@}$/)) {
@@ -3427,7 +3443,7 @@
 							outerHtml = elm[0].outerHTML;
 						}
 
-					} else if (elm.hasClass( 'mwt-heading' )) {
+					} else if ( elm[0].tagName.match(/^H\d$/) ) {
 						// process headings
 						var headingMarkup = '======',
 							text = elm[0].innerText,
@@ -3438,13 +3454,21 @@
 							altro = headingMarkup.substring(0, hLevel),
 							heading;
 
+						spacesBefore = spacesBefore ? spacesBefore : ' ';
+						spacesAfter = spacesAfter ? spacesAfter : ' ';
+						newlines = newlines ? newlines : 0;
+
 						// mediawiki doesn't like leading and trailing new lines
+						text = text.replace(/{@@elf@@}/gm, "\n\n");
+						text = text.replace(/{@@enl@@}/gm, "\n");
+						text = text.replace(/{@@snl@@}/gm, "\n");
 						text = text.replace(/^(\n*)([^]*?)(\n*)$/, function (match, $1, $2, $3) {
 							// $1 = new lines before
-							// $2 = new lines after
+							// $2 = heading text
 							// $3 = new lines after
-
+							
 							// build the header, including any spaces before the header text
+							$2 = $2.replace(/\/n/gmi, '<br>');
 							heading = altro + spacesBefore + $2 + spacesAfter + altro ;
 							heading = '{@@hnl@@}' + heading + '{@@hnl@@}';
 							// build back any new lines after the heading
@@ -3849,7 +3873,7 @@
 			text = text.replace(/\n(?!{@@enl@@})/gmi, "{@@enl@@}"); //0907
 			
 			// protect any pre blocks followed by pnl
-			text = text.replace(/<\/pre>{@@pnl@@}/gmi, "</pre> ");
+//0126			text = text.replace(/<\/pre>{@@pnl@@}/gmi, "</pre> ");
 			
 			// process single new lines bracketed by block new lines
 //1019			text = text.replace(/({@@[epbht]nl@@})*(\s*{@@snl@@}\s*)/gmi, "$2");
@@ -3857,9 +3881,12 @@
 //0914			text = text.replace(/(\s*{@@snl@@}\s*)({@@[pbht]nl@@})*/gmi, function(match, $1, $2, $3, $4) {
 //0914				return $1;
 //0914			});
-			text = text.replace(/(\s*{@@snl@@}\s*)({@@[pbht]nl@@})*/gmi, "$1");
+//0102			text = text.replace(/(\s*{@@snl@@}\s*)({@@[pbht]nl@@})*/gmi, "$1");
+			text = text.replace(/(\s*{@@snl@@}\s*)({@@[pbht]nl@@})+/gmi, "$2");
 			// process empty lines bracketed by block new lines
 //0914			text = text.replace(/({@@[pbht]nl@@})?((\s*{@@(enl|elf)?@@}\s*)+)({@@[pbht]nl@@})?/gmi, "$2");
+			text = text.replace(/({@@([bht]nl|npl)@@})?{@@pnl@@}{@@enl@@}{@@[bht]nl@@}/gmi, "{@@nl@@}{@@nl@@}{@@nl@@}"); //0115
+			text = text.replace(/{@@tnl@@}{@@elf@@}{@@npl@@}{@@bnl@@}/gmi, "{@@nl@@}{@@nl@@}{@@nl@@}"); //0126
 			text = text.replace(/({@@[bht]nl@@})*((\s*{@@(enl|elf)?@@}\s*)+)({@@[bht]nl@@})*/gmi, "$2"); //0907a
 			text = text.replace(/({@@[p]nl@@})((\s*{@@(enl|elf)?@@}\s*)+)({@@[p]nl@@})/gmi, "$2"); //0907a
 //0916			text = text.replace(/({@@pnl@@})({@@[bht]nl@@})/gmi, "$1"); //0907a
@@ -3878,7 +3905,7 @@
 			text = text.replace(/({@@npl@@})({@@enl@@})+/gmi, "$2"); //0118
 			// process tables with separate cells on same line separated by '||'
 			text = text.replace(/({@@npl@@})\|\|/gmi, " ||"); //0118
-			text = text.replace(/({@@elf@@}\s*)({@@(npl|pnl)@@})*/gmi, "$1"); //0212
+			text = text.replace(/({@@elf@@}\s*)({@@(npl|pnl)@@})*/gmi, "$1"); //1018
 
 			// deal with table ends
 			text = text.replace(/{@@tnl@@}{@@pnl@@}(({@@enl@@})*)/gmi, function(match, $1) {
@@ -3910,7 +3937,7 @@
 //			text = text.replace(/{@@hnl@@}(({@@nl@@})*){@@[bht]nl@@}/gmi, '{@@nl@@}$1');//0918
 			
 //0916			text = text.replace(/({@@[bht]nl@@})({@@pnl@@})/gmi, "$2"); //0907a
-			text = text.replace(/({@@[bht]nl@@})*({@@pnl@@})/gmi, "$2"); //0916
+//0115			text = text.replace(/({@@[bht]nl@@})*({@@pnl@@})/gmi, "$2"); //0916
 //			text = text.replace(/({@@[bht]nl@@})*({@@pnl@@})/gmi, "{@@nl@@}"); //1018
 			// replace remaining br_emptyline_first with 2 new lines
 			text = text.replace(/\n?{@@elf@@}/gmi, "{@@2nl@@}");
@@ -3923,7 +3950,7 @@
 			text = text.replace(/^({@@[pbht]nl@@})*/gmi, "");
 			// where two or more blocks are adjacent we only need one new line
 //0916			text = text.replace(/({@@[pbht]nl@@}\s*)+{@@[pbht]nl@@}/gmi, "{@@nl@@}");
-			text = text.replace(/({@@[bht]nl@@}\s*)+{@@[bht]nl@@}/gmi, "{@@nl@@}"); //0916
+//0120			text = text.replace(/({@@[bht]nl@@}\s*)+{@@[bht]nl@@}/gmi, "{@@nl@@}"); //0916
 			// where one or two new lines are followed or preceded by
 			// a header/block/table new line then remove it
 			text = text.replace(/{@@2nl@@}{@@[pbht]nl@@}/gmi, "{@@2nl@@}");
@@ -3933,6 +3960,7 @@
 			text = text.replace(/{@@nl@@}{@@[bht]nl@@}/gmi, "{@@nl@@}"); //0907
 			// rationalise forced new lines for blocks at start and end of table cells
 			text = text.replace(/(({@@tnl@@})?\|{1,2}\s*){@@[bh]nl@@}/gmi, "$1");
+			text = text.replace(/(({@@tnl@@})?\|{1,2}\s*{@@tnl@@}\s*){@@[bh]nl@@}/gmi, "$1");//0125
 			text = text.replace(/{@@[bh]nl@@}(({@@tnl@@})?\|{1,2}\s*)/gmi, "$1");
 			// clean up newline before tables in definitions
 			text = text.replace(/{@@pnl@@}:{/gmi, '{@@bnl@@}:{');
@@ -3940,6 +3968,8 @@
 			text = text.replace(/{@@pnl@@}/gmi, "{@@2nl@@}");
 			// otherwise replace no paragraph placeholders with nothing
 			text = text.replace(/{@@npl@@}/gmi, "");
+			// replace two adjacent table new lines by a single one
+			text = text.replace(/{@@tnl@@}{@@tnl@@}/gmi, "{@@nl@@}"); //0126
 			// otherwise replace forced new line placeholder with single new line
 			text = text.replace(/{@@[bht]nl@@}/gmi, "{@@nl@@}");
 			// replace br_singlelinebreak with single new line
@@ -4346,7 +4376,7 @@ _pipeText;
 			// if we are just retrieving the html, for example for CodeMirror,
 			// we may have to tidy up some of the 'rationalisation' that
 			// TinyMCE makes to the html, mainly as a result of forcing root blocks
-			text = text.replace(/<br class="mwt-emptylineFirst"><\/p>/gm,"</p>");
+//			text = text.replace(/<br class="mwt-emptylineFirst"><\/p>/gm,"</p>");
 			text = text.replace(/{@@nl@@}/gmi, '\n');
 
 		}
@@ -4802,8 +4832,7 @@ function wikiparser( editor ) {
 		//
 		var selector = '#top',
 			mwexttb = $( '#mwext-tinytoolbar' );
-
-		// if there is no placeholder for inline toolbar alreayy, the add one
+		// if there is no placeholder for inline toolbar already, then add one
 		if ( mwexttb.length == 0 ) {
 			$( selector ).before( '<div id="mwext-tinytoolbar" class="mwt-toolbar"></div>' );
 			mwexttb = $( '#mwext-tinytoolbar' );
@@ -4877,13 +4906,19 @@ function wikiparser( editor ) {
 	var minimizeOnBlur = $(editor.getElement()).hasClass( 'mceMinimizeOnBlur' );
 		if ( minimizeOnBlur ) {
 			editor.on('focus', function(e) {
-				var mcePane = $("textarea#" + e.target.id).prev();
+//0207			tinyMCE.activeEditor.on('focus', function(e) {
+debugger;
+//0207				var mcePane = $("textarea#" + e.target.id).prev();
+				var mcePane = $("textarea#" + e.target.id).css( "background-color", "red" );
 				mcePane.find(".tox-toolbar__primary").css("height", "");
 				mcePane.find(".tox-toolbar__primary .tox-flow-layout").show("medium");
 
 			});
 			editor.on('blur', function(e) {
-				var mcePane = $("textarea#" + e.target.id).prev();
+//0207			tinyMCE.activeEditor.on('blur', function(e) {
+debugger;
+//0207				var mcePane = $("textarea#" + e.target.id).prev();
+				var mcePane = $("textarea#" + e.target.id).css( "background-color", "green" );
 				// Keep a little sliver of the toolbar so that users see it.
 				mcePane.find(".tox-toolbar__primary").css("height", "10px");
 				mcePane.find(".tox-toolbar__primary .tox-flow-layout").hide("medium");

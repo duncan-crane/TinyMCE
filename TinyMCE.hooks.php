@@ -534,7 +534,8 @@ class TinyMCEHooks {
 			return;
 		}
 
-		if( self::enableTinyMCE( $output->getTitle(), $context ) ) {
+		if (( self::enableTinyMCE( $output->getTitle(), $context ) ) ||
+			( substr( $output->getTitle()->getBaseText(), 0, 8 ) == 'FormEdit' )) {
 			$GLOBALS['wgTinyMCEEnabled'] = true;
 			$output->addModules( 'ext.tinymce' );
 		} else {
