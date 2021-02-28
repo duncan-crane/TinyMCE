@@ -316,22 +316,7 @@
 		 * code that has already been converted!
 		 * @type Array
 		 */
-		_tags4Wiki = new Array(),
-
-		/**
-		 *
-		 * following use to hold the cursor position before and 
-		 * after up or down arrow kepress
-		 */
-		_cursorOnDown,
-		_cursorOnUp,
-		_cursorOnDownIndex,
-		_cursorOnUpIndex,
-		_cursorOnDownPreviousNode,
-		_cursorOnUpPreviousNode,
-		_cursorOnDownNextNode,
-		_cursorOnUpNextNode;
-
+		_tags4Wiki = new Array();
 
 	var pluginManager = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
@@ -356,97 +341,6 @@
 
 		return text;
 	}
-
-	/**
-	 * find the offset of the cursor within the displayed text
-	 *
-	 * @param {String} text
-	 * @returns {String}
-	 */
-	function _getCursorOffset() {
-		var range,
-			text,
-			bm,
-			index,
-			parents = {},
-			parentsPreviousSibling = {},
-			rootNode = editor.getBody(),
-			currentNode = null,
-			previousNode = null,
-			nextNode = null,
-			firstNode = false;
-
-		function getPreviousNode( aNode ) {
-			var previousNode = aNode.previousSibling,
-				parents = editor.dom.getParents( aNode );
-
-			function validPreviousNode( aaNode ) {
-				while ( aaNode  && (aaNode.nodeType != 3 )) {
-					if ( aaNode.attributes[ "data-mce-bogus" ] ) {
-						aaNode = aaNode.previousSibling;
-					} else {
-						break;
-					}
-				}
-				return aaNode;
-			}
-			
-			if ( !validPreviousNode( previousNode )) {
-				tinymce.each( parents , function( aParent ) {
-					if ( aParent == rootNode ) return false;
-					if ( validPreviousNode( aParent.previousSibling ) ) {
-						previousNode = aParent.previousSibling;
-						return false;
-					}
-				});
-			} 
-			return previousNode;
-		}
-
-		function getNextNode( aNode ) {
-			var nextNode = aNode.nextSibling,
-				parents = editor.dom.getParents( aNode );
-
-			function validNextNode ( aaNode ) {
-				while ( aaNode && (aaNode.nodeType != 3 )) {
-					if ( aaNode.attributes[ "data-mce-bogus" ] ) {
-						aaNode = aaNode.nextSibling;
-					} else {
-						break;
-					}
-				}
-				return aaNode;
-			}
-			
-			if ( !validNextNode( nextNode )) {
-				tinymce.each( parents , function( aParent ) {
-					if ( aParent == rootNode ) return false;
-					if ( validNextNode( aParent.nextSibling ) ) {
-						nextNode = aParent.nextSibling;
-						return false;
-					}
-				});
-			}
-			return nextNode;
-		}
-
-		currentNode = editor.selection.getNode()
-		previousNode = getPreviousNode( currentNode );
-		nextNode = getNextNode( currentNode );
-		bm = tinymce.activeEditor.selection.getBookmark();
-		range = editor.selection.getRng();
-		range.setStart(editor.getBody().firstChild, 0);
-		text = range.toString();
-		tinymce.activeEditor.selection.moveToBookmark(bm);
-
-		return {
-			cursor: text.length, 
-			text: text,
-			index: index,
-			previousNode: previousNode,
-			nextNode: nextNode
-		}
-	} 
 
 	/**
 	 * replace any wiki placeholders in the text with their 
@@ -1421,19 +1315,21 @@
 				if ( $1 == 'ref' ) {
 					// $1 = content of the comment
 					var refHtml,
+						showRef = '',
 						id = 'R' + createUniqueNumber();
 
+					if ( $3.includes( "mwt-dummyReference" )) showRef = " mwt-showReference";
 					refHtml = $3.replace(/\n/gm, '{@@@ENL:0@@@}');
 					refHtml = refHtml.replace(/([^}])\{@@@ENL:0@@@}\{@@@ENL:0@@@}/gmi, '$1{@@@ELF:0@@@}');
 					refHtml = _convertWiki2Html( $.trim( $3 ), "inline" );
 					
 					if ( refHtml == '' ) {
-						refHtml = 'Empty reference'
+						refHtml = ' ' + translate( 'tinymce-empty-reference' );
 					}
 					
 					// create inner span that contains the content of the reference
 					refHtml = 
-						'<span class="mwt-editable mwt-reference'  
+						'<span class="mwt-editable mwt-reference' + showRef
 						+ '" id="' + id
 						+ '" data-mwt-type="reference"'
 						+ '" draggable="false" contenteditable="true">' 
@@ -2021,6 +1917,7 @@
 
 			// replace multiple new lines after table start with single new line
 			// and a data attribute to store the number of new lines for recovery later
+//0125			text = text.replace(/(^|\n)(\{\|[^\n]*?)(\n+)/gmi, function(match, $1, $2, $3) {
 			text = text.replace(/(^|\n)(\{\|[^\n]*?)(\n+)/i, function(match, $1, $2, $3) { //0125
 				// $1 = start of page or new line before table defiunition
 				// $2 = the first line of the table defintion 
@@ -3227,10 +3124,13 @@
 						// spans with class mwt-dummyRference are replaced with their innerHTML
 
 						outerHtml = $.trim( elm[0].innerHTML );
+						if ( outerHtml == '' ) outerHtml = translate( 'tinymce-empty-reference' );
 
 					} else if ( elm.hasClass( 'mwt-reference' )) {
 						// spans with class mwt-reference are coverted to mediawiki <ref>
 
+						outerHtml = $.trim( elm[0].innerHTML );
+						if ( outerHtml == '' ) outerHtml = translate( 'tinymce-empty-reference' );
 						outerHtml = '<ref>' + elm[0].innerHTML + '</ref>';
 
 					} else if ( elm.hasClass( 'mwt-referenceHolder' )) {
@@ -4199,7 +4099,7 @@
 			}
 		}
 
-		// for seome reason _showPlaceholders won't be picked up so set it here again!
+		// for some reason _showPlaceholders won't be picked up so set it here again!
 		_showPlaceholders = editor.getParam("showPlaceholders");
 		_placeholderClass = _showPlaceholders ? "mwt-showPlaceholder" : "mwt-hidePlaceholder";
 
@@ -4330,7 +4230,6 @@
 				}
 			}
 			if (e.value.convert2html) {
-_pipeText;
 				e.value.content = _convertWiki2Html(e.value.content, e.value.mode);
 				e.value.convert2html = false;
 				e.value["format"] = 'raw';
@@ -4675,12 +4574,106 @@ _pipeText;
 	 * @param {tinymce.onKeyDownEvent} e
 	 */	
 	function _onKeyDown(evt) {
-		var editor = tinyMCE.activeEditor;
+		var editor = tinyMCE.activeEditor,
+			_cursorOnDown,
+			_cursorOnUp,
+			_cursorOnDownIndex,
+			_cursorOnUpIndex,
+			_cursorOnDownPreviousNode,
+			_cursorOnUpPreviousNode,
+			_cursorOnDownNextNode,
+			_cursorOnUpNextNode;
 		
+		//find the offset of the cursor within the displayed text
+		function getCursorOffset() {
+			var range,
+				text,
+				bm,
+				index,
+				parents = {},
+				parentsPreviousSibling = {},
+				rootNode = editor.getBody(),
+				currentNode = null,
+				previousNode = null,
+				nextNode = null,
+				firstNode = false;
+	
+			function getPreviousNode( aNode ) {
+				var previousNode = aNode.previousSibling,
+					parents = editor.dom.getParents( aNode );
+	
+				function validPreviousNode( aaNode ) {
+					while ( aaNode  && (aaNode.nodeType != 3 )) {
+						if ( aaNode.attributes[ "data-mce-bogus" ] ) {
+							aaNode = aaNode.previousSibling;
+						} else {
+							break;
+						}
+					}
+					return aaNode;
+				}
+				
+				if ( !validPreviousNode( previousNode )) {
+					tinymce.each( parents , function( aParent ) {
+						if ( aParent == rootNode ) return false;
+						if ( validPreviousNode( aParent.previousSibling ) ) {
+							previousNode = aParent.previousSibling;
+							return false;
+						}
+					});
+				} 
+				return previousNode;
+			}
+	
+			function getNextNode( aNode ) {
+				var nextNode = aNode.nextSibling,
+					parents = editor.dom.getParents( aNode );
+	
+				function validNextNode ( aaNode ) {
+					while ( aaNode && (aaNode.nodeType != 3 )) {
+						if ( aaNode.attributes[ "data-mce-bogus" ] ) {
+							aaNode = aaNode.nextSibling;
+						} else {
+							break;
+						}
+					}
+					return aaNode;
+				}
+				
+				if ( !validNextNode( nextNode )) {
+					tinymce.each( parents , function( aParent ) {
+						if ( aParent == rootNode ) return false;
+						if ( validNextNode( aParent.nextSibling ) ) {
+							nextNode = aParent.nextSibling;
+							return false;
+						}
+					});
+				}
+				return nextNode;
+			}
+	
+			currentNode = editor.selection.getNode()
+			previousNode = getPreviousNode( currentNode );
+			nextNode = getNextNode( currentNode );
+			bm = editor.selection.getBookmark();
+			range = editor.selection.getRng();
+			range.setStart(editor.getBody().firstChild, 0);
+			text = range.toString();
+			editor.selection.moveToBookmark(bm);
+	
+			return {
+				cursor: text.length, 
+				text: text,
+				index: index,
+				previousNode: previousNode,
+				nextNode: nextNode
+			}
+		} 
+	
 		if ( evt.keyCode == 38 ) {
 			// up-arrow or down arrow at start or end of editor
 			// content results in an empty paragraph being added
-			var cursorLocation = _getCursorOffset();
+			var cursorLocation = getCursorOffset();
 
 			_cursorOnDown = cursorLocation.cursor;
 			_cursorOnDownPreviousNode = cursorLocation.previousNode;
@@ -4696,12 +4689,12 @@ _pipeText;
 		} else if ( evt.keyCode == 40 ) {
 			// up-arrow or down arrow at start or end of editor
 			// content results in an empty paragraph being added
-			var cursorLocation = _getCursorOffset();
+			var cursorLocation = getCursorOffset();
 
 			_cursorOnDown = cursorLocation.cursor;
 			_cursorOnDownNextNode = cursorLocation.nextNode;
 			var range = editor.selection.getRng();
-			editor.selection.select(tinyMCE.activeEditor.getBody(), true);
+			editor.selection.select(editor.getBody(), true);
 			var ftxt = editor.selection.getRng().toString().trimRight().length;
 			editor.selection.setRng( range );
 			if ( _cursorOnDown >= ftxt ) {

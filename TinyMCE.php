@@ -222,6 +222,8 @@ $GLOBALS['wgResourceModules'] += array(
 			'tinymce-toggle-button-toggle-wiki-placeholders',
 			'tinymce-nonbreaking-insertNonBreakingSpace',
 			'tinymce-reference-insertReference',
+			'tinymce-reference-enterReferenceContent',
+			'tinymce-empty-reference',
 			'tinymce-reference-alert-not-allowed',
 			'tinymce-pre-alert-only-plain-text',
 			'tinymce-yes',

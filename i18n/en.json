@@ -156,6 +156,8 @@
 	"tinymce-toggle-button-toggle-wiki-placeholders": "Toggle wiki placeholders",
 	"tinymce-nonbreaking-insertNonBreakingSpace": "Insert a non-breaking space",
 	"tinymce-reference-insertReference": "Insert a reference",
+	"tinymce-reference-enterReferenceContent": " Empty reference",
+	"tinymce-empty-reference": "Empty reference",
 	"tinymce-reference-alert-not-allowed": "Cannot insert a reference within a reference",
 	"tinymce-pre-alert-only-plain-text": "Only plain text is allowed in this class of element",
 	"tinymce-yes": "Yes",

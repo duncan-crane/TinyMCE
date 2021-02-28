@@ -1,7 +1,7 @@
 {
 	"@Note": "When updating this file please also update TinyMCE.php with the same changes.",
 	"name": "TinyMCE",
-	"version": "1.0.7",
+	"version": "1.0.8",
 	"author": [
 		"Ephox",
 		"Hallo Welt",
@@ -151,6 +151,8 @@
 				"tinymce-toggle-button-toggle-wiki-placeholders",
 				"tinymce-nonbreaking-insertNonBreakingSpace",
 				"tinymce-reference-insertReference",
+				"tinymce-empty-reference",
+				"tinymce-reference-enterReferenceContent",
 				"tinymce-reference-alert-not-allowed",
 				"tinymce-pre-alert-only-plain-text",
 				"tinymce-yes",

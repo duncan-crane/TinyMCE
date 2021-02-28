@@ -151,6 +151,8 @@
 	"tinymce-toggle-button-toggle-wiki-placeholders": "Used as tooltip. Used with javascript.",
 	"tinymce-nonbreaking-insertNonBreakingSpace": "Used as tooltip. Used with javascript.",
 	"tinymce-reference-insertReference": "Used as tooltip. Used with javascript.",
+	"tinymce-reference-enterReferenceContent": "Used as placeholder for new reference text.  Used with javascript.",
+	"tinymce-empty-reference": "Used as placeholder for empty reference.  Used with javascript.",
 	"tinymce-reference-alert-not-allowed": "Used as error message. Used with javascript.",
 	"tinymce-yes": "Used as label. Used with javascript.",
 	"tinymce-no": "Used as label. Used with javascript.",
