@@ -415,6 +415,7 @@
 					mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.wrapper.css',
 					mw_extensionAssetsPath + '/SyntaxHighlight_GeSHi/modules/pygments.generated.css',
 				],
+			content_css_cors: true,
 			external_plugins: {
 				'advlist': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/advlist/plugin.js',
 				'anchor': mw_extensionAssetsPath + '/TinyMCE/tinymce/plugins/anchor/plugin.js',
@@ -633,8 +634,8 @@
 						}
 					}
 				});
-//	  		editor.on('ScriptsLoaded', function(e) {
-//	  			var _toolbarResizeFactor = tinymce.activeEditor.getParam("toolbarResize");
+	  		editor.on('ScriptsLoaded', function(e) {
+	  			var _toolbarResizeFactor = tinymce.activeEditor.getParam("toolbarResize");
 			
 				  /**
 				   * dynamicallyAccessCSS 
@@ -646,7 +647,7 @@
 				   * @published 2016
 				   */
 					
-/*	  			var returnStyleSheetRules = (function (){  
+	  			var returnStyleSheetRules = (function (){  
 					  if(!document.styleSheets[0]){
 						  // Create the <style> tag
 						  var style = document.createElement("style");
@@ -715,7 +716,7 @@
 					  thisRule.style.setProperty ("height", 34 * _toolbarResizeFactor + "px", "important");
 					  thisRule.style.setProperty ("width", "auto", "important");
 				  });
-			  });*/
+			  });
 			},
 			init_instance_callback: function (instance) {
 				// For some reason, in some installations this only works as an inline function,
