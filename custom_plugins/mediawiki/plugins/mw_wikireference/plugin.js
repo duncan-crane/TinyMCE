@@ -75,7 +75,7 @@
 				refHtml = getSelection( editor, {format : 'html', convert2wiki : false});
 			}
 			if ( refHtml == '') refHtml = translate( "tinymce-reference-enterReferenceContent" );
-			reference = '<ref>' + '<span class="mwt-dummyReference" id="' + id + '">' + refHtml + '</span></ref>&nbsp;';
+			reference = '<ref>' + '<span class="mwt-dummyReference" id="' + id + '">' + refHtml + '</span></ref>';
 	  
 		} else if ( type = 'comment' ) {
 			// comments are plain text so convert the content to wikitext

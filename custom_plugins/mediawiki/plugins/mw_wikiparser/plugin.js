@@ -1168,7 +1168,8 @@
 				var comHtml,
 					id = 'R' + createUniqueNumber();
 	
-				comHtml = $1.replace(/\n/gm, '{@@@ENL:0@@@}');
+				comHtml = $1.replace(/</gm, '{@@@LTE:0@@@}');
+				comHtml = comHtml.replace(/\n/gm, '{@@@ENL:0@@@}');
 				
 				if ( comHtml == '' ) {
 					comHtml = 'Empty comment'
@@ -1340,9 +1341,9 @@
 					refHtml = '<span class="mwt-placeHolder mwt-referenceHolder " title="' 
 						+ translate( 'tinymce-editreference' ) 
 						+ '" data-mwt-type="reference" contenteditable="false" draggable="true" data-mwt-ref="' 
-						+ id + '">' 
+						+ id + '"> ' 
 						+ refHtml 
-						+ '</span>';
+						+ ' </span>';
 					  
 					return _getPlaceHolder4Html(match, refHtml, 'reference', 'editable')	
 				} else {
@@ -2261,6 +2262,9 @@
 				}
 			}
 			text = lines.join("\n");
+			
+			// fix any empty cells by putting in temporary <br>s
+			text = text.replace(/<td([^>]*)>\n{0,1}<\/td>/gmi, "<td$1><br></td>");
 			return text;
 		}
 
@@ -3771,6 +3775,9 @@
 // DC TODO tidy this up/rationalise when satisfied it is OK
 			// protect any new lines embedded in the html
 			text = text.replace(/\n(?!{@@enl@@})/gmi, "{@@enl@@}"); //0907
+			
+			// process any multiple block new lines
+			text = text.replace(/({@@bnl@@})+/gmi, '{@@bnl@@}');
 			
 			// protect any pre blocks followed by pnl
 //0126			text = text.replace(/<\/pre>{@@pnl@@}/gmi, "</pre> ");
