@@ -534,13 +534,13 @@ class TinyMCEHooks {
 			return;
 		}
 
-/*2403		if (( self::enableTinyMCE( $output->getTitle(), $context ) ) ||
-			( substr( $output->getTitle()->getBaseText(), 0, 8 ) == 'FormEdit' )) {*/
+		if (( self::enableTinyMCE( $output->getTitle(), $context ) ) ||
+			( substr( $output->getTitle()->getBaseText(), 0, 8 ) == 'FormEdit' )) {
 			$GLOBALS['wgTinyMCEEnabled'] = true;
 			$output->addModules( 'ext.tinymce' );
-/*2403		} else {
+		} else {
 			$GLOBALS['wgTinyMCEEnabled'] = false;
-		}*/
+		}
 	}
 
 	/**
