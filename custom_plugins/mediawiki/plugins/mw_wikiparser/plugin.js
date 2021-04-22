@@ -2894,6 +2894,8 @@
 		// convert new lines
 		text = newLines2html( text, mode );
 
+		//replace remaining \n
+		text = text.replace(/\n/gmi, "");
 		//Write back content of preserved code to placeholders.
 		text = _recoverTags2html(text);
 		// wrap the text in an object to send it to event listeners
